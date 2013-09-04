@@ -28,10 +28,18 @@ module Mobilize
       key_file_path = run_dir + "/key.ssh"
       File.open(key_file_path,"w") {|f| f.print(key_value)}
       "chmod 0600 #{key_file_path}".popen4
+      #set git to not check strict host
+      git_ssh_cmd = <<-end_of_git_cmd
+                      #!/bin/sh
+                      exec /usr/bin/ssh -o StrictHostKeyChecking=no -i #{key_file_path} "$@"
+                      end_of_git_cmd
+      git_file_path = run_dir + "/git.ssh"
+      File.open(git_file_path,"w") {|f| f.print(git_ssh_cmd)}
+      "chmod 0700 #{git_file_path}".popen4
       #create folder for repo and command
       run_file_path = run_dir + "/cmd.sh"
       #add keys, clone repo, go to specific revision, execute command
-      cmd = "ssh-add #{key_file_path}; " +
+      cmd = "GIT_SSH=#{git_file_path} && " +
             "cd #{run_dir} && " +
             "git clone -q #{gp.git_user_name}@#{gp.domain}:#{gp.owner_name}/#{gp.repo_name}.git --depth=1 && " +
             "cd #{gp.repo_name} && git checkout #{gp.branch}"
