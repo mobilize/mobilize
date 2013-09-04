@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require 'mobilize'
+switch = ARGV[0]
+
+if ['c','console'].include?(switch)
+  env = ARGV[1] || "development"
+  ENV['MOBILIZE_ENV'] ||= env
+  Mobilize.console
+elsif switch=='deploy'
+  env = ARGV[1]
+  if env.nil?
+    STDERR.puts "Please specify environment"
+  else
+    `cap deploy #{env}`
+  end
+elsif switch=='root'
+  puts Mobilize.root
+end

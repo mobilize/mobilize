@@ -1,0 +1,25 @@
+language: ruby
+rvm:
+- 1.9.3
+bundler_args: --without development
+script: bundle exec rake test
+services:
+- mongodb
+- redis-server
+gemfile:
+- Gemfile
+notifications:
+  recipients:
+  - mobilize.server@gmail.com
+branches:
+  only:
+  - master
+env:
+  global:
+#   AWS_ACCESS_KEY_ID
+    secure: nGbKdpWOwZE8HYJrrUrW3VQ+Qi1+66gqE4nQO92Zij3/4OIbGw1H1ELKa+GLL7N7LQAeUxrTa5akLH5fxLmNdSC294TojlwG1IpHN5YfwRo7VgSpqY3e6KHZwhhmyHEjP7qNqBmJwtuM8hCWq+X2QmnyiHCw7HU6xdE1cvy012E=
+#   AWS_SECRET_KEY_ID
+    secure: SgMhj+xnjsGSbFPw/suGEBsLdPef1YFxGRBDB59G2cPH6C857Zw6lkU//y8BHMhlVC43+++LLqt7u46bLZsEbiTU29XK+hG8o+1bBlO/wWdR/Y+DaBHqLjapP8vOi4OzP41GoovZYmV5qSFV4QYkCgRyHAcmBLoNsbkuDe81SE4=
+#   MOB_MASTER_EMAIL
+    secure: TnGcOjKVJfSTpm5zbNwy8dtNZhWzc66NjsKfKrMNks5FwCYjSzzUwhIMov3s9cPKVqr00RhXtPwxSO/TWyyP/yg6MeXZNzgy4dUiaZnSxCalyEMETAq2z51j/riaZ3TCH/0a8fqdWIYb/kFU4fRlgp5QhB1NNqsStw0R4RYFM8g=
+#   MOB_MASTER_IPS

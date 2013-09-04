@@ -1,0 +1,27 @@
+development:
+  master:
+    ips: ENV['MOB_MASTER_IPS']
+    email: ENV['MOB_MASTER_EMAIL']
+    pw: ENV['MOB_MASTER_PW']
+  worker:
+    ips: ENV['MOB_WORKER_IPS']
+  poller:
+    ips: ENV['MOB_POLLER_IPS']
+test:
+  master:
+    ips: ENV['MOB_MASTER_IPS']
+    email: ENV['MOB_MASTER_EMAIL']
+    pw: ENV['MOB_MASTER_PW']
+  worker:
+    ips: ENV['MOB_WORKER_IPS']
+  poller:
+    ips: ENV['MOB_POLLER_IPS']
+production:
+  master:
+    ips: ENV['MOB_MASTER_IPS']
+    email: ENV['MOB_MASTER_EMAIL']
+    pw: ENV['MOB_MASTER_PW']
+  worker:
+    ips: ENV['MOB_WORKER_IPS']
+  poller:
+    ips: ENV['MOB_POLLER_IPS']

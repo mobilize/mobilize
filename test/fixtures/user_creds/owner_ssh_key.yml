@@ -1,0 +1,5 @@
+---
+  user_id: "user@gmail.com"
+  service: "git"
+  key: "ssh_private_key"
+  value: "-----BEGIN PRIVATE KEY-----\r\nblablabla\r\n-----END PRIVATE KEY-----\r\n"
