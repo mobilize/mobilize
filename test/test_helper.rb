@@ -5,7 +5,8 @@ $dir = File.dirname(File.expand_path(__FILE__))
 #set test environment
 ENV['MOBILIZE_ENV'] = 'test'
 require 'mobilize'
-$TESTING = true
+#drop test database
+Mongoid.purge!
 module TestHelper
   def TestHelper.load_fixture(rel_path)
     #assume yml, check
