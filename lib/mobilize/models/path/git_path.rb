@@ -22,37 +22,44 @@ module Mobilize
     #checks out appropriate branch
     def load(user=Mobilize.owner,run_dir=Dir.mktmpdir)
       gp = self
-      #try http access first
-      #public repo; use http access with nobody:nobody credentials
-      cmd = "cd #{run_dir} && " +
-            "git clone -q #{gp.http_url_repo.sub("https://","https://nobody:nobody@")} --depth=1 && " +
-            "cd #{gp.repo_name} && git checkout #{gp.branch}"
       begin
-        cmd.popen4(true)
+        #try http access first for public repo
+        #use http access with nobody:nobody credentials
+        gp.pub_load_cmd(run_dir).popen4(true)
       rescue
         #public access failed;
         #requires appropriate user permissions
         #given by private key
-        key_value = user.git_key
-        #create key file, set permissions, write key
-        key_file_path = run_dir + "/key.ssh"
-        File.open(key_file_path,"w") {|f| f.print(key_value)}
-        "chmod 0600 #{key_file_path}".popen4
-        #set git to not check strict host
-        git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no'"
-        git_ssh_cmd += " -i #{key_file_path} \"$@\""
-        git_file_path = run_dir + "/git.ssh"
-        File.open(git_file_path,"w") {|f| f.print(git_ssh_cmd)}
-        "chmod 0700 #{git_file_path}".popen4
-        #add keys, clone repo, go to specific revision, execute command
-        cmd = "export GIT_SSH=#{git_file_path} && " +
-              "cd #{run_dir} && " +
-              "git clone -q #{gp.ssh_url_repo} --depth=1 && " +
-              "cd #{gp.repo_name} && git checkout #{gp.branch}"
-        cmd.popen4(true)
+        gp.priv_load_cmd(run_dir,user).popen4(true)
       end
       repo_dir = "#{run_dir}/#{gp.repo_name}"
       return repo_dir
+    end
+
+    def pub_load_cmd(run_dir)
+      cmd = "cd #{run_dir} && " +
+            "git clone -q #{gp.http_url_repo.sub("https://","https://nobody:nobody@")} --depth=1 && " +
+            "cd #{gp.repo_name} && git checkout #{gp.branch}"
+      cmd
+    end
+
+    def priv_load_cmd(run_dir,user)
+      key_value = user.git_key
+      #create key file, set permissions, write key
+      key_file_path = run_dir + "/key.ssh"
+      File.open(key_file_path,"w") {|f| f.print(key_value)}
+      "chmod 0600 #{key_file_path}".popen4
+      #set git to not check strict host
+      git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' -i #{key_file_path} \"$@\""
+      git_file_path = run_dir + "/git.ssh"
+      File.open(git_file_path,"w") {|f| f.print(git_ssh_cmd)}
+      "chmod 0700 #{git_file_path}".popen4
+      #add keys, clone repo, go to specific revision, execute command
+      cmd = "export GIT_SSH=#{git_file_path} && " +
+            "cd #{run_dir} && " +
+            "git clone -q #{gp.ssh_url_repo} --depth=1 && " +
+            "cd #{gp.repo_name} && git checkout #{gp.branch}"
+      return cmd
     end
 
     #loads repo and returns file contents as string
