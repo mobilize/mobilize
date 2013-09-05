@@ -27,5 +27,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "redis-objects"
   spec.add_runtime_dependency "mongoid", "3.1.4"
   spec.add_runtime_dependency "popen4","0.1.2"
-
+  spec.add_runtime_dependency "pry","0.9.12.2"
+  spec.add_runtime_dependency "pry-doc","0.4.6"
 end

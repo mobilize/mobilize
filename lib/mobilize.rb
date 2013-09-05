@@ -7,11 +7,7 @@ module Mobilize
   end
   #force Mobilize context when running `bundle console`
   def Mobilize.console
-    require 'irb'
-    IRB.setup nil
-    IRB.conf[:MAIN_CONTEXT] = IRB::Irb.new.context
-    require 'irb/ext/multi-irb'
-    IRB.irb nil, Mobilize
+    Mobilize.pry
   end
   def Mobilize.env
     #use MOBILIZE_ENV to manually set your environment when you start your app
@@ -28,6 +24,8 @@ module Mobilize
     ::YAML.load_file_indifferent(yaml_path)[Mobilize.env]
   end
 end
+
+require 'pry'
 
 require "popen4"
 require "mobilize/extensions/string"
