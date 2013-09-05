@@ -37,6 +37,7 @@ module Mobilize
     end
 
     def pub_load_cmd(run_dir)
+      gp = self
       cmd = "cd #{run_dir} && " +
             "git clone -q #{gp.http_url_repo.sub("https://","https://nobody:nobody@")} --depth=1 && " +
             "cd #{gp.repo_name} && git checkout #{gp.branch}"
@@ -44,6 +45,7 @@ module Mobilize
     end
 
     def priv_load_cmd(run_dir,user)
+      gp = self
       key_value = user.git_key
       #create key file, set permissions, write key
       key_file_path = run_dir + "/key.ssh"
