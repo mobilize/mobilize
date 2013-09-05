@@ -10,6 +10,7 @@ module Mobilize
     field :branch, type: String, default:->{"master"}
     field :file_path, type: String #file within the branch
     field :address, type: String, default:->{"#{domain}/#{owner_name}/#{repo_name}/#{branch}/#{file_path}"}
+    field :url, type: String, default:->{ "#{service}://#{address}" } #unique identifier
     field :http_url, type: String, default:->{"https://#{domain}/#{owner_name}/#{repo_name}/blob/#{branch}/#{file_path}"}
     field :http_url_repo, type: String, default:->{"https://#{domain}/#{owner_name}/#{repo_name}.git"}
     field :git_user_name, type: String, default:->{"git"}
@@ -21,12 +22,15 @@ module Mobilize
     #checks out appropriate branch
     def load(user=Mobilize.owner,run_dir=Dir.mktmpdir)
       gp = self
-      if gp.domain == "github.com"
-        #public repo; use http access
-        cmd = "cd #{run_dir} && " +
-              "git clone -q https://#{gp.domain}/#{gp.owner_name}/#{gp.repo_name}.git --depth=1 && " +
-              "cd #{gp.repo_name} && git checkout #{gp.branch}"
-      else
+      #try http access first
+      #public repo; use http access with nobody:nobody credentials
+      cmd = "cd #{run_dir} && " +
+            "git clone -q #{gp.http_url_repo.sub("https://","https://nobody:nobody@")} --depth=1 && " +
+            "cd #{gp.repo_name} && git checkout #{gp.branch}"
+      begin
+        cmd.popen4(true)
+      rescue
+        #public access failed;
         #requires appropriate user permissions
         #given by private key
         key_value = user.git_key
@@ -36,18 +40,17 @@ module Mobilize
         "chmod 0600 #{key_file_path}".popen4
         #set git to not check strict host
         git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no'"
-        git_ssh_cmd += "-i #{key_file_path} \"$@\""
+        git_ssh_cmd += " -i #{key_file_path} \"$@\""
         git_file_path = run_dir + "/git.ssh"
         File.open(git_file_path,"w") {|f| f.print(git_ssh_cmd)}
         "chmod 0700 #{git_file_path}".popen4
         #add keys, clone repo, go to specific revision, execute command
         cmd = "export GIT_SSH=#{git_file_path} && " +
               "cd #{run_dir} && " +
-              "git clone -q #{gp.git_user_name}@#{gp.domain}:#{gp.owner_name}/#{gp.repo_name}.git --depth=1 && " +
+              "git clone -q #{gp.ssh_url_repo} --depth=1 && " +
               "cd #{gp.repo_name} && git checkout #{gp.branch}"
+        cmd.popen4(true)
       end
-      #run cmd
-      cmd.popen4(true)
       repo_dir = "#{run_dir}/#{gp.repo_name}"
       return repo_dir
     end
