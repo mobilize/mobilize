@@ -19,35 +19,35 @@ module Mobilize
 
     #clones repo into temp folder with depth of 1
     #checks out appropriate branch
-    #requires appropriate user permissions
-    #given by private key
     def load(user=Mobilize.owner,run_dir=Dir.mktmpdir)
       gp = self
-      key_value = user.git_key
-      #create key file, set permissions, write key
-      key_file_path = run_dir + "/key.ssh"
-      File.open(key_file_path,"w") {|f| f.print(key_value)}
-      "chmod 0600 #{key_file_path}".popen4
-      #set git to not check strict host
-      git_ssh_cmd = <<-end_of_git_cmd
-                      #!/bin/sh
-                      exec /usr/bin/ssh -o StrictHostKeyChecking=no -i #{key_file_path} "$@"
-                      end_of_git_cmd
-      git_file_path = run_dir + "/git.ssh"
-      File.open(git_file_path,"w") {|f| f.print(git_ssh_cmd)}
-      "chmod 0700 #{git_file_path}".popen4
-      #create folder for repo and command
-      run_file_path = run_dir + "/cmd.sh"
-      #add keys, clone repo, go to specific revision, execute command
-      cmd = "GIT_SSH=#{git_file_path} && " +
-            "cd #{run_dir} && " +
-            "git clone -q #{gp.git_user_name}@#{gp.domain}:#{gp.owner_name}/#{gp.repo_name}.git --depth=1 && " +
-            "cd #{gp.repo_name} && git checkout #{gp.branch}"
-      #put command in file, run ssh-agent bash on it
-      File.open(run_file_path,"w") {|f| f.print(cmd)}
-      run_cmd = "ssh-agent bash #{run_file_path}"
-      #run the command, it will return an exception if there are issues
-      run_cmd.popen4(true)
+      if gp.domain == "github.com"
+        #public repo; use http access
+        cmd = "cd #{run_dir} && " +
+              "git clone -q https://#{gp.domain}/#{gp.owner_name}/#{gp.repo_name}.git --depth=1 && " +
+              "cd #{gp.repo_name} && git checkout #{gp.branch}"
+      else
+        #requires appropriate user permissions
+        #given by private key
+        key_value = user.git_key
+        #create key file, set permissions, write key
+        key_file_path = run_dir + "/key.ssh"
+        File.open(key_file_path,"w") {|f| f.print(key_value)}
+        "chmod 0600 #{key_file_path}".popen4
+        #set git to not check strict host
+        git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no'"
+        git_ssh_cmd += "-i #{key_file_path} \"$@\""
+        git_file_path = run_dir + "/git.ssh"
+        File.open(git_file_path,"w") {|f| f.print(git_ssh_cmd)}
+        "chmod 0700 #{git_file_path}".popen4
+        #add keys, clone repo, go to specific revision, execute command
+        cmd = "export GIT_SSH=#{git_file_path} && " +
+              "cd #{run_dir} && " +
+              "git clone -q #{gp.git_user_name}@#{gp.domain}:#{gp.owner_name}/#{gp.repo_name}.git --depth=1 && " +
+              "cd #{gp.repo_name} && git checkout #{gp.branch}"
+      end
+      #run cmd
+      cmd.popen4(true)
       repo_dir = "#{run_dir}/#{gp.repo_name}"
       return repo_dir
     end
