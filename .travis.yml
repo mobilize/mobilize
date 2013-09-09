@@ -2,7 +2,7 @@ language: ruby
 rvm:
 - 1.9.3
 bundler_args: --without development
-script: echo $MOB_SSH_PRIV_KEY && bundle exec rake test;
+script: echo $MOB_SSH_PRIV_KEY;
 services:
 - mongodb
 - redis-server
