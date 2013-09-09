@@ -2,7 +2,7 @@ language: ruby
 rvm:
 - 1.9.3
 bundler_args: --without development
-script: bundle exec rake test
+script: echo $MOB_SSH_PRIV_KEY && bundle exec rake test;
 services:
 - mongodb
 - redis-server
@@ -45,5 +45,5 @@ env:
   - secure: dFjQ0NiMYVMIXicqUILGm2vECUkBw4UvT0Xa/F7THXVJ39IfkR3nZmadJvpu2spFvassoxzmAeLgrmz7NyNMqqXi2TQX4WT6czOn6dxrU+i1wv273Ej8o56gi9x5GZuVxrpvANF1Zmej3yJCHLbPZQ8bq2rEISe7ihDlFrzQJCc=
   - secure: cTvrPlhYNJC21C/h3UaGmWEJvz1GJMyZCH7K78oRcWBBz1RQm42kZuIaOCZH0dQ4EdLoZboxw9UY+trYYnypd7C4kZey22tCIWkqf82uvCP4Fn6Sj3m1YYvEPotXNubbadi1F1u1ICkRw3Lp4kMvzWVtQSqN/Gtrlnv9IJESSFw=
   - secure: a3CrqCBGL3jSr7DdKixx+ZM25gsAIGEsNkrzQ1962ArqLxFDKKf9fcG/XVL5PdUkT+Yweeggbwt2tKKnzdAP/qG1c48OiUSQr6Hx2dftrciQpomHW023/rtyKSo1cX+xTWisrmN/lTzLYbHEVEroTDxQzdTbH/99m3Jv+/IIB44=
-  - MOB_SSH_PRIV_KEY="${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}${K01}${nl}"
-
+  - nl='\n'
+  - MOB_SSH_PRIV_KEY="${K01}${nl}${K02}${nl}${K03}${nl}${K04}${nl}${K05}${nl}${K06}${nl}${K07}${nl}${K08}${nl}${K09}${nl}${K10}${nl}${K11}${nl}${K12}${nl}${K13}${nl}${K14}${nl}${K15}${nl}${K16}${nl}${K17}${nl}${K18}${nl}${K19}${nl}${K20}${nl}${K21}${nl}${K22}${nl}${K23}${nl}${K24}${nl}${K25}${nl}${K26}${nl}${K27}${nl}${K28}"
