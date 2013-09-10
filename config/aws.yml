@@ -1,9 +1,16 @@
 development:
+  zone: ENV['AWS_ZONE']
+  access_key_id: ENV['AWS_ACCESS_KEY_ID']
+  secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
+test:
+  zone: ENV['AWS_ZONE']
   access_key_id: ENV['AWS_ACCESS_KEY_ID']
   secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
 staging:
+  zone: ENV['AWS_ZONE']
   access_key_id: ENV['AWS_ACCESS_KEY_ID']
   secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
 production:
+  zone: ENV['AWS_ZONE']
   access_key_id: ENV['AWS_ACCESS_KEY_ID']
   secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']

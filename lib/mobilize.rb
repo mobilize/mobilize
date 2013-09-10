@@ -28,13 +28,12 @@ end
 require 'pry'
 
 require "popen4"
-require "mobilize/extensions/string"
-require "mobilize/extensions/yaml"
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
 Mongoid.load!(mongoid_config_path, Mobilize.env)
 
+extensions_dir = "mobilize/extensions"
 models_dir = "mobilize/models"
 user_dir = "#{models_dir}/user"
 container_dir = "#{models_dir}/container"
@@ -42,6 +41,10 @@ path_dir = "#{models_dir}/path"
 aws_dir = "#{path_dir}/aws"
 google_dir = "#{path_dir}/google"
 gbook_dir = "#{google_dir}/gbook"
+
+require "#{extensions_dir}/object"
+require "#{extensions_dir}/string"
+require "#{extensions_dir}/yaml"
 
 require "#{user_dir}/user"
 require "#{user_dir}/user_cred"
