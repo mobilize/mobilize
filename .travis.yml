@@ -1,7 +1,7 @@
 language: ruby
 rvm:
 - 1.9.3
-script: echo "a${nl}b"
+script: (printf $MOB_SSH_PRIV_KEY > test.ssh) && chmod 0400 test.ssh && ssh -i test.ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' "ubuntu@$MOB_AWS_MASTER_DNS" hostname
 notifications:
   recipients:
   - mobilize.server@gmail.com
@@ -38,6 +38,6 @@ env:
   - secure: S0VkVu7LwtqSkjUtw4iwwf/bRAIf/+SWZkUIKtBjzDp5Mf/OiS2GDbrbqnXPfKITrDjVhmfPwvAlDgsL6kn6vPOn2KblHb0CtZIFT9BvVcbl1tgXfjCerMOUp27vB0ifMwiPgEcidIDaVYW8rAIiray1NlqToJl4jXKI4nWmdkc=
   - secure: Dsb5lMMQRFcssTV9cbsy/PymDn57dwQNsUxI7ris1FLCo/LXoOA0hOs+3pELZOFxlsjNhBtO8Xp6xgFQIzwYIywfBaPOZqIZtBiHpHZHfIImlehR7+OegsMUK4CYmxGY0iTbspRaLTnka/S9MvlIvpJ/3uYXkmIEQ5efm9leiHc=
   - secure: gbRddOAoBlF+ReEFIQPALZat9+WmgOLemXeFHsAiyLaFFincb1feUWMjO7If4GJ1n8iv8bT4KnxNkprrzASceGRtwX/iJNVTNJ5b88GQt2Gh2a1dstU6DlsGOC3F1sWBcmt/50Fj00e07615JGvGoEnESZ98IFeCWP/p/ekSgCI=
-  - nl="\\n"
+  - nl="\n"
   - MOB_SSH_PRIV_KEY="${K01}${nl}${K02}${nl}${K03}${nl}${K04}${nl}${K05}${nl}${K06}${nl}${K07}${nl}${K08}${nl}${K09}${nl}${K10}${nl}${K11}${nl}${K12}${nl}${K13}${nl}${K14}${nl}${K15}${nl}${K16}${nl}${K17}${nl}${K18}${nl}${K19}${nl}${K20}${nl}${K21}${nl}${K22}${nl}${K23}${nl}${K24}${nl}${K25}${nl}${K26}${nl}${K27}${nl}${K28}"
   - MOB_AWS_MASTER_DNS=ec2-54-215-215-64.us-west-1.compute.amazonaws.com
