@@ -2,7 +2,7 @@
 language: ruby
 rvm:
 - 1.9.3
-script: ruby -e 'require ./config/deploy/travis; Mobilize::Travis.base64_decode("mob_ssh",22)'
+script: ruby -e 'require "./config/deploy/travis"; Mobilize::Travis.base64_decode("mob_ssh",22)'
 notifications:
   recipients:
   - mobilize.server@gmail.com
