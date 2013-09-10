@@ -2,7 +2,8 @@
 language: ruby
 rvm:
 - 1.9.3
-script: ruby -e 'require "./config/deploy/travis"; Mobilize::Travis.base64_decode("mob_ssh",22)'
+script: (ruby -e 'require "./config/deploy/travis"; Mobilize::Travis.base64_decode("mob_ssh",22)' > test.ssh) &&
+  chmod 0400 test.ssh && ssh -i test.ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' "ubuntu@$MOB_AWS_MASTER_DNS" hostname
 notifications:
   recipients:
   - mobilize.server@gmail.com
