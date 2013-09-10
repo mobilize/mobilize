@@ -33,7 +33,8 @@ module Mobilize
                         ENV[chunk_name]
                       end.join
       file_string = Base64.strict_decode64(base64_file_str)
-      puts file_string
+      File.open(file_path,"w"){|f| f.print(file_string)}
+      return true
     end
   end
 end

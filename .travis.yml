@@ -2,7 +2,7 @@
 language: ruby
 rvm:
 - 1.9.3
-script: (ruby -e 'require "./config/deploy/travis"; Mobilize::Travis.base64_decode("mob_ssh",22)' > test.ssh) &&
+script: (ruby -e 'require "./config/deploy/travis"; Mobilize::Travis.base64_decode("mob_ssh",23,"test.ssh")') &&
   chmod 0400 test.ssh && ssh -i test.ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' "ubuntu@$MOB_AWS_MASTER_DNS" hostname
 notifications:
   recipients:
@@ -14,48 +14,50 @@ env:
   global:
   - MOB_AWS_MASTER_DNS=ec2-54-215-215-64.us-west-1.compute.amazonaws.com
 #mob_ssh00
-  - secure: "FXugvQYkJjxBAucu4yX8X7EfL9lAj+e7z0oPGGgV2VzcTcKyf+3nHWXggCa7KtZMl5OQSZ0j9MxdIMpcToPV2G2+BgbgXQB0GBnQulP0wcPsko1RkaxYGBB/+FPEiSu5Lm0m0O4Ypc9XnUInn8p0XXGF1TDklD7xKoHOHOhzegM="
+  - secure: "OsTKT4Rc3Z2AkBP0//F4gGoapSfXOAWxebADt3bKcZTYuclceP12BDaeMaKBZUkY882GZ5XO9D4LZFOECLeuDo1HAzCmZM5xprrKcH6XLWnVRJBZ6/vCDKnGO6QJ3tsMozmO+Mm3SixExI73+SZxFEkgktm/QnDm+T5KrWXKF7M="
 #mob_ssh01
-  - secure: "EO4UIhpASwF+weLtUty5vWvbE1UwqOCfgGyzWIOr7ACpUAQcdx9J9euiU3dULpy/5qH+8vIV2WAEVmoyaBLxNHQ/0hG2XahbHo2nyz3KuLWFORAPiP1XAEWviLbLmrugdxO8mGhQieLPeRZZukeNWgvt5PBC+m7JuvcKVTyEfR8="
+  - secure: "mIsdo0LNFLdm+X8xNo9blLhQy2MK77/qK7/qLIQWzyrONaDYd+HE1B1cQ2BXg4g5C/M9VDY3cGz0jIUqJHiIrzthAzQvZGZbBdnMeX9xRppTc4BjsUtmOI825RzzcMljJECdgfwgkDI+rOLelZnEZ3pj7ZtwHAiJd9J7HQiOLM4="
 #mob_ssh02
-  - secure: "SReURPerAvj5f57HpKB6UuMXoDkzumIdd5lhDEHD8/mR9XB/E4uhz6oBKFqTK0MrEBMsD3q8dniMvbz0K+NjruF/BYgBk5CA1HRR8gwWWWUUIYCHHBAD07jMugTUz+fCUvO0lbFcGp1MboUUYLsvrqvq2yQpinM0UU06SxgTmmk="
+  - secure: "kn+A6Y6QZKLpFr0jGcfLOp7zB8lMa0FD4GY8mQrz32va1h2T+wVrqhJd85K5Qm1+Ii2F5CjGZB3W9Gb/GXzc3igj3g0Ho4P4FjQz8aDDDMaxpNRDIVmfAkR5hO4eVloCeY2AvYtTTH+D017PZo6sTXfgUTPm0ZpgEZ84B3SxMbk="
 #mob_ssh03
-  - secure: "Fr7Et358S6dLbYrOo2LPTGhpXlPmqNDjxJmpmCI9Hs8tzySSALvQzfio9IdlHEv24GLnJariPQNplgFgjpXXZYcx/H9v/jnjjozdzhrDWWYMSW6voc48B/7/r/bnsIR5lo5pxLvDTEfoLg6XOBwGUwxaSm/2C8+JZClxisBZ9RU="
+  - secure: "U7Oy5cg/bddQujsq38oa73NSP7dswAx3BIWX6HheoRwI83h464TLTWHe+PVxh22b5jJdfBfCfm+fTXuzSh1ZIqTH9JcPVW8bswjgWkGBdiDdF5QmZNcSrTtj84/weKU7a3Km1XOq+Q7l/qNm3SiP0MeUQBYoauLXgfhYUoEeC7c="
 #mob_ssh04
-  - secure: "OT8OJjJ7Q5Pe1VnQ0hNaoHZRJAocYIZgC1LxLRr4n8Ov49klgWdcX8FZ/n8By9i25V1ymUn4NV+g9Wb3sJEUfvKugPI10Is9rM0OgD3uT6sugCcKzIKikx/3HVAy/f5RlbPoMwOotRL2NXigULJZaqcDhonUtTu2E53kjiEYC3Y="
+  - secure: "EvpZ1RjKA9XYJEyuRBg/q6srXN2qYraI1w8i98Od97YJmJPqbvFo61s5A7ImiNnoI2XNYb9c3/db5ma1v2SDRymzAaCHePEVIoU8Oj3aIJb4UiX9/aFPq6/jv7u1gJ0cAzCg9wU34LTS9t24OY6OUxzaYn/I/A91KWengL9/dz8="
 #mob_ssh05
-  - secure: "DFNaZ270M+wiNK45aGxKmL/Us+rE86A+UARrBg4PaA0INQIN6gUpjZ93HugNkhqWpm5r37QlLX0n2nhX1okZGV14rJwqBSSzdnNNmw2jmwSkQkiZ1vMwPs+Eos/bsoC+5VMrEhIAZIXNfisXIt4R8bT9uMEO2SPOJ8VA7us2dAw="
+  - secure: "dF1p/VAxqvRK7kNiJGxPB/x3xuxtHHwJRxQoinQe0dhCjZ6dOXPsVBCIUO+W1jBIjJUanIavAptgERPacJRZQemoYTdeQSyGdPTtnv6ubQxzI0mYVKexkjneqHT/394M6O7+pOHSMD774DXGWTIGIkWFieYFQbJ0ain2p+rF2pk="
 #mob_ssh06
-  - secure: "heFRKptlDF8EbWwCR5WNlFmgnPesJ0ZYsZz2E5SxObdMvQhr/l3s0UnHNS5dxAsiYhy7kExmABmJtJXzfgvpO2F7OamRZKKv3CPJIc+0QNitwdX/QxvjtPkyI09onY8lLKJVfq3mvpi7LPepv2666SWLFtZn0k5EoI+VS5VOrjg="
+  - secure: "K7PJy4ju8kBO+bUmRYPMl0k27L3CeOp4pzXGc+7x66Tm9VjDDfppn95FRuPoQcrkjSS2XQT9yqd77Lh6ZthMopDOxJGSWs++kodnD/NYwvW75Vazyuz0u2Jv2iSRbnTWXbGDqKsUF7xSy9HwQR4+qaqoPGvMqvofyAAsdKYv8xk="
 #mob_ssh07
-  - secure: "P4l9kcA2QP9ilWdj8FpdTv/M6GwHYiG8kTDHzNDU3l+TfjHd6xBEkxNDACzRlIXf0SBi2R7HgRuM6Vo7fbYzXo9IOL83YG1FPSBWTA8kr5ANqGkWofFilrTXlB6ad/C5XOGKao79KErOWh20SlixKo0087YMtmz6vGDfORzi4hY="
+  - secure: "Yi1kb+kaE95vWQGN6BeWyvS4xVCnwvsef5DT3lXSNTFq5LKiR/yjZXlS+uT0YUX72k0m6mWXSP/+zWQmRnM+ghsX3Aa33fPBjPqO30Sg3KynQXGdEIpcGcj9ClVVboGkLsJO7krCyPWNrLhoCgIcu5aRj1XVxxHe6uC/VCDEZHs="
 #mob_ssh08
-  - secure: "Y1HFvEASWrO87CtU1MpDYAFGKFJQb96KRpXqVuNomdj7KIwWazhsJBLTzDbRxEbsf88HSZUcfaw/3zVelecZ24o3hRtqaeSHlf9PslBpgeO4lf2AqT8Wqa+Ymuf0IP6w6vwPDQTBa5GmBojFH0aonb0BdnCZ2VlEkY55qY0H0fk="
+  - secure: "jTE5HBY7K/iQyJ5zRnrm++pEKva47gpaHAvWIhwbhnUjIktVdhS1cvSi4i8d9ef4FFysf7IEdDwtDskNMkFHs8X+2i18XcJ2v7z3Ka96+hleci4u7116v/4IfqSW41ni16izM65yvJxT4zVPgjTq5N940G7sZIIANu0E2AqX3Xs="
 #mob_ssh09
-  - secure: "HbnNM+ER/2TPzGrrGuUYH9J/Dp+tlWdmOy1nEi9D908SZ0QamIARR6QlaNQegRgYHOSbotrBSnBgYs0KeNEV9c5kR8uaeikpMHKPmTXF79buGTSUH5Wvf1ulf+XVEX1gCfaz+SEOxsY/9kT8OBQRiPeiYxfVtrWOomWuEf+XjBQ="
+  - secure: "eH7fTdIQqqgTDeIqqdXHUxB9lKpdWWRO/jQTT8U5OTBkKK6Mk2u2jIf5i+N1NMRi305dMZfEYwHNucJPLPWOJPFeO5ybMeCPUhdouSojgRumsjWsSPo5PyF2MHRpeamzLFQSEDBMsF8UNYFp1ZAaeBcPqV5JchYtuCA78Y8iVRk="
 #mob_ssh10
-  - secure: "Z5ScDv7YuHQNOvllzL3/gy3otkN2xPLCR9zY/nQnyqpNef2BT7/Ehnw6PYGzJtxSTL6CtxZzA7ixqfgERp8REW+XuJUdvJTT+CCoYHyzy/R4WOrHNvfx1ZE2Qfl9UH4h7zrWFS+V7w4iSAl5XHI19mNLo7Jb80XHcHuY1QQHL38="
+  - secure: "dfmPjlrAycIqZwjw4uXxnptp6gkqgrNuYITVvzZXE5smzJFBF787mc4odio4gV6pY/X7lCdcktLgu5E+D4gRDxmhyMrLBMSsRG1G4ow2dBSQRTD7wP62EU3dmCfODfquYWXeT7sMqhyLuTwvmM6paOqUSd2ikCuSl2NhBf3dhHs="
 #mob_ssh11
-  - secure: "cG4AlXacIynlGhEJlmA70tRMohyuE3y8vUkWrLoV4HOntyc48KcxBGSKV3sAiTcwHobSrN8D8mSkxC/oRKXIcru90dpZEWz9RuvqpZzlEEMoiLd51tCG09lYiwU48mnB/38ti9ttHBDQDYGM6vSTdFA248VRffpLRk4gEmrZx+I="
+  - secure: "QDgdyaEKJ+06dB2umFzp+qfW87Q65bQJkExcJ5wv9CBD9ZmmZor6UgEgNE9uA8nuI9nmhVpITyhoQRNXXIIstTEO7jl8TV48WL0LABfKnVjXpBl0uu5mteHGc9GBs9v7F/Y1CSJaPDAIj1b14ptWtqRQ+pPNrQSo3lhlF4DUxOk="
 #mob_ssh12
-  - secure: "n/f2IP7qXypo2HxWe4gyGtiWjJVsx96YMV8JDHeB9S8aul6LOWQjfYf8PXMLkSXflCLvSq+NmGub7n3bHQj9L98uvgQs7Zx577UpdsbvHgQ0LDunIspyMt+kZnxEXDpCTYEvLkA6RRJShks2vntiCTfOww9UwHIXM6AFsP+gAwM="
+  - secure: "FcpEfkECRGvOK52Yt6VyrtDYuw/910f1oAA9nh/Nu/6hxDO8sTxdhbGkEKUpri9mle6VBVPpnLHxVApVKN2EF8L+CgrKmAoRVF2qthuFBRNrpTQ1ctPdfumADLA7PD5smd6SLHSd/dtAs2EU7cFZL9E+nb2jQ9cIR7HVTf7cW1I="
 #mob_ssh13
-  - secure: "FXy9FvlSVfsDco20q1IFPEjZ60ssv1I5MIwb+O9dyh+E34dB+Ro4TX1KWYlo/7HxbG/XxVAgU0tru4/IsFnQD8JjR+HVwBTm2jBihsxC8A2pccnN+w6AGpc3YYWbCx3FxkqPfl2Pni+Mi5b/A0axfSMHXQb9dFr9xS74AeIJgp8="
+  - secure: "gahwAUGAmrBLc57Zj4qOAgJ2h4QR07hWvSuSjNxkGrBfM2xdb29VzDzigtulE3mUE74C4vefhzUerXYtiLnPXwQyeDrOHafoQCW0b/PSUDregGaUnga8ZcYpUTtthBOaE0AFGbzLHCTAkaGc5ZmJOcLPXEMGndzqmRhCqzUUPxU="
 #mob_ssh14
-  - secure: "T+sZ5XNITCCTtQi1b0wjU9bhknisnr1CwxrbRWg+fzlmjKHy3nfWfVMtHaZy18Bui61E/NOKH9YrsqBtG9PgHTpzFsHAAxLUnhk0hajNCD79jCZF8jJGHqQ2b7E52NNBr8vcasIZc2698Z7FpQebaQ/LlempsS4tjznfsxJmlgE="
+  - secure: "Sa+FERlaJd1K6fVEfirpO+KCzXg6fTb3A05BlcNV8CIsiT2HvT9HrHrge0kJ8nGry8nmZ0VX4o1ZgVT1Uv7EGCiDelmCLWqBOtfiygyaRLwxR152V+bG4L+78Z0g1wPoLfHl7+WSvsvAzI9l6UtRsW8uG3JSdIt5MWxeC1nfn9g="
 #mob_ssh15
-  - secure: "gT8M0HJwIZf98SaJwbfgJuJ7FSsz4qVIePt2BTTzNKeBuXQv/H/lxrwLa0sdbOsKQ8QXB4gQfd4tNa9ynRUj/Dnms2TLSu9GCLjLRA81HFeSzynR2jPi8oJjcL0Domr5XoxnbnJyXsz2pVWzcxhMA7OAFJejfpQYlWAw1KODaYc="
+  - secure: "jGzas1BJ0pGTJyWBr+Cu/cO/4WVGQT5eKCXdyCZ1LFO64hsiryE6wztSubR7rLQBTLHaJo2xEuvPz50aoyqDKXIU8uZ2HPeaxxYnLR8tYdt2IB1jaZkInyFcV49lONbIvOyYBvAkWA/xPh1ibilxl5yQzx+W++mh/WWcBUSg1nc="
 #mob_ssh16
-  - secure: "kE/5mRt4Own4nMCXFNwIb2edawmwmpNZxMJBs2Wy1bI3r+iyh8Y6DD64rwWBO9nY27S3FoEAAc/FPivaijzwWm4AMTnM18ICnqNF+JaKkNv/CODcileWBm9ufcIL4C7uLU6CLYRexxsjDdMbdaRtOQ61x3wfGrnicxT0EHFWllw="
+  - secure: "hTkkGlqTcVh9hHMDMsprxQZoCN5AA47r/C+YNKoUFzQQvZi4fqjCvnuUYoNRJYbQT2Qufne31YO0qHCuHyGmFSyDiIWojxJGpxOsTOmtYODZPh/LKvnsOXg/+gAXP58pYjwguKjk549LQdUuq/gC4L0fbGPKhSEtuy7FWlgWvNM="
 #mob_ssh17
-  - secure: "LACMki+yP0AehkOrzz0CZGTSPV/HBj57sDFueCg0fQeQJY8XMazcd3J/+1J+8OU5cEwj56e3xKeUpS16f4KNk9bdxZE5XlbyN8eFGtYqyUvFBISVG0vQrvQd5W6qvjaAa1w/0xq2kEqrVeg6V6F1DirUvJ+4qkOC23hY5HrUHm0="
+  - secure: "jMDCKPuCkTwpks3TZ0FaIrj5jK68sIzqNItF6HpDzNGV8ygifaoFqDXt/Vwm1WMv2Lb0fr2GnRd379j9X2UrKPKKTrcnoaCVN1G2GiwKeuy8mvZiFJO7SnCXCnB6G7rmCRvJnrIFR2u0WL6LWWeYAtsWVFMWQwBckmZC4xNsTsg="
 #mob_ssh18
-  - secure: "Z1I/gRFvVjPqUzv/gZIHESHjFXfHtvEpS9geAPQOtWhbwBr1cG8eU3w/89z3TL1z5fkUMjzHJeF6/i21RCaFMOxVEXnmfZsDP8sgC92W2Z8QNfVrl1wUGIttbAQoWOgyu5O7E7meSsXnn4unA4hFcvCDGxE18KlsCak5l2N7LIU="
+  - secure: "FgqBn0IJs+e+0VW6fBtoZa5EdALcWhtpccWVzeuo1u/RHBOeszaKnmQbw4pYRkhGvp4mXqAcrM6gt0UVPW++7+VeiVfUT3dNV0lfJkRM1+A8/0Vx0ZOpd/5Vblu5Q4bbkscPQycwU9uLraLoG2FmhqNolK/31ZynBNhZ7C1kRhI="
 #mob_ssh19
-  - secure: "WQKxORpmU746zsaXFzulVsOHa8Lg6GWmyQFcCf05cG2dIYYeeDfmJcJu/A4QK10WKJSZZzQJeW6TifLIYauaX8Y9PJ2s2hjVOK5BF8fndHxlWrqIgPp/3MmUvC1BJNeWzGPUCwESJw7SO56PGYMvvQ+ibzzmH9OMWjw4ZjjITRI="
+  - secure: "D5OtRpjhflCCJ7RikcpHqilxfTUR7pml4QgGg9C0j3iJEn92NYGBeFrj3sLTI4h1l9mx+qD6oqbVgB5wWEr8p2AvQPAd43yKOeDTaw8Bew68+hQV/HCFcnS21dmqfPvSlOrcX6Wuq+aAEUG7T2jVGbYk9PuVk2jOqJuLvyyFvSY="
 #mob_ssh20
-  - secure: "F3QMgG8aBHf4YUjEt9lWkxCNL26hTQ9cAUXO11jkaEbc2b+ZPicI0lTKxCs5kBJNmPUR5A1kF3B1Cj2EBADs0RV0bvVj0efHDe2sxv7CAonQktgBIYg+I3nAtG4Yv88BcYIrs4enIMcyB49L1uDjaHC+4g2yzqZFxNa7Nz6TbEw="
+  - secure: "Lig1kbo2j0HNu4GG0/Hv4CU2Pc6B/XMscD3Z001vumvVOzO3ZwKJ1TlQGBew8+bDV44NT4snwof+HZSId+HI4KCQcP8FDnoc+UEE/FZgnk7teKGJ5N4E0GuIKRuomd8j3cTuW8CCTm2AuYW8I6lR63Taouw2RV60dscpdDd/YFI="
 #mob_ssh21
-  - secure: "NfOMmK3t+gCRQyyKob5CGiohfyIIiNkMNZJ5p5t7Nnr5xpOWw4j36eTJpeUd/7F7jQJ58NhYkgdRmk8oT6Buv/aW2Ur6OIB4jYcCPaOM+XZL9wY0mMCVN0KDqoeOD2u/zrtAN1DU2EDV3oZbAH0Qdfs14cs/XRxR5+kjFCXbBmw="
+  - secure: "lser4YH3hmf6fwJq91u5p7SyffqkpWjq2WAP4I2XGVELP7AYxolnqU4GfHm5u9g8CGiDBtxa/edmcl0B2zNfbNpQU8lA4a6Et8jBScYHljXMpc5Ggyyte4Qm9FKt0F3WQIwB99VzQo6bc78jCPl7LxGFiH2gT6G8E7uuM8x5G5Q="
 #mob_ssh22
-  - secure: "O/UTaN921/8m9Rk+YjKllmdZ7JMvSvVAWhu+KhM11gPmiD7R5xazDbS1C6tvgU8aKt6nQE4M0DYvBSdiWXOvBIwTFAEPrwaM31eXS9PJ9kgAnZ7yIb85/Jz0Rf9gznhYz1svxxYQHzWOObKpEbi6zojoIRB5ZIzaaZhPncgIDbM="
+  - secure: "FcgT1BPaPo6ioGIhbCwV/3ZA41uz/dUYBterlKWxc3DN6RS+KOrPP/vuGzsfh2pv1zlbha4eoGcEnOaszhsoDyB7Pw46xyyTNL27kMgHWD73upXnG1aSP3r7Q/IszBqOk3il7CqNsHYurbOPqvulYtOji9NId056GsBBf4n9M68="
+#mob_ssh23
+  - secure: "jl5vyi6tHO8na9wKtEAqUkXqJRXOcgNEYMIoE6/1dh5LJI+HyejvoI1mExy/IPiP92NoNR+gqSTP6NXnwwgyCpShZgzWo2nNUKOItU9X4g8t0K/H4cWS0/lADe1/766zLg/UL3EL+P2HotLGyjc+KhLPaZ1rtbGznJbhH1msLvw="
