@@ -1,7 +1,7 @@
 language: ruby
 rvm:
 - 1.9.3
-script: echo -e "a\nb"
+script: ruby test.rb
   hostname
 notifications:
   recipients:
@@ -39,6 +39,4 @@ env:
   - secure: l9BL8Sg4HlwK3u5r/JaVnx6bgluLokoByOFLTpDs6J01k6zcIgxLiTvPJWi+xL/JtgwBUqJH4VjQw+z+iDH4W97a7cMYIHckt5xb5vYlvojOsCBnKrDvMHprtsaVD/2NoW8S428RSCMxVvlh9vxTGufZiNleHuj9GaNbnhTmcVA=
   - secure: VhDHXDXiV66JdIZAT0kwZwLrJRi0Uy3Whuk1wdKTHhS8IHekMMdaFlpXNtWbJklh13NjYlxIxT00ZiBWdqNrAJtXE9hAsOai0LMepYjU6pJ3xpUW2saYg6oAoCB3vWL1OKb6Fi2KIhutHxSyq3xKDa7DTecWm4+H1I5WpBlsIjo=
   - secure: ah7nBbv0dWFdRdoibS0QWNwxwowlGfba934ep5aSDXaVyQqujEfH0nwabFebM+BRsDObvdLtjw2NiR0X8L0F6WSqOerCVhAhfEPpsU4cRjcZ2fiG9uLglgbCWW2XmLeiNk7XWM2nLzSkLolu9IUHZjFNMFKkDmcZUMfKG0Mf6bw=
-  - nl="\n"
-  - MOB_SSH_PRIV_KEY="${K01}${nl}${K02}${nl}${K03}${nl}${K04}${nl}${K05}${nl}${K06}${nl}${K07}${nl}${K08}${nl}${K09}${nl}${K10}${nl}${K11}${nl}${K12}${nl}${K13}${nl}${K14}${nl}${K15}${nl}${K16}${nl}${K17}${nl}${K18}${nl}${K19}${nl}${K20}${nl}${K21}${nl}${K22}${nl}${K23}${nl}${K24}${nl}${K25}${nl}${K26}${nl}${K27}${nl}${K28}"
   - MOB_AWS_MASTER_DNS=ec2-54-215-215-64.us-west-1.compute.amazonaws.com
