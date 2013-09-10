@@ -36,13 +36,8 @@ mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
 Mongoid.load!(mongoid_config_path, Mobilize.env)
 
 models_dir = "mobilize/models"
-user_dir = "#{models_dir}/user"
-container_dir = "#{models_dir}/container"
-path_dir = "#{models_dir}/path"
-aws_dir = "#{path_dir}/aws"
-google_dir = "#{path_dir}/google"
-gbook_dir = "#{google_dir}/gbook"
 
+user_dir = "#{models_dir}/user"
 require "#{user_dir}/user"
 require "#{user_dir}/user_cred"
 require "#{user_dir}/schedule"
@@ -50,15 +45,17 @@ require "#{user_dir}/job"
 require "#{user_dir}/stage"
 require "#{user_dir}/transfer"
 
+container_dir = "#{models_dir}/container"
 require "#{container_dir}/container"
 require "#{container_dir}/image"
 require "#{container_dir}/node"
 
+path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
-
 require "#{path_dir}/git_path"
 
 require "aws"
+aws_dir = "#{path_dir}/aws"
 require "#{aws_dir}/aws_path"
 require "#{aws_dir}/ec2_path"
 require "#{aws_dir}/hive_path"
@@ -66,6 +63,8 @@ require "#{aws_dir}/rds_path"
 require "#{aws_dir}/s3_path"
 
 require "gmail"
+google_dir = "#{path_dir}/google"
+gbook_dir = "#{google_dir}/gbook"
 require "#{google_dir}/gmail_path"
 
 require "google_drive"
