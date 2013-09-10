@@ -32,7 +32,7 @@ module Mobilize
                         chunk_name="#{prefix}#{chunk_pad_i}"
                         ENV[chunk_name]
                       end.join
-      file_string = Base64.strict_decode(base64_file_str)
+      file_string = Base64.strict_decode64(base64_file_str)
       puts file_string
     end
   end
