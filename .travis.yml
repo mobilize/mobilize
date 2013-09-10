@@ -1,8 +1,7 @@
 language: ruby
 rvm:
 - 1.9.3
-script: (echo -e $MOB_SSH_PRIV_KEY > test.ssh) && chmod 0400 test.ssh && ssh -i test.ssh
-  -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' "ubuntu@$MOB_AWS_MASTER_DNS"
+script: echo -e "a\nb"
   hostname
 notifications:
   recipients:
