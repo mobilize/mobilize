@@ -3,7 +3,6 @@ language: ruby
 rvm:
 - 1.9.3
 script: 'require ./config/deploy/travis; Mobilize::Travis.base64_decode("mob_ssh",22)'
-  hostname
 notifications:
   recipients:
   - mobilize.server@gmail.com
@@ -59,4 +58,3 @@ env:
   - secure: "NfOMmK3t+gCRQyyKob5CGiohfyIIiNkMNZJ5p5t7Nnr5xpOWw4j36eTJpeUd/7F7jQJ58NhYkgdRmk8oT6Buv/aW2Ur6OIB4jYcCPaOM+XZL9wY0mMCVN0KDqoeOD2u/zrtAN1DU2EDV3oZbAH0Qdfs14cs/XRxR5+kjFCXbBmw="
 #mob_ssh22
   - secure: "O/UTaN921/8m9Rk+YjKllmdZ7JMvSvVAWhu+KhM11gPmiD7R5xazDbS1C6tvgU8aKt6nQE4M0DYvBSdiWXOvBIwTFAEPrwaM31eXS9PJ9kgAnZ7yIb85/Jz0Rf9gznhYz1svxxYQHzWOObKpEbi6zojoIRB5ZIzaaZhPncgIDbM="
-
