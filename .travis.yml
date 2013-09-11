@@ -1,7 +1,9 @@
-#https://gist.github.com/lukewpatterson/4242707
 language: ruby
 rvm:
 - 1.9.3
+script: rake install && 
+  mob decode -p mob_ssh -l 23 -f mob_test.ssh && chmod 0400 mob_test.ssh && 
+  export MOB_EC2_PRIV_KEY="$(pwd)/mob_test.ssh" && mob ec2 -n master -c hostname
 script: (ruby -e 'require "./config/deploy/travis"; Mobilize::Travis.base64_decode("mob_ssh",23,"test.ssh")') &&
   chmod 0400 test.ssh && ssh -i test.ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' "ubuntu@$MOB_AWS_MASTER_DNS" hostname
 notifications:
@@ -12,7 +14,6 @@ branches:
   - master
 env:
   global:
-  - MOB_AWS_MASTER_DNS=ec2-54-215-215-64.us-west-1.compute.amazonaws.com
 #mob_ssh00
   - secure: "OsTKT4Rc3Z2AkBP0//F4gGoapSfXOAWxebADt3bKcZTYuclceP12BDaeMaKBZUkY882GZ5XO9D4LZFOECLeuDo1HAzCmZM5xprrKcH6XLWnVRJBZ6/vCDKnGO6QJ3tsMozmO+Mm3SixExI73+SZxFEkgktm/QnDm+T5KrWXKF7M="
 #mob_ssh01

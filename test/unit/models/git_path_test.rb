@@ -2,19 +2,22 @@ require 'test_helper'
 class GitPathTest < MiniTest::Unit::TestCase
   def setup
     @gp_pub = Mobilize::GitPath.find_or_create_by(
-      TestHelper.load_fixture("git_paths/mobilize")
+      owner_name: "mobilize",
+      repo_name: "mobilize",
     )
     @u = Mobilize::User.find_or_create_by(
-      TestHelper.load_fixture("users/owner")
+      active: true,
+      name: "user",
+      domain: "gmail.com",
+      is_owner: true
     )
     #populate the 5 envs below if you need to test
     #private repository accessibility
     priv_git_path_hash = {
         owner_name: ENV['MOB_TEST_PRIVATE_GIT_PATH_OWNER'],
-        repo_name: ENV['MOB_TEST_PRIVATE_GIT_PATH_REPO'],
-        branch: ENV['MOB_TEST_PRIVATE_GIT_PATH_BRANCH'],
-        file_path: ENV['MOB_TEST_PRIVATE_GIT_PATH_FILE']
+        repo_name: ENV['MOB_TEST_PRIVATE_GIT_PATH_REPO']
       }
+
     priv_user_cred_hash = {
       user_id: "user@gmail.com",
       service: "git",
@@ -49,18 +52,9 @@ class GitPathTest < MiniTest::Unit::TestCase
     assert_in_delta "cd #{repo_dir_pub} && git status".popen4.length, 1, 1000
     FileUtils.rm_r(repo_dir_pub, force: true)
     if @gp_priv
-      repo_dir_priv = @gp_priv.load
+      repo_dir_priv = @gp_priv.load(@u.id)
       assert_in_delta "cd #{repo_dir_priv} && git status".popen4.length, 1, 1000
       FileUtils.rm_r(repo_dir_priv, force: true)
     end
   end
-
-  def test_read
-    assert_in_delta @gp_pub.read.length, 1, 10000
-    if @gp_priv
-      #make sure your priv file is not bigger than 10k char :)
-      assert_in_delta @gp_priv.read.length, 1, 10000
-    end
-  end
-
 end

@@ -2,37 +2,45 @@ module Mobilize
   class GitPath < Path
     include Mongoid::Document
     include Mongoid::Timestamps
-    #a git_path points to a file inside a specific branch of a git repo
-    field :service, type: String, default:->{"git"}
+    #a git_path points to a specific repo
     field :domain, type: String, default:->{"github.com"}
     field :owner_name, type: String
     field :repo_name, type: String
-    field :branch, type: String, default:->{"master"}
-    field :file_path, type: String #file within the branch
-    field :address, type: String, default:->{"#{domain}/#{owner_name}/#{repo_name}/#{branch}/#{file_path}"}
-    field :url, type: String, default:->{ "#{service}://#{address}" } #unique identifier
-    field :http_url, type: String, default:->{"https://#{domain}/#{owner_name}/#{repo_name}/blob/#{branch}/#{file_path}"}
-    field :http_url_repo, type: String, default:->{"https://#{domain}/#{owner_name}/#{repo_name}.git"}
-    field :git_user_name, type: String, default:->{"git"}
-    field :ssh_url_repo, type: String, default:->{"#{git_user_name}@#{domain}:#{owner_name}/#{repo_name}.git"}
+    field :ssh_user_name, type: String, default:->{"git"}
+    field :_id, type: String, default:->{"#{domain}:#{owner_name}/#{repo_name}"}
 
     validates :owner_name, :repo_name, presence: true
 
+    def http_url
+      g = self
+      "https://#{g.domain}/#{g.owner_name}/#{g.repo_name}"
+    end
+
+    def git_http_url
+      g = self
+      "https://#{g.domain}/#{g.owner_name}/#{g.repo_name}.git"
+    end
+
+    def git_ssh_url
+      g = self
+      "#{g.ssh_user_name}@#{g.domain}:#{g.owner_name}/#{g.repo_name}.git"
+    end
+
+    def url
+      g = self
+      g.http_url
+    end
+
     #clones repo into temp folder with depth of 1
     #checks out appropriate branch
-    def load(user=Mobilize.owner,run_dir=Dir.mktmpdir)
+    #needs user_id with git_ssh_key to get private repo
+    def load(user_id=nil,run_dir=Dir.mktmpdir)
       gp = self
-      begin
-        #try http access first for public repo
-        #use http access with nobody:nobody credentials
-        gp.pub_load_cmd(run_dir).popen4(true)
-      rescue
-        #public access failed;
-        #requires appropriate user permissions
-        #given by private key
-        gp.priv_load_cmd(run_dir,user).popen4(true)
-      end
-      repo_dir = "#{run_dir}/#{gp.repo_name}"
+      repo_dir = if user_id
+                   gp.priv_load(user_id,run_dir)
+                 else
+                   gp.pub_load(run_dir)
+                 end
       return repo_dir
     end
 
@@ -44,9 +52,9 @@ module Mobilize
       cmd
     end
 
-    def priv_load_cmd(run_dir,user)
+    def priv_load_cmd(user_id,run_dir)
       gp = self
-      key_value = user.git_key
+      key_value = User.find(user_id).git_key
       #create key file, set permissions, write key
       key_file_path = run_dir + "/key.ssh"
       File.open(key_file_path,"w") {|f| f.print(key_value)}
@@ -59,16 +67,11 @@ module Mobilize
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{git_file_path} && " +
             "cd #{run_dir} && " +
-            "git clone -q #{gp.ssh_url_repo} --depth=1 && " +
-            "cd #{gp.repo_name} && git checkout #{gp.branch}"
-      return cmd
-    end
-
-    #loads repo and returns file contents as string
-    def read(user=Mobilize.owner)
-      gp = self
-      repo_dir = gp.load
-      File.read("#{repo_dir}/#{file_path}")
+            "git clone -q #{gp.ssh_url_repo} --depth=1"
+      cmd.popen4(true)
+      #remove aux files
+      [key_file_path, git_file_path].each{|fp| FileUtils.rm(fp,force: true)}
+      return "#{run_dir}/#{gp.repo_name}"
     end
   end
 end
