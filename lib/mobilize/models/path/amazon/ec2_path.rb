@@ -4,38 +4,79 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
-    field :file_path, type: String
+    field :ami, type: String, default:->{ENV['MOB_EC2_DEF_AMI']}
+    field :size, type: String, default:->{ENV['MOB_EC2_DEF_SIZE']}
+    field :keypair_name, type: String, default:->{ENV['MOB_EC2_DEF_KEYPAIR_NAME']}
+    field :security_group_names, type: Array, default:->{ENV['MOB_EC2_DEF_SG_NAMES'].split(",")}
+    field :instance_id, type: String
 
-    def Ec2Path.login
-      session = Aws::Ec2.new(ENV['AWS_ACCESS_KEY_ID'],ENV['AWS_SECRET_ACCESS_KEY'], :region=>ENV['MOB_AWS_REGION'])
+    after_create :find_or_create_instance
+
+    def Ec2Path.login(access_key_id=ENV['AWS_ACCESS_KEY_ID'],
+                      secret_access_key=ENV['AWS_SECRET_ACCESS_KEY'],
+                      region=ENV['MOB_AWS_REGION'])
+      session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
       return session
     end
 
-    def Ec2Path.instances(params={state: 'running'})
-      all_instances = Ec2Path.login.describe_instances.map{|i| i.with_indifferent_access}
+    def Ec2Path.instances(session=nil, params={state: 'running'})
+      session ||= Ec2Path.login
+      all_instances = session.describe_instances.map{|i| i.with_indifferent_access}
       if params[:state]!='all'
         all_instances.select{|i| i[:aws_state]==params[:state]}
       end
     end
 
-    def Ec2Path.find_or_create_by
-      master_instances = Ec2Path.instances.select{|i| i[:tags][:name]==ENV['MOB_AWS_MASTER_NAME']}
-      if master_instances.length>1
-        raise "You have more than 1 master -- please investigate your configuration"
-      elsif master_instances.length==1
-        master_instance=master_instances.first
+    def find_or_create_instance
+      ec2 = self
+      session = Ec2Path.login
+      if ec2.instance_id
+        #already has an instance_id assigned, so verify and
+        #update w any changes
+        return ec2.instance(session)
       else
-        session = Ec2Path.login
-        master_instances = session.launch_instances(ENV['MOB_AWS_MASTER_AMI'],{
-          key_name: ENV['MOB_AWS_KEYPAIR_NAME'],
-          group_ids: [ENV['MOB_AWS_MASTER_SG_NAME']],
-          instance_type: ENV['MOB_AWS_MASTER_SIZE']
-        })
-        master_instance=master_instances.first
-        session.create_tag(master_instance[:aws_instance_id],"name",ENV['MOB_AWS_MASTER_NAME'])
+        #create an instance based on current parameters
+        return ec2.create_instance(session)
       end
-      master_instance
     end
 
+    #find instance by ID, update DB record with latest from AWS
+    def instance(session=nil)
+      ec2 = self
+      session ||= Ec2Path.login
+      i = Ec2Path.instances(session,{aws_instance_id: instance[:aws_instance_id]}).first
+      ec2.update_attributes(
+        ami: i[:aws_image_id],
+        size: i[:instance_type],
+        keypair_name: i[:keypair_name],
+        security_group_names: i[:group_ids],
+      )
+    end
+
+    def create_instance(session=nil)
+      ec2 = self
+      session ||= Ec2Path.login
+      instances = Ec2Path.instances(session).select{|i| i[:tags][:name]==ec2.name}
+      if instances.length>1
+        Logger.error("You have more than 1 running instance named #{ec2.name} -- please investigate your configuration")
+      elsif instances.length==1
+        instance = instances.first
+      else
+        instances = session.launch_instances(ec2.ami,{
+          key_name: ec2.keypair_name,
+          group_ids: ec2.security_group_names,
+          instance_type: ec2.size
+        })
+        instance=instances.first
+        session.create_tag(instance[:aws_instance_id],"name", ec2.name)
+      end
+      #wait around until the instance is running
+      instance = Ec2Path.instances(session,{aws_instance_id: instance[:aws_instance_id]})
+      while ec2.instance(session).state != "running"
+        Logger.info("Instance #{ec2.instance_id} still at #{instance_state}- waiting 10 sec")
+        sleep 10
+      end
+      return instance
+    end
   end
 end
