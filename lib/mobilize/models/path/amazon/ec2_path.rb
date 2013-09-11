@@ -44,39 +44,36 @@ module Mobilize
     def instance(session=nil)
       ec2 = self
       session ||= Ec2Path.login
-      i = Ec2Path.instances(session,{aws_instance_id: instance[:aws_instance_id]}).first
+      inst = Ec2Path.instances(session,{aws_instance_id: ec2[:instance_id]}).first
       ec2.update_attributes(
-        ami: i[:aws_image_id],
-        size: i[:instance_type],
-        keypair_name: i[:keypair_name],
-        security_group_names: i[:group_ids],
+        ami: inst[:aws_image_id],
+        size: inst[:instance_type],
+        keypair_name: inst[:keypair_name],
+        security_group_names: inst[:group_ids]
       )
     end
 
     def create_instance(session=nil)
       ec2 = self
       session ||= Ec2Path.login
-      instances = Ec2Path.instances(session).select{|i| i[:tags][:name]==ec2.name}
-      if instances.length>1
+      insts = Ec2Path.instances(session).select{|i| i[:tags][:name] == ec2.name}
+      if insts.length>1
         Logger.error("You have more than 1 running instance named #{ec2.name} -- please investigate your configuration")
-      elsif instances.length==1
-        instance = instances.first
-      else
-        instances = session.launch_instances(ec2.ami,{
-          key_name: ec2.keypair_name,
-          group_ids: ec2.security_group_names,
-          instance_type: ec2.size
-        })
-        instance=instances.first
-        session.create_tag(instance[:aws_instance_id],"name", ec2.name)
+      elsif insts.length == 1
+        insts = rem_insts.first
+      elsif insts.length == 0
+        #create new instance
+        new_inst_params = {key_name: ec2.keypair_name, group_ids: ec2.security_group_names, instance_type: ec2.size}
+        new_inst = session.launch_instances(ec2.ami, new_inst_params).first
+        session.create_tag(new_inst[:aws_instance_id],"name", ec2.name)
+        ec2.update_attributes(instance_id: new_inst[:aws_instance_id])
       end
       #wait around until the instance is running
-      instance = Ec2Path.instances(session,{aws_instance_id: instance[:aws_instance_id]})
-      while ec2.instance(session).state != "running"
-        Logger.info("Instance #{ec2.instance_id} still at #{instance_state}- waiting 10 sec")
+      while (state=ec2.instance(session)[:aws_state]) != "running"
+        Logger.info("Instance #{ec2.instance_id} still at #{state}- waiting 10 sec")
         sleep 10
       end
-      return instance
+      return ec2.instance
     end
   end
 end
