@@ -6,9 +6,6 @@ module Mobilize
     field :name, type: String #name tag on the ec2 instance
     field :file_path, type: String
 
-    after_find :verify_instance
-    after_create :
-
     def Ec2Path.login
       session = Aws::Ec2.new(ENV['AWS_ACCESS_KEY_ID'],ENV['AWS_SECRET_ACCESS_KEY'], :region=>ENV['MOB_AWS_REGION'])
       return session

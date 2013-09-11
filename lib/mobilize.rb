@@ -49,18 +49,12 @@ require "#{user_dir}/job"
 require "#{user_dir}/stage"
 require "#{user_dir}/transfer"
 
-container_dir = "#{models_dir}/container"
-require "#{container_dir}/container"
-require "#{container_dir}/image"
-require "#{container_dir}/node"
-
 path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
 require "#{path_dir}/git_path"
 
 require "aws"
 amazon_dir = "#{path_dir}/amazon"
-require "#{amazon_dir}/aws_path"
 require "#{amazon_dir}/ec2_path"
 require "#{amazon_dir}/hive_path"
 require "#{amazon_dir}/rds_path"

@@ -34,17 +34,13 @@ class GitPathTest < MiniTest::Unit::TestCase
 
   #make sure defaults are working as expected
   def test_create
-    assert_equal @gp_pub.service, "git"
     assert_equal @gp_pub.domain, "github.com"
     assert_equal @gp_pub.owner_name, "mobilize"
     assert_equal @gp_pub.repo_name, "mobilize"
-    assert_equal @gp_pub.branch, "master"
-    assert_equal @gp_pub.file_path, "lib/mobilize.rb"
-    assert_equal @gp_pub.address, "github.com/mobilize/mobilize/master/lib/mobilize.rb"
-    assert_equal @gp_pub.http_url, "https://github.com/mobilize/mobilize/blob/master/lib/mobilize.rb"
-    assert_equal @gp_pub.http_url_repo, "https://github.com/mobilize/mobilize.git"
-    assert_equal @gp_pub.git_user_name, "git"
-    assert_equal @gp_pub.ssh_url_repo, "git@github.com:mobilize/mobilize.git"
+    assert_equal @gp_pub.http_url, "https://github.com/mobilize/mobilize"
+    assert_equal @gp_pub.git_http_url, "https://github.com/mobilize/mobilize.git"
+    assert_equal @gp_pub.ssh_user_name, "git"
+    assert_equal @gp_pub.git_ssh_url, "git@github.com:mobilize/mobilize.git"
   end
 
   def test_load

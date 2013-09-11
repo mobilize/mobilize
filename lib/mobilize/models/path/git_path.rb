@@ -44,15 +44,15 @@ module Mobilize
       return repo_dir
     end
 
-    def pub_load_cmd(run_dir)
+    def pub_load(run_dir)
       gp = self
       cmd = "cd #{run_dir} && " +
-            "git clone -q #{gp.http_url_repo.sub("https://","https://nobody:nobody@")} --depth=1 && " +
-            "cd #{gp.repo_name} && git checkout #{gp.branch}"
-      cmd
+            "git clone -q #{gp.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
+      cmd.popen4(true)
+      return "#{run_dir}/#{gp.repo_name}"
     end
 
-    def priv_load_cmd(user_id,run_dir)
+    def priv_load(user_id,run_dir)
       gp = self
       key_value = User.find(user_id).git_key
       #create key file, set permissions, write key
@@ -67,7 +67,7 @@ module Mobilize
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{git_file_path} && " +
             "cd #{run_dir} && " +
-            "git clone -q #{gp.ssh_url_repo} --depth=1"
+            "git clone -q #{gp.git_ssh_url} --depth=1"
       cmd.popen4(true)
       #remove aux files
       [key_file_path, git_file_path].each{|fp| FileUtils.rm(fp,force: true)}
