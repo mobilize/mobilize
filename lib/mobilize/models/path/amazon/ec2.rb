@@ -1,6 +1,6 @@
 module Mobilize
-  #an Ec2Path resolves to an ec2 instance
-  class Ec2Path
+  #an Ec2 resolves to an ec2 instance
+  class Ec2
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
@@ -12,24 +12,26 @@ module Mobilize
 
     after_create :find_or_create_instance
 
-    def Ec2Path.login(access_key_id=ENV['AWS_ACCESS_KEY_ID'],
+    def Ec2.login(access_key_id=ENV['AWS_ACCESS_KEY_ID'],
                       secret_access_key=ENV['AWS_SECRET_ACCESS_KEY'],
-                      region=ENV['MOB_AWS_REGION'])
+                      region=ENV['MOB_EC2_DEF_REGION'])
       session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
       return session
     end
 
-    def Ec2Path.instances(session=nil, params={state: 'running'})
-      session ||= Ec2Path.login
-      all_instances = session.describe_instances.map{|i| i.with_indifferent_access}
-      if params[:state]!='all'
-        all_instances.select{|i| i[:aws_state]==params[:state]}
+    def Ec2.instances(session=nil, params={aws_state: 'running'})
+      session ||= Ec2.login
+      all_insts = session.describe_instances.map{|i| i.with_indifferent_access}
+      filtered_insts = all_insts.select do |i|
+        match_array = params.map{|k,v| i[k] == v}.uniq
+        match_array.length == 1 and match_array.first == true
       end
+      return filtered_insts
     end
 
     def find_or_create_instance
       ec2 = self
-      session = Ec2Path.login
+      session = Ec2.login
       if ec2.instance_id
         #already has an instance_id assigned, so verify and
         #update w any changes
@@ -43,25 +45,27 @@ module Mobilize
     #find instance by ID, update DB record with latest from AWS
     def instance(session=nil)
       ec2 = self
-      session ||= Ec2Path.login
-      inst = Ec2Path.instances(session,{aws_instance_id: ec2[:instance_id]}).first
+      session ||= Ec2.login
+      inst = Ec2.instances(session,{aws_instance_id: ec2[:instance_id]}).first
       ec2.update_attributes(
         ami: inst[:aws_image_id],
         size: inst[:instance_type],
         keypair_name: inst[:keypair_name],
         security_group_names: inst[:group_ids]
       )
+      return inst
     end
 
     def create_instance(session=nil)
       ec2 = self
-      session ||= Ec2Path.login
-      insts = Ec2Path.instances(session).select{|i| i[:tags][:name] == ec2.name}
-      if insts.length>1
+      session ||= Ec2.login
+      curr_insts = Ec2.instances(session).select{|i| i[:tags][:name] == ec2.name}
+      if curr_insts.length>1
         Logger.error("You have more than 1 running instance named #{ec2.name} -- please investigate your configuration")
-      elsif insts.length == 1
-        insts = rem_insts.first
-      elsif insts.length == 0
+      elsif curr_insts.length == 1
+        curr_inst = curr_insts.first
+        ec2.update_attributes(instance_id: curr_inst[:aws_instance_id])
+      elsif curr_insts.length == 0
         #create new instance
         new_inst_params = {key_name: ec2.keypair_name, group_ids: ec2.security_group_names, instance_type: ec2.size}
         new_inst = session.launch_instances(ec2.ami, new_inst_params).first

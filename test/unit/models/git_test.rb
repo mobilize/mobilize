@@ -1,7 +1,7 @@
 require 'test_helper'
-class GitPathTest < MiniTest::Unit::TestCase
+class GitTest < MiniTest::Unit::TestCase
   def setup
-    @gp_pub = Mobilize::GitPath.find_or_create_by(
+    @g_pub = Mobilize::Git.find_or_create_by(
       owner_name: "mobilize",
       repo_name: "mobilize",
     )
@@ -27,28 +27,28 @@ class GitPathTest < MiniTest::Unit::TestCase
     #make sure everything is defined as expected
     if priv_git_path_hash.values.compact.length==4 and
       priv_user_cred_hash.values.compact.length==4
-      @gp_priv = Mobilize::GitPath.find_or_create_by(priv_git_path_hash)
+      @g_priv = Mobilize::Git.find_or_create_by(priv_git_path_hash)
       @uc_priv = Mobilize::UserCred.find_or_create_by(priv_user_cred_hash)
     end
   end
 
   #make sure defaults are working as expected
   def test_create
-    assert_equal @gp_pub.domain, "github.com"
-    assert_equal @gp_pub.owner_name, "mobilize"
-    assert_equal @gp_pub.repo_name, "mobilize"
-    assert_equal @gp_pub.http_url, "https://github.com/mobilize/mobilize"
-    assert_equal @gp_pub.git_http_url, "https://github.com/mobilize/mobilize.git"
-    assert_equal @gp_pub.ssh_user_name, "git"
-    assert_equal @gp_pub.git_ssh_url, "git@github.com:mobilize/mobilize.git"
+    assert_equal @g_pub.domain, "github.com"
+    assert_equal @g_pub.owner_name, "mobilize"
+    assert_equal @g_pub.repo_name, "mobilize"
+    assert_equal @g_pub.http_url, "https://github.com/mobilize/mobilize"
+    assert_equal @g_pub.git_http_url, "https://github.com/mobilize/mobilize.git"
+    assert_equal @g_pub.ssh_user_name, "git"
+    assert_equal @g_pub.git_ssh_url, "git@github.com:mobilize/mobilize.git"
   end
 
   def test_load
-    repo_dir_pub = @gp_pub.load
+    repo_dir_pub = @g_pub.load
     assert_in_delta "cd #{repo_dir_pub} && git status".popen4.length, 1, 1000
     FileUtils.rm_r(repo_dir_pub, force: true)
-    if @gp_priv
-      repo_dir_priv = @gp_priv.load(@u.id)
+    if @g_priv
+      repo_dir_priv = @g_priv.load(@u.id)
       assert_in_delta "cd #{repo_dir_priv} && git status".popen4.length, 1, 1000
       FileUtils.rm_r(repo_dir_priv, force: true)
     end

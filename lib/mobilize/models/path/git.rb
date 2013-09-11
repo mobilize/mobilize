@@ -1,5 +1,5 @@
 module Mobilize
-  class GitPath < Path
+  class Git
     include Mongoid::Document
     include Mongoid::Timestamps
     #a git_path points to a specific repo
@@ -35,25 +35,25 @@ module Mobilize
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
     def load(user_id=nil,run_dir=Dir.mktmpdir)
-      gp = self
+      g = self
       repo_dir = if user_id
-                   gp.priv_load(user_id,run_dir)
+                   g.priv_load(user_id,run_dir)
                  else
-                   gp.pub_load(run_dir)
+                   g.pub_load(run_dir)
                  end
       return repo_dir
     end
 
     def pub_load(run_dir)
-      gp = self
+      g = self
       cmd = "cd #{run_dir} && " +
-            "git clone -q #{gp.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
+            "git clone -q #{g.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
       cmd.popen4(true)
-      return "#{run_dir}/#{gp.repo_name}"
+      return "#{run_dir}/#{g.repo_name}"
     end
 
     def priv_load(user_id,run_dir)
-      gp = self
+      g = self
       key_value = User.find(user_id).git_key
       #create key file, set permissions, write key
       key_file_path = run_dir + "/key.ssh"
@@ -67,11 +67,11 @@ module Mobilize
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{git_file_path} && " +
             "cd #{run_dir} && " +
-            "git clone -q #{gp.git_ssh_url} --depth=1"
+            "git clone -q #{g.git_ssh_url} --depth=1"
       cmd.popen4(true)
       #remove aux files
       [key_file_path, git_file_path].each{|fp| FileUtils.rm(fp,force: true)}
-      return "#{run_dir}/#{gp.repo_name}"
+      return "#{run_dir}/#{g.repo_name}"
     end
   end
 end
