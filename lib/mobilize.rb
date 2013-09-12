@@ -52,6 +52,7 @@ require "#{user_dir}/transfer"
 
 path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
+require 'github_api'
 require "#{path_dir}/github"
 
 require "aws"

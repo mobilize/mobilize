@@ -31,7 +31,7 @@ module Mobilize
     end
 
     def Github.login
-      session = Github.new(login: ENV['MOB_OWNER_GITHUB_LOGIN'], password: ENV['MOB_OWNER_GITHUB_PASSWORD'])
+      session = ::Github.new(login: ENV['MOB_OWNER_GITHUB_LOGIN'], password: ENV['MOB_OWNER_GITHUB_PASSWORD'])
       Logger.info("Logged into Github.")
       return session
     end
@@ -39,13 +39,19 @@ module Mobilize
     def is_private?
       gh = self
       session ||= Github.login
-      resp = begin
-               resp = session.repos.get(user: gh.owner_name, repo: gh.repo_name)
-               Logger.info("Got repo for #{gh._id}")
-             rescue
-               Logger.error("Could not access #{gh._id}")
-             end
-      return resp.body[:private]
+      begin
+        resp = session.repos.get(user: gh.owner_name, repo: gh.repo_name)
+        Logger.info("Got repo for #{gh._id}")
+      rescue
+        Logger.error("Could not access #{gh._id}")
+      end
+      if resp.body[:private]
+        Logger.info("repo #{gh._id} is private")
+        return true
+      else
+        Logger.info("repo #{gh._id} is public")
+        return false
+      end
     end
 
     #clones repo into temp folder with depth of 1
@@ -74,12 +80,12 @@ module Mobilize
     def collaborators(session=nil)
       gh = self
       session ||= Github.login
-      resp = begin
-               session.repos.collaborators.list(user: gh.owner_name, repo: gh.repo_name)
-               Logger.info("Got collaborators for #{gh._id}")
-             rescue
-               Logger.error("Could not access #{gh._id}")
-             end
+      begin
+        resp = session.repos.collaborators.list(user: gh.owner_name, repo: gh.repo_name)
+        Logger.info("Got collaborators for #{gh._id}")
+      rescue
+        Logger.error("Could not access #{gh._id}")
+      end
       return resp.body.map{|b| b[:login]}
     end
 
