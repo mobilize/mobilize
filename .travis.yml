@@ -8,9 +8,8 @@ services:
 gemfile:
 - Gemfile
 script: rake install && 
-  mob decode -p git_ssh -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
-  export MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && rake install && 
-  rake test
+  mob decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
+  export MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && rake test
 notifications:
   recipients:
   - mobilize.server@gmail.com
@@ -39,6 +38,8 @@ env:
   - secure: "Q2PEzjUV7yJNKpShRsgt6zym1cPh8+OxYpFaw736FuRIAiy3llvIua9P6wM4yRpk2DFnn7r2WUfemEDL7/NXUucr6rXrdAmlUaHmObn3r1Y1rLQEQrYRaUe1hadEKkHzH+cR0Fbwl7/E/Rwr/Qjs/hkTF5jYQOOyjMD94mM4jEE="
 #mob_test_aws_secret_access_key
   - secure: "J3IFzH1IWuIxWV6R8B6Ko/wIIX0xaTkEJc03Q77F68n7WCo9lkWIibJE7XddCbimthDFR7K+L2CxVctNTIqgzKjQnwxxck6fM6td41C7UgrylL0kvEBm/rCx7uAzuUinQXGHN/18r4QIZDWVDQ7u+bOaMCttiGzBjJjoPo2XQzg="
+#mob_test_ec2_def_region
+  - "MOB_TEST_EC2_DEF_REGION='us-west-1'"
 #mob_test_ec2_name
   - "MOB_TEST_EC2_NAME='mobilize-test'"
 #mob_test_ec2_ami
