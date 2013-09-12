@@ -18,6 +18,8 @@ class GithubTest < MiniTest::Unit::TestCase
         owner_name: ENV['MOB_TEST_PRIVATE_GITHUB_OWNER'],
         repo_name: ENV['MOB_TEST_PRIVATE_GITHUB_REPO']
       }
+    ENV['MOB_OWNER_GITHUB_LOGIN']=ENV['MOB_TEST_OWNER_GITHUB_LOGIN']
+    ENV['MOB_OWNER_GITHUB_PASSWORD']=ENV['MOB_TEST_OWNER_GITHUB_PASSWORD']
     ENV['MOB_OWNER_GITHUB_SSH_KEY_PATH']=ENV['MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH']
     #make sure everything is defined as expected
     if priv_git_hash.values.compact.length==3
