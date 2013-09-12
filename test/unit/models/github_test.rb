@@ -1,33 +1,27 @@
 require "test_helper"
-class GitTest < MiniTest::Unit::TestCase
+class GithubTest < MiniTest::Unit::TestCase
   def setup
-    @git_pub = Mobilize::Git.find_or_create_by(
+    @git_pub = Mobilize::Github.find_or_create_by(
       owner_name: "mobilize",
       repo_name: "mobilize",
     )
     @u = Mobilize::User.find_or_create_by(
       active: true,
       _id: ENV['MOB_TEST_USER_ID'],
-      is_owner: true
+      github_login: ENV['MOB_TEST_PRIVATE_GITHUB_LOGIN']
     )
     #populate the envs below if you need to test
     #private repository accessibility
     priv_git_hash = {
-        owner_name: ENV['MOB_TEST_PRIVATE_GIT_OWNER'],
-        repo_name: ENV['MOB_TEST_PRIVATE_GIT_REPO']
+        domain: ENV['MOB_TEST_PRIVATE_GITHUB_DOMAIN'],
+        owner_name: ENV['MOB_TEST_PRIVATE_GITHUB_OWNER'],
+        repo_name: ENV['MOB_TEST_PRIVATE_GITHUB_REPO']
       }
-
-    priv_user_cred_hash = {
-      user_id: ENV['MOB_TEST_USER_ID'],
-      service: "git",
-      key: "private_key",
-      value: ENV['MOB_TEST_GIT_SSH_KEY']
-    }
+    ENV['MOB_OWNER_GITHUB_SSH_KEY_PATH']=ENV['MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH']
     #make sure everything is defined as expected
     if priv_git_hash.values.compact.length==2 and
       priv_user_cred_hash.values.compact.length==4
-      @git_priv = Mobilize::Git.find_or_create_by(priv_git_hash)
-      @uc_priv = Mobilize::UserCred.find_or_create_by(priv_user_cred_hash)
+      @git_priv = Mobilize::Github.find_or_create_by(priv_git_hash)
     end
   end
 
