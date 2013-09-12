@@ -1,6 +1,12 @@
 language: ruby
 rvm:
 - 1.9.3
+bundler_args: --without development
+services:
+- mongodb
+- redis-server
+gemfile:
+- Gemfile
 script: rake install && 
   mob decode -p git_ssh -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
   export MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && rake install && 
