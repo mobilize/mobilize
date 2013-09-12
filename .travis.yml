@@ -18,38 +18,16 @@ branches:
   - master
 env:
   global:
-#mob_test_google_login
-  - "MOB_TEST_GOOGLE_LOGIN=mobilize.server@gmail.com"
-#mob_test_user_id
-  - "MOB_TEST_USER_ID=mobilize.server@gmail.com"
-#mob_test_github_login
-  - "MOB_TEST_GITHUB_LOGIN=mobilize"
-#mob_test_owner_github_login
-  - "MOB_TEST_OWNER_GITHUB_LOGIN=mobilize"
 #mob_test_owner_github_password
   - secure: "fatwGEFiDXpcgcIk6TUZpyP4mJcEY/uTHXO5ZMWBorcznJ7dxb12UjUDsyl3EFnG3v4s/MThGGNx9mhmb1OnClO+oHUim1TB3OAvHGF3WOM03rwnGMTvkV4VVIpEXc5bOzE8fSWn02X9Guiv6Sh5ycA1T7wpf5Pr6Xgja6Hi99g="
-#mob_test_private_github_domain
-  - "MOB_TEST_PRIVATE_GITHUB_DOMAIN='github.com'"
-#mob_test_private_github_owner
-  - "MOB_TEST_PRIVATE_GITHUB_OWNER='mobilize'"
 #mob_test_private_github_repo
   - secure: "U8WspBw8NQRekwYrZOYrfUeV4qgaWscQy8izTtlHJmqaZ4hI89itzIA69GWA9p0ouwoXgubY1jXVPJgWkZsPvXTWPjw2TH8Kt8lk6l8po0NT7SPpq3ic+c4KScWfITZYGSisVc9A3WU589xCXBWMV4y27IpUWZ0rMatBikybFjs="
 #mob_test_aws_access_key_id
-  - secure: "Q2PEzjUV7yJNKpShRsgt6zym1cPh8+OxYpFaw736FuRIAiy3llvIua9P6wM4yRpk2DFnn7r2WUfemEDL7/NXUucr6rXrdAmlUaHmObn3r1Y1rLQEQrYRaUe1hadEKkHzH+cR0Fbwl7/E/Rwr/Qjs/hkTF5jYQOOyjMD94mM4jEE="
+  - secure: "ecuiyIY1BnOdNVH/C+QUlVFOG44xnXAh4v1Bi/JsqQSuwfdw3UDU52fzNRT9e4ezMNQzLJTgoRNw3TyM+/dsWE5fQPySONavBBJ8wqExj0xKsNx0Q9tRdRmHpgG4aV74vguwBDU0CVODNRncW03BHDClqBb/xz9SHKXQEaoBzCE="
 #mob_test_aws_secret_access_key
-  - secure: "J3IFzH1IWuIxWV6R8B6Ko/wIIX0xaTkEJc03Q77F68n7WCo9lkWIibJE7XddCbimthDFR7K+L2CxVctNTIqgzKjQnwxxck6fM6td41C7UgrylL0kvEBm/rCx7uAzuUinQXGHN/18r4QIZDWVDQ7u+bOaMCttiGzBjJjoPo2XQzg="
-#mob_test_ec2_def_region
-  - "MOB_TEST_EC2_DEF_REGION='us-west-1'"
-#mob_test_ec2_name
-  - "MOB_TEST_EC2_NAME='mobilize-test'"
-#mob_test_ec2_ami
-  - "MOB_TEST_EC2_AMI='ami-fe002cbb'"
-#mob_test_ec2_size
-  - "MOB_TEST_EC2_SIZE='t1.micro'"
+  - secure: "Zrbv1R4qSCc/1vQEFRZ1UMTEEYxyLJKUzGnx7T/zex7fszQlhHEiZZuCH/5yWNkrPeApqR47Tw+oLhiWFw+Yivk4xEBji8VVrRec0ZT/ZkX2kH1ykE+E3blpzeWHRPKn68ZD56uK409NW5f3BVvNzdju47IGXHvHkq2llBXsESA="
 #mob_test_ec2_keypair_name
   - secure: "meMH/Z03JtnPIgkSkUOoJhgsbsM6613w8XMZ8t9p/+P23M9q1ioMhWyzOCluSE9kbOUvcibjPUl4D4cC42KXoeL6Y3y0zO78w5LIxVhCV0OPx9hLPX9CkLWm2ySg0ECQcg4siXP+EZF3NYI/sZm5/LyfT9sgGnyvyopPzBb6qY8="
-#mob_test_ec2_sg_names
-  - "MOB_TEST_EC2_SG_NAMES='default'"
 #git_ssh_00
   - secure: "FnoCpSbl9IhtgmxKBO7iYK8vOtKEr+NJN3F9Pt0up/Ln634VrKM8UvB0jz0uolo5b0idNNHkahry7z5xc3RIUINdbn2lEeshgyph8M+RHg8s/kEtM7XyLP+i932qkCHfaCmZkRBer2pZOKFzav1WrMoF+qGaINudZuq1Hx5EWJ4="
 #git_ssh_01
@@ -96,3 +74,25 @@ env:
   - secure: "flgZK4uLXgZme410hsXUrcw4Wdi9NvdzkjMZz98e5hXQthF33n//axzPdbUzTGeUkuZxKL8vtjlWEQqwcuAt6DDFPs9WPnIkufcA/TJx2DSpPx7D9YDwaeiqqQqM8smLx7lm7eZ7dwD0aLjP4P4srzv05YJ5JdSGgmEwCtDOM68="
 #git_ssh_22
   - secure: "SffVNf/OTB9KVmhSsYwQwEbtsLs8kyfM6OrdYD/RPOPIE3yF5ddYWUF0upjE/SH919Uxgt4Er3DsypUaYWh4zyFLnctPTtRj7vmzlF0aQ6r7SwSMmSDYHYKPNRt+WG+Iy3bi/eHZ+QL2a9mugbqiDLuLX/arA4sqmHyvMkmYv/Q="
+#mob_test_google_login
+  - "MOB_TEST_GOOGLE_LOGIN=mobilize.server@gmail.com"
+#mob_test_user_id
+  - "MOB_TEST_USER_ID=mobilize.server@gmail.com"
+#mob_test_github_login
+  - "MOB_TEST_GITHUB_LOGIN=mobilize"
+#mob_test_owner_github_login
+  - "MOB_TEST_OWNER_GITHUB_LOGIN=mobilize"
+#mob_test_private_github_domain
+  - "MOB_TEST_PRIVATE_GITHUB_DOMAIN='github.com'"
+#mob_test_private_github_owner
+  - "MOB_TEST_PRIVATE_GITHUB_OWNER='mobilize'"
+#mob_test_ec2_def_region
+  - "MOB_TEST_EC2_DEF_REGION='us-west-1'"
+#mob_test_ec2_name
+  - "MOB_TEST_EC2_NAME='mobilize-test'"
+#mob_test_ec2_ami
+  - "MOB_TEST_EC2_AMI='ami-fe002cbb'"
+#mob_test_ec2_size
+  - "MOB_TEST_EC2_SIZE='t1.micro'"
+#mob_test_ec2_sg_names
+  - "MOB_TEST_EC2_SG_NAMES='default'"
