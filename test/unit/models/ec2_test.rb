@@ -9,6 +9,8 @@ class Ec2Test < MiniTest::Unit::TestCase
       security_group_names:ENV['MOB_TEST_EC2_SG_NAMES']
     }
     @ec2 = Mobilize::Ec2.new(@ec2_params)
+    ENV['AWS_ACCESS_KEY_ID']=ENV['MOB_TEST_AWS_ACCESS_KEY_ID']
+    ENV['AWS_SECRET_ACCESS_KEY']=ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY']
     @session = Mobilize::Ec2.login(ENV['MOB_TEST_AWS_ACCESS_KEY_ID'],ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY'],ENV['MOB_TEST_EC2_DEF_REGION'])
   end
 
