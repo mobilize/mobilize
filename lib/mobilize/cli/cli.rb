@@ -40,7 +40,7 @@ module Mobilize
       opt_parser.parse!(args)
       #by default, execute on master node
       options[:node_name] ||= ENV['MOB_EC2_MASTER_NAME']
-      Mobilize::Ec2Path.execute(options[:node_name],options[:command])
+      Mobilize::Ec2.find_by(options[:node_name]).execute(options[:command])
     end
   end
 end

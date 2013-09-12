@@ -1,15 +1,15 @@
 module Mobilize
   module Logger
-    #stubbing this out for info and error levels
+    def Logger.trace_header(stack_trace)
+      return "[#{Time.now.utc}]: #{stack_trace.first.split(Mobilize.root).last}"
+    end
     def Logger.info(message,object=nil)
       c = caller(1)
-      trace_header = c.first.split(Mobilize.root).last
-      puts "#{trace_header}:   #{message}"
+      puts "#{Logger.trace_header(c)}:   #{message}"
     end
     def Logger.error(message,object=nil)
       c = caller(1)
-      trace_header = c.first.split(Mobilize.root).last
-      raise "#{trace_header}:   #{message}"
+      raise "#{Logger.trace_header(c)}:   #{message}"
     end
   end
 end

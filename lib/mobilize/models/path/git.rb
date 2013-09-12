@@ -49,6 +49,7 @@ module Mobilize
       cmd = "cd #{run_dir} && " +
             "git clone -q #{g.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
       cmd.popen4(true)
+      Logger.info("Loaded public git repo #{g._id}")
       return "#{run_dir}/#{g.repo_name}"
     end
 
@@ -71,6 +72,7 @@ module Mobilize
       cmd.popen4(true)
       #remove aux files
       [key_file_path, git_file_path].each{|fp| FileUtils.rm(fp,force: true)}
+      Logger.info("Loaded private git repo #{g._id}")
       return "#{run_dir}/#{g.repo_name}"
     end
   end
