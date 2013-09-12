@@ -29,9 +29,14 @@ module Mobilize
       return filtered_insts
     end
 
-    def find_or_create_instance
+    def Ec2.instances_by_name(name,session=nil,params={aws_state: 'running'})
+      Ec2.instances(session).select{|i| i[:tags][:name] == name}
+    end
+
+
+    def find_or_create_instance(session=nil)
       ec2 = self
-      session = Ec2.login
+      session ||= Ec2.login
       if ec2.instance_id
         #already has an instance_id assigned, so verify and
         #update w any changes
@@ -56,16 +61,35 @@ module Mobilize
       return inst
     end
 
+    def purge!(session=nil)
+      #terminates the remote instance then
+      #deletes the local database instance
+      ec2 = self
+      session ||= Ec2.login
+      #terminate instances by name
+      insts = Ec2.instances_by_name(ec2.name,session)
+      insts.each do |i|
+        session.terminate_instances([i[:aws_instance_id]])
+        Logger.info("Terminated instance #{i[:aws_instance_id]}")
+      end
+      if ec2.created_at
+         Logger.info("Purged #{ec2.name} from DB")
+         ec2.delete
+      end
+      return true
+    end
+
     def create_instance(session=nil)
       ec2 = self
       session ||= Ec2.login
-      curr_insts = Ec2.instances(session).select{|i| i[:tags][:name] == ec2.name}
+      curr_insts = Ec2.instances_by_name(ec2.name,session)
       if curr_insts.length>1
         Logger.error("You have more than 1 running instance named #{ec2.name} -- please investigate your configuration")
       elsif curr_insts.length == 1
         curr_inst = curr_insts.first
+        Logger.info("Instance #{curr_inst[:aws_instance_id]} found, assigning to #{ec2.name}")
         ec2.update_attributes(instance_id: curr_inst[:aws_instance_id])
-      elsif curr_insts.length == 0
+      elsif curr_insts.empty?
         #create new instance
         new_inst_params = {key_name: ec2.keypair_name, group_ids: ec2.security_group_names, instance_type: ec2.size}
         new_inst = session.launch_instances(ec2.ami, new_inst_params).first
@@ -74,7 +98,7 @@ module Mobilize
       end
       #wait around until the instance is running
       while (state=ec2.instance(session)[:aws_state]) != "running"
-        Logger.info("Instance #{ec2.instance_id} still at #{state}- waiting 10 sec")
+        Logger.info("Instance #{ec2.instance_id} still at #{state} -- waiting 10 sec")
         sleep 10
       end
       return ec2.instance
