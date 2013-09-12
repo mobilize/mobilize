@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "bundler","1.3.5"
   spec.add_runtime_dependency "rake","10.1.0"
   spec.add_runtime_dependency "aws","2.4.5"
+  spec.add_runtime_dependency "github_api","0.10.2"
   spec.add_runtime_dependency "gmail","0.4.0"
   spec.add_runtime_dependency "google_drive","0.3.6"
   spec.add_runtime_dependency "resque","1.24.1"
@@ -29,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "popen4","0.1.2"
   spec.add_runtime_dependency "pry","0.9.12.2"
   spec.add_runtime_dependency "pry-doc","0.4.6"
+  spec.add_runtime_dependency "log4r","1.1.10"
 end

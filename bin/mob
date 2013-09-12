@@ -1,19 +1,25 @@
 #!/usr/bin/env ruby
 
 require 'mobilize'
-switch = ARGV[0]
 
-if ['c','console'].include?(switch)
+cmd = ARGV[0]
+options={}
+
+if ['c','console'].include?(cmd)
   env = ARGV[1] || "development"
   ENV['MOBILIZE_ENV'] ||= env
   Mobilize.console
-elsif switch=='deploy'
+elsif cmd == 'deploy'
   env = ARGV[1]
   if env.nil?
     STDERR.puts "Please specify environment"
   else
     `cap deploy #{env}`
   end
-elsif switch=='root'
+elsif cmd == 'decode'
+  Mobilize::Cli.decode(ARGV)
+elsif cmd=='ec2'
+  Mobilize::Cli.ec2(ARGV)
+elsif cmd=='root'
   puts Mobilize.root
 end
