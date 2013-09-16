@@ -121,5 +121,12 @@ module Mobilize
       end
       return @ec2.instance
     end
+
+    def shell
+      @ec2 = self
+      @shell = Net::SSH.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],:keys=>ENV['MOB_EC2_PRIV_KEY_PATH'])
+      Logger.info("Started SSH session for on #{@ec2.name}")
+      return @shell
+    end
   end
 end
