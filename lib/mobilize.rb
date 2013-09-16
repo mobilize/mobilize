@@ -42,6 +42,7 @@ extensions_dir = "mobilize/extensions"
 require "#{extensions_dir}/object"
 require "#{extensions_dir}/string"
 require "#{extensions_dir}/yaml"
+require "#{extensions_dir}/net-ssh"
 
 models_dir = "mobilize/models"
 user_dir = "#{models_dir}/user"
@@ -55,10 +56,6 @@ path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
 require 'github_api'
 require "#{path_dir}/github"
-
-ssh_dir = "#{path_dir}/ssh"
-require "#{ssh_dir}/ssh"
-require "#{ssh_dir}/deploy"
 
 require "aws"
 amazon_dir = "#{path_dir}/amazon"

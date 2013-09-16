@@ -4,6 +4,5 @@ module Mobilize
     include Mongoid::Timestamps
     #a path is a location
     #that can read or write data.
-
   end
 end
