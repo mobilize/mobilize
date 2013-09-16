@@ -27,6 +27,7 @@ end
 
 require 'pry'
 require "popen4"
+require 'net/ssh'
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
@@ -54,6 +55,10 @@ path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
 require 'github_api'
 require "#{path_dir}/github"
+
+ssh_dir = "#{path_dir}/ssh"
+require "#{ssh_dir}/ssh"
+require "#{ssh_dir}/deploy"
 
 require "aws"
 amazon_dir = "#{path_dir}/amazon"

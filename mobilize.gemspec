@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "pry","0.9.12.2"
   spec.add_runtime_dependency "pry-doc","0.4.6"
   spec.add_runtime_dependency "log4r","1.1.10"
+  spec.add_runtime_dependency "net-ssh"
 end

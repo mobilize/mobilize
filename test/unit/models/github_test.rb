@@ -9,7 +9,8 @@ class GithubTest < MiniTest::Unit::TestCase
       id: ENV['MOB_TEST_USER_ID'],
       active: true,
       google_login: ENV['MOB_TEST_GOOGLE_LOGIN'],
-      github_login: ENV['MOB_TEST_GITHUB_LOGIN']
+      github_login: ENV['MOB_TEST_GITHUB_LOGIN'],
+      ec2_public_key: `ssh-keygen -y -f #{ENV['MOB_TEST_EC2_PRIV_KEY_PATH']}`.strip
     )
     #populate the envs below if you need to test
     #private repository accessibility
