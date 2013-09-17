@@ -124,7 +124,7 @@ module Mobilize
 
     def ssh(command,except=true)
       @ec2 = self
-      total_retries = MOB['MOB_EC2_SSH_RETRY_COUNT'] || 5
+      total_retries = ENV['MOB_EC2_SSH_TOTAL_RETRIES'] || 5
       @result = nil
       @exc = nil
       retries = 0
@@ -149,7 +149,7 @@ module Mobilize
 
     def scp(loc_path, rem_path)
       @ec2 = self
-      total_retries = MOB['MOB_EC2_SSH_RETRY_COUNT'] || 5
+      total_retries = ENV['MOB_EC2_SSH_TOTAL_RETRIES'] || 5
       @result = nil
       @exc = nil
       retries = 0
@@ -159,6 +159,7 @@ module Mobilize
             scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
               Logger.info("#{name}: #{sent}/#{total}")
             end
+            @result = true
           end
         rescue => @exc
           retries += 1

@@ -17,8 +17,8 @@ module Mobilize
       self.user.ec2
     end
 
-    def ssh
-      self.user.ec2.ssh
+    def ssh(command,except=true)
+      self.user.ec2.ssh(command,except)
     end
 
     def scp(loc_path,rem_path)
@@ -43,7 +43,7 @@ module Mobilize
       @transfer.gsubs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s)
-        replace_cmd = "cd #{@transfer.loc_dir} && (find . -type f | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
+        replace_cmd = "cd #{@transfer.loc_dir} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
         Logger.info("Replaced #{@string1} with #{@string2} for #{@transfer.id}")
       end
@@ -75,15 +75,14 @@ module Mobilize
 
     def refresh_rem_dir
       @transfer = self
-      @ssh = @transfer.ssh
       rem_dir = @transfer.rem_dir
       home_dir = @transfer.home_dir
       #clear out and regenerate remote folder
-      @ssh.run("sudo rm -rf #{rem_dir}*")
+      @transfer.ssh("sudo rm -rf #{rem_dir}*")
       Logger.info("Removed #{rem_dir}")
-      @ssh.run("sudo mkdir -p #{home_dir}")
+      @transfer.ssh("sudo mkdir -p #{home_dir}")
       Logger.info("Mkdir'ed #{home_dir}")
-      @ssh.run("sudo chown #{ENV['MOB_EC2_ROOT_USER']} #{home_dir}")
+      @transfer.ssh("sudo chown #{ENV['MOB_EC2_ROOT_USER']} #{home_dir}")
       Logger.info("Chowned #{home_dir} to #{ENV['MOB_EC2_ROOT_USER']}")
       Logger.info("Refreshed remote: #{home_dir}")
     end
@@ -99,7 +98,7 @@ module Mobilize
       loc_path = "#{@transfer.loc_dir}.tar.gz"
       @transfer.scp(loc_path,rem_path)
       Logger.info("uploaded local to remote for #{@transfer.id}")
-      @transfer.ssh.run("cd #{@transfer.home_dir} && tar -zxvf #{@transfer.name}.tar.gz")
+      @transfer.ssh("cd #{@transfer.home_dir} && tar -zxvf #{@transfer.name}.tar.gz")
       Logger.info("Unpacked remote for #{@transfer.id}")
       #remove local dir
       FileUtils.rm_r(@transfer.loc_dir,:force=>true)
@@ -113,7 +112,7 @@ module Mobilize
       @transfer.load
       exec_cmd = @transfer.deploy
       begin
-        @transfer.ssh.run(exec_cmd)
+        @transfer.ssh(exec_cmd)
         Logger.info("Completed transfer for #{@transfer.id}")
       rescue
         Logger.error("Failed transfer #{@transfer.id} with #{@transfer.stderr}")
@@ -124,19 +123,19 @@ module Mobilize
     def stdin
       @transfer = self
       Logger.info("retrieving stdin for #{@transfer.id}")
-      @transfer.ssh.run("cat #{@transfer.rem_dir}/stdin")[:stdout]
+      @transfer.ssh("cat #{@transfer.rem_dir}/stdin")[:stdout]
     end
 
     def stdout
       @transfer = self
       Logger.info("retrieving stdout for #{@transfer.id}")
-      @transfer.ssh.run("cat #{@transfer.rem_dir}/stdout")[:stdout]
+      @transfer.ssh("cat #{@transfer.rem_dir}/stdout")[:stdout]
     end
 
     def stderr
       @transfer = self
       Logger.info("retrieving stderr for #{@transfer.id}")
-      @transfer.ssh.run("cat #{@transfer.rem_dir}/stderr")[:stdout]
+      @transfer.ssh("cat #{@transfer.rem_dir}/stderr")[:stdout]
     end
   end
 end

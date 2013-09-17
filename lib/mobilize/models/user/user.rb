@@ -14,7 +14,7 @@ module Mobilize
     end
 
     def ec2
-      Ec2.find(self.user.ec2_id)
+      Ec2.find(self.ec2_id)
     end
 
     def home_dir
