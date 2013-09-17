@@ -30,7 +30,7 @@ module Mobilize
     end
 
     def local
-      return "#{Mobilize.root}/tmp/#{self.home}/#{self.name}"
+      return "#{Mobilize.root}/tmp#{self.home}/#{self.name}"
     end
 
     def remote
