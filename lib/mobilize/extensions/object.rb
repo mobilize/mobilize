@@ -24,8 +24,6 @@ class Object
     end
     if success==false
       Mobilize::Logger.error("Unable to #{identifier} with: #{@exc.to_s}")
-    else
-      Mobilize::Logger.info("Ran #{identifier} successfully with #{curr_retries} retries")
     end
     return @result
   end
