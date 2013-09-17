@@ -9,7 +9,10 @@ gemfile:
 - Gemfile
 script: rake install && 
   mob decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
-  export MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && rake test
+  mob decode -p 'ec2_ssh_' -l 23 -f ec2_ssh_test.ssh && chmod 0400 ec2_ssh_test.ssh && 
+  export MOB_TEST_EC2_PRIV_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
+  export MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && 
+  rake test
 notifications:
   recipients:
   - mobilize.server@gmail.com
@@ -74,6 +77,54 @@ env:
   - secure: "flgZK4uLXgZme410hsXUrcw4Wdi9NvdzkjMZz98e5hXQthF33n//axzPdbUzTGeUkuZxKL8vtjlWEQqwcuAt6DDFPs9WPnIkufcA/TJx2DSpPx7D9YDwaeiqqQqM8smLx7lm7eZ7dwD0aLjP4P4srzv05YJ5JdSGgmEwCtDOM68="
 #git_ssh_22
   - secure: "SffVNf/OTB9KVmhSsYwQwEbtsLs8kyfM6OrdYD/RPOPIE3yF5ddYWUF0upjE/SH919Uxgt4Er3DsypUaYWh4zyFLnctPTtRj7vmzlF0aQ6r7SwSMmSDYHYKPNRt+WG+Iy3bi/eHZ+QL2a9mugbqiDLuLX/arA4sqmHyvMkmYv/Q="
+#ec2_ssh_00
+  - secure: "RKwD1juBOWUUYkJGsNz3FIsplV8VCYtJ3X7d/DT2543cnfdrvWSO4HfHBT3mwt8Qd66x3uUlPaRrI7fV2RfWiUKEAlKTW8F0Zx0/QP2RFmfM0LDZJRMkrqDn9Z1De1zcGYZbpawY5Ia2VWZ39L15J05AIYW8JmCUeC5yA3zgXcw="
+#ec2_ssh_01
+  - secure: "mBjeYUm6NYLiAivYYNQG1FHe1/tIuOabbBncqm8vspUUbuMfE1B+2FuNxOx/E8CAzZGBeMhfxxQOVEl30xg4vpsyY1SuDqDgGptHLfGWAzuWwdAAs6LVFs0MxxTrZjHFbPF89slfC4yEBvggWr5ktJHDFaebTmnQMI7oAhuOONg="
+#ec2_ssh_02
+  - secure: "n3k45lxpI9ylu8OP00KaRIzUHiVXXzt5gD4K/iFohtmeRsiQRWfC6AtDknnmkmYJfDeq0yVl9nR6BJAlUVhTz70O43qmjoKifpuYEFauAjEGPqF9IndxQggaQ7f28rmxzMyMHMj9tlw09URSLMR/U40uaaWr+ahQ1KRTBaZpf6Y="
+#ec2_ssh_03
+  - secure: "GvG5mm+gYSZYiJaVxGWn5FeGWa/06mpOgZueLxSIePk5j2oSPRQ2JhM+frssFumZwK4RaWRY+vwFQmxaGROJ1xVx7X7TeVGtJfX5SwRsxmj00+8OE2AO0SS8sk641g2UQFJynX2pwJq768XKkmUL7MlyHrvWfWuuhersTN01vX8="
+#ec2_ssh_04
+  - secure: "TW5NZUO5qequ9b2DlpHecibLukm/GITR9FWiUij0adl/2+zoZZ37JYMdD51r6wEqI7xxVfBJ/KV6Pd6CWVIgf818AiElwFQCuxte9l9Ie91FTkl4dAP19d8g2KN9PqNqvnlaRErPcDhTWwQcQCfyHp3M87XW3gR9pMfQjwmCwrg="
+#ec2_ssh_05
+  - secure: "HB3txm5eAiyONaq/PLJhJu3TmWXlsjLl0Xim5Jaw6WGRKizIv/ncmmAM51lFT+zvjWq6HvGW+TnmEa26Tzk4sjVNPa4DsEyt0r9yvqH+9bYZHaBsrSiPHMJ11Sxhf8whi4KftuZqFJd09KeTwivGoOY2j9qQP1jZW9JE+l6G29o="
+#ec2_ssh_06
+  - secure: "dJe91Un47t0ZeyNzCz+7sGisbzdg9LVYCaIkDajVYcgK28xpU70rWKju0G38lVwGTI87Yl2ZsiaR3Qeo2li3mYZ5tsQuLcQKvEQnyGRryS3WQJykGbIfZ5ld8lJphu3DBVTDYeobDe+r48zT1Lbj6m1FZ6oaMX55hOgFLcA2ePg="
+#ec2_ssh_07
+  - secure: "AR3936dDXpZVbFQ9cX2wRVXT1gotRH85E3hT9EfTW5NTxPQ1ivk4OZsVxED3FTXpbSSfAdPfWwvA2S5O0gY4n13TurjS5mDegHm5StHXe5pWFzftDoh3ADR3xGFrkhj/7F31EwvVwKJovod7z4lfw52j2XhvT9oNMN9DqexPGs4="
+#ec2_ssh_08
+  - secure: "Uy+MWHdLK3nlnaRDpRp5MX8+B5X6x/2ENint0vRibeEdnas7fuI22MsU8TIcjbDEWjgCZmGc12ks5BR/tZfyqt0tq1wiDY26YePFq/pOF9Rcyem/LHzv8eWyTh6I2es7fbFaqgvSJ+Bw1qthr8dNOi5di6yEPygriBrM7KgIa7k="
+#ec2_ssh_09
+  - secure: "XvB3KvStzIbHB/4Cd2/G36UmuWX7j+IHw0//QXQLFGC60Z28uF0Xi0Da9gQ5zAWx0xF/wSD2po423gCWAEKBG0VjagvkqcL/dQChlCdNiua8dnXhilNHGL231FDGWBmcasTsj5Mvrep6nldwizxExn3vl6LPeDYJPEeDxHAmRXk="
+#ec2_ssh_10
+  - secure: "K7Np+gMSjwl5KJKBhtqI8Db/ABNH3uSR+8cohiHE0ehYe8QLtgU5ixspbZZhTgLdXY098KvSokVaiFJg5a9esHTu592suyzW6T6dCX3Xvjvhnnty6u5aRBDwmoewXjDuWc2LKi3boiEeNRiIg1rReFIga7hFL5qaT5DlpISKAak="
+#ec2_ssh_11
+  - secure: "lV8Q/YvoBmD5s8vU32uKozXVsnlFtE5iOQCEoP+Vnqeh7t5vnsJu0HKVy8Rvg7OqJkz5ckayf+7p3RzGzJb7xiPWblN/1ru7HtM9L9vpIRFQHWnbH69N57Gutm2ZEcziyesinGXPzGIbn216Ft59Cqr82MfpB8PSxF4iIG8qmr0="
+#ec2_ssh_12
+  - secure: "ZZWKNb7o+v3WDd8p/XXChpI59uq14ZHKTdhjirE4Dyy1qZCb8TxWrjXEZ4hguaaZKhMlzuUIoOZMj0dYR/OQH4rhpZWv8cqi8STAu/m4lNS+yqv9dpM+aSvYEl4vIUSZxCJoPx+pW1fdRw2TcF+Tq2UXdvww7e4K+z9NoC3DiEI="
+#ec2_ssh_13
+  - secure: "NP5m3eBPifK0m/9JNngN76z3tnKDi8W2cHtgftYGwnznjlmatMtfLyqd1U/CMYRcBqKppf1MTutS9Nm+tfe1NsUetN7IKeNns1W9suMelhIe8qycZdOk6QacNg7eh++ZRWCzcYKwCOy2KJomKH9ap/jOCSl/aTvDGk9O315+5k4="
+#ec2_ssh_14
+  - secure: "XjnPoYbCXgVPPCZ0C3LqDXCfCBxBeNDhIxIJbwlrEiYh52oL2y9jvixnBShqji08hAi9iVWDJaHLvdcsTnI5vPD7jlnOgveI9Sp2gBf5jVr6sPokU0KppmVDf40jSkbF4PVi/Bf3/1l0/nZzsIRT0Z2P5aAg9xwjG5huB+tRcGo="
+#ec2_ssh_15
+  - secure: "CWbJXy5LMHwkVvG4ZxLNpaykCwkyCrVChOj9J1XIP2OzVU4r5/Zex3MLa3xl8aAAq0u+ZeapwTDGtUtx5v/0mOTa4b7qKXzrBo934MD70djkD5Qkpnl1JWNUlChJkLr9/d8ZQT9n8NAthQAvcBzuLuOZTgsu9aTmw9vYBh7qnsM="
+#ec2_ssh_16
+  - secure: "Y/sDAiNLDDqBLRoBLpr9576gQGwLCdVih+gVSRx4TwENO1wyWbXDpUGo7aiWlB4gVdzZLMcN1jpbujk8mC4CLBh8bdBFM03SobPiYMhZGT7VxgxnJCDDE1m3ep9g9SFl3SoPrxcfYZ0PNz2MqY9PdrcWJ/Z7d3Wz6pt56uUrL3c="
+#ec2_ssh_17
+  - secure: "HqvATmxGa0jzOuJtxt5FAR0sM9h0qT2NSn+uGNf4lUh0cDekyT/S+pdL27Lf0jhxWPusrJ6qHnoi9cP/ITF72GQ/YbI4cdYdd/pWVVxrKem5kw2/tnDkHJ6XkYhTZDvm/sBj7OE9hFwSiKjEKcqDUF4Z7BRh7o9EbtMndbzx8r0="
+#ec2_ssh_18
+  - secure: "UB9giBDtMt+Zvu0I1/ZwR/2wQkWS2ZD8jiaUUCxLOxRLoa5sobaCUt2t7AnuMDL//wds3dlv1scrN8EPQieRjUuE2XsS5KrojPaIUHCt9VlxcQvCXfUD6Y1aXUdaFmuvuUevLuR7jwZ/YiyDUzMrjrnzwvdsHTDS8pixcta9C5Y="
+#ec2_ssh_19
+  - secure: "nwhhJlucV9WizcPhy7ITIlgHSW3i0LsCc0fvNcxOaBNPvscO/FpmIPi+LkESGqAtVBbLOxC/q1fiBbdl8YiPQ+OwK5ZDaH9EU/82qAaTHRXHfuJlKwrYOnbZyK9rbKDbl1eD7/ZChILlOtt1hRk0ifxF9HcZS+yFDPsl2/BPIzU="
+#ec2_ssh_20
+  - secure: "dEYOIUuRhp0KF8fAoRlxVkl76FNF1R/NVZxxpsuA7tbdYwIa997dFtpuWQOclmFP3uKIXm+SdvsVH4d5e07fMJBTlBeJWZIspO6bjh9BqAx9RhQipP2P0E/hsgLLy3CUYq2+A5LBN8F3whtIVH1L0pGX054F18a/1GBFmDVYHLU="
+#ec2_ssh_21
+  - secure: "L87PqKTlHo8VdISoemSVyZXJoe43g22OwXRwbA+h4EwmZYybqe2syvFTJT2G//Dut9tHFLCqkgiVUezqG/hZ78gJUwRs2MA55HfbJvBxdBFBrkjQyYZ5xuMa4aguKM3pTvFAeppVs/43eqqeuDWrM0FcdcKKWs3xcPVSYsNMVAc="
+#ec2_ssh_22
+  - secure: "eooQwuYrgorsv36rHNiHldWUnsV7s147+HrPvjr1t71ZLwy6c6KaoMc800jX7RUe4ryo33eMhV6GfROD34Hn7N8DeVxldUDt97je9F2WwEY7tb33DDpOCuUznylx7OEvtrirljHNAsniq2D1RRV+y+MNe2KTWBdJ9LVWEk4GFsk="
+#ec2_ssh_23
+  - secure: "juCbLwT06bXCNs+eh4L/3dVBH9ANc0CgDIuBHx3g/wSsfaCcP4MoZLNQLeIDlEHEWBs67aXWyBMNFgDetrelChjYiWl6z7zg+m1Fe630Q2j8SLIZ9t1DvXdkQKBo0u6yT7HXkeSkgFig9MuWpVxB3mKKihewBeFLhjJYOJP+oyk="
 #mob_test_google_login
   - "MOB_TEST_GOOGLE_LOGIN=mobilize.server@gmail.com"
 #mob_test_user_id
@@ -96,3 +147,5 @@ env:
   - "MOB_TEST_EC2_SIZE='t1.micro'"
 #mob_test_ec2_sg_names
   - "MOB_TEST_EC2_SG_NAMES='default'"
+#mob_test_ec2_root_user
+  - "MOB_EC2_ROOT_USER='ubuntu'"
