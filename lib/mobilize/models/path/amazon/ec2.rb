@@ -28,12 +28,16 @@ module Mobilize
     def Ec2.instances(session=nil, params={aws_state: 'running'})
       @session = session || Ec2.login
       all_insts = @session.describe_instances.map{|i| i.with_indifferent_access}
-      filtered_insts = all_insts.select do |i|
+      filtered_insts = Ec2.filter_instances(all_insts,@session, params)
+      Logger.info("got #{filtered_insts.length.to_s} instances for #{@session.params[:region]}, params: #{params.to_s}")
+      return filtered_insts
+    end
+
+    def Ec2.filter_instances(all_insts,session = nil,params={aws_state: 'running'})
+      all_insts.select do |i|
         match_array = params.map{|k,v| i[k] == v}.uniq
         match_array.length == 1 and match_array.first == true
       end
-      Logger.info("got #{filtered_insts.length.to_s} instances for #{@session.params[:region]}, params: #{params.to_s}")
-      return filtered_insts
     end
 
     def Ec2.instances_by_name(name,session=nil,params={aws_state: 'running'})
@@ -99,7 +103,16 @@ module Mobilize
       return true
     end
 
-    def create_instance(session=nil)
+    def launch(session=nil)
+      @ec2 = self
+      @session = session || Ec2.login
+      inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_group_names, instance_type: @ec2.size}
+      inst = @session.launch_instances(@ec2.ami, inst_params).first
+      @session.create_tag(inst[:aws_instance_id],"name", @ec2.name)
+      return inst
+    end
+
+    def resolve_instance(session=nil)
       @ec2 = self
       @session = session || Ec2.login
       insts = Ec2.instances_by_name(@ec2.name,@session)
@@ -110,16 +123,27 @@ module Mobilize
         Logger.info("Instance #{inst[:aws_instance_id]} found, assigning to #{@ec2.name}")
       elsif insts.empty?
         #create new instance
-        inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_group_names, instance_type: @ec2.size}
-        inst = @session.launch_instances(@ec2.ami, inst_params).first
-        @session.create_tag(inst[:aws_instance_id],"name", @ec2.name)
+        inst = @ec2.launch
       end
-      @ec2.sync_instance(inst)
-      #wait around until the instance is running
+      return inst
+    end
+
+    def wait_for_instance(session=nil)
+      @ec2 = self
+      @session = session || Ec2.login
       while (state=@ec2.instance(@session)[:aws_state]) != "running"
         Logger.info("Instance #{@ec2.instance_id} still at #{state} -- waiting 10 sec")
         sleep 10
       end
+    end
+
+    def create_instance(session=nil)
+      @ec2 = self
+      @session = session || Ec2.login
+      inst = @ec2.resolve_instance
+      @ec2.sync_instance(inst)
+      #wait around until the instance is running
+      @ec2.wait_for_instance
       return @ec2.instance
     end
 
@@ -131,7 +155,9 @@ module Mobilize
       retries = 0
       while retries < total_retries and @result.nil?
         begin
-          Net::SSH.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],:keys=>ENV['MOB_EC2_PRIV_KEY_PATH']) do |ssh|
+          Net::SSH.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],
+                         keys: ENV['MOB_EC2_PRIV_KEY_PATH'],
+                         paranoid: false) do |ssh|
             @result = ssh.run(command,except)
           end
         rescue => @exc
@@ -156,7 +182,9 @@ module Mobilize
       retries = 0
       while retries < total_retries and @result.nil?
         begin
-          Net::SCP.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],:keys=>ENV['MOB_EC2_PRIV_KEY_PATH']) do |scp|
+          Net::SCP.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],
+                         keys: ENV['MOB_EC2_PRIV_KEY_PATH'],
+                         paranoid: false) do |scp|
             scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
               Logger.info("#{name}: #{sent}/#{total}")
             end
