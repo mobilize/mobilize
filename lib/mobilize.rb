@@ -47,6 +47,7 @@ require "#{extensions_dir}/object"
 require "#{extensions_dir}/string"
 require "#{extensions_dir}/yaml"
 require "#{extensions_dir}/net-ssh"
+require "#{extensions_dir}/class"
 
 models_dir = "mobilize/models"
 user_dir = "#{models_dir}/user"

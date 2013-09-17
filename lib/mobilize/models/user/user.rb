@@ -17,7 +17,7 @@ module Mobilize
       Ec2.find(self.ec2_id)
     end
 
-    def home_dir
+    def home
       return "/home/#{self.ssh_name}/#{Mobilize.db.name}"
     end
 
@@ -25,11 +25,14 @@ module Mobilize
       Transfer.where(user_id: self.id).to_a
     end
 
-    def prune_orphan_transfers
+    def purge_orphan_transfers
       #deletes any transfers in the remote, but not in the database
       @user = self
-      valid_transfers = @user.transfers.map{|t| t.name}
-      @user.ec2.ssh(home_dir)
+      remotes = @user.ec2.ssh("ls #{@user.home}/transfers").split("\n")
+      locals = @user.transfers.map{|t| t.name}
+      remotes.reject{|r| locals.include?(r)}.each do |r|
+        Transfer.new(name: r).purge!
+      end
     end
   end
 end

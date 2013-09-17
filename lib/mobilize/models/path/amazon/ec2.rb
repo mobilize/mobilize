@@ -46,14 +46,15 @@ module Mobilize
     def find_or_create_instance(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      if @ec2.instance_id
-        #already has an instance_id assigned, so verify and
+      begin
+        #check for an instance_id assigned, so verify and
         #update w any changes
-        return @ec2.instance(@session)
-      else
-        #create an instance based on current parameters
-        return @ec2.create_instance(@session)
+        return @ec2.instance(@session) if @ec2.instance_id
+      rescue
+        #go ahead and create an instance if it turns out this ID is wrong
       end
+      #create an instance based on current parameters
+      return @ec2.create_instance(@session)
     end
 
     #find instance by ID, update DB record with latest from AWS
@@ -167,6 +168,12 @@ module Mobilize
           Logger.info("Retrying scp from #{loc_path} to #{rem_path} on #{@ec2.name} #{retries.to_s} of #{total_retries.to_s} time(s)")
         end
       end
+      if @result.nil?
+        Logger.error("Unable to scp from #{loc_path} to #{rem_path} on #{@ec2.name} with #{@exc.to_s}")
+      else
+        Logger.info("Ran scp from #{loc_path} to #{rem_path} on #{@ec2.name}")
+      end
+      return @result
     end
   end
 end
