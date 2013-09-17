@@ -27,6 +27,8 @@ end
 
 require 'pry'
 require "popen4"
+require 'net/ssh'
+require 'net/scp'
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
@@ -41,6 +43,7 @@ extensions_dir = "mobilize/extensions"
 require "#{extensions_dir}/object"
 require "#{extensions_dir}/string"
 require "#{extensions_dir}/yaml"
+require "#{extensions_dir}/net-ssh"
 
 models_dir = "mobilize/models"
 user_dir = "#{models_dir}/user"
