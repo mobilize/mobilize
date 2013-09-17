@@ -21,16 +21,20 @@ module Mobilize
       self.user.ec2.ssh
     end
 
+    def scp(loc_path,rem_path)
+      self.user.ec2.scp(loc_path,rem_path)
+    end
+
     def home_dir
       self.user.home_dir
     end
 
     def loc_dir
-      return "#{Mobilize.root}/tmp/mobilize#{self.home_dir}/#{self.name}"
+      return "#{Mobilize.root}/tmp/#{self.home_dir}/#{Mobilize.db.name}/#{self.name}"
     end
 
     def rem_dir
-      return "#{self.home_dir}/#{self.name}"
+      return "#{self.home_dir}/#{Mobilize.db.name}/#{self.name}"
     end
 
     #gsubs keys in files with the replacement value given
@@ -93,11 +97,7 @@ module Mobilize
       Logger.info("Starting upload to remote for #{@transfer.id}")
       rem_path = "#{@transfer.user.home_dir}/#{@transfer.name}.tar.gz"
       loc_path = "#{@transfer.loc_dir}.tar.gz"
-      Net::SCP.start(@transfer.ec2.dns,ENV['MOB_EC2_ROOT_USER'],:keys=>ENV['MOB_EC2_PRIV_KEY_PATH']) do |scp|
-        scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
-          Logger.info("#{name}: #{sent}/#{total}")
-        end
-      end
+      @transfer.scp(loc_path,rem_path)
       Logger.info("uploaded local to remote for #{@transfer.id}")
       @transfer.ssh.run("cd #{@transfer.home_dir} && tar -zxvf #{@transfer.name}.tar.gz")
       Logger.info("Unpacked remote for #{@transfer.id}")

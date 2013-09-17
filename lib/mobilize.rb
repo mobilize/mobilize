@@ -23,6 +23,9 @@ module Mobilize
     yaml_path = "config/mobilize.yml"
     ::YAML.load_file_indifferent(yaml_path)[Mobilize.env]
   end
+  def Mobilize.db
+    Mongoid.session(:default)[:database].database
+  end
 end
 
 require 'pry'
