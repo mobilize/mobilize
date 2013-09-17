@@ -149,57 +149,20 @@ module Mobilize
 
     def ssh(command,except=true)
       @ec2 = self
-      total_retries = ENV['MOB_EC2_SSH_TOTAL_RETRIES'] || 5
-      @result = nil
-      @exc = nil
-      retries = 0
-      while retries < total_retries and @result.nil?
-        begin
-          Net::SSH.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],
-                         keys: ENV['MOB_EC2_PRIV_KEY_PATH'],
-                         paranoid: false) do |ssh|
-            @result = ssh.run(command,except)
-          end
-        rescue => @exc
-          retries += 1
-          Logger.info("Failed #{command} on #{@ec2.name} with #{@exc.to_s}")
-          Logger.info("Retrying #{command} on #{@ec2.name} #{retries.to_s} of #{total_retries.to_s} time(s)")
-        end
-      end
-      if @result.nil?
-        Logger.error("Unable to run #{command} on #{@ec2.name} with #{@exc.to_s}")
-      else
-        Logger.info("Ran #{command} on #{@ec2.name}")
+      ssh_args = {keys: ENV['MOB_EC2_PRIV_KEY_PATH'],paranoid: false}
+      @result = Net::SSH.send_w_retries("start",@ec2.dns,ENV['MOB_EC2_ROOT_USER'],ssh_args) do |ssh|
+        ssh.run(command,except)
       end
       return @result
     end
 
     def scp(loc_path, rem_path)
       @ec2 = self
-      total_retries = ENV['MOB_EC2_SSH_TOTAL_RETRIES'] || 5
-      @result = nil
-      @exc = nil
-      retries = 0
-      while retries < total_retries and @result.nil?
-        begin
-          Net::SCP.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],
-                         keys: ENV['MOB_EC2_PRIV_KEY_PATH'],
-                         paranoid: false) do |scp|
-            scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
-              Logger.info("#{name}: #{sent}/#{total}")
-            end
-            @result = true
-          end
-        rescue => @exc
-          retries += 1
-          Logger.info("Failed scp from #{loc_path} to #{rem_path} on #{@ec2.name} with #{@exc.to_s}")
-          Logger.info("Retrying scp from #{loc_path} to #{rem_path} on #{@ec2.name} #{retries.to_s} of #{total_retries.to_s} time(s)")
+      ssh_args = {keys: ENV['MOB_EC2_PRIV_KEY_PATH'],paranoid: false}
+      @result = Net::SCP.send_w_retries("start",@ec2.dns,ENV['MOB_EC2_ROOT_USER'],ssh_args) do |scp|
+        scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
+          Logger.info("#{name}: #{sent}/#{total}")
         end
-      end
-      if @result.nil?
-        Logger.error("Unable to scp from #{loc_path} to #{rem_path} on #{@ec2.name} with #{@exc.to_s}")
-      else
-        Logger.info("Ran scp from #{loc_path} to #{rem_path} on #{@ec2.name}")
       end
       return @result
     end
