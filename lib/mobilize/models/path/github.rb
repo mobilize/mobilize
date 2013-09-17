@@ -41,7 +41,7 @@ module Mobilize
       @session = session || Github.login
       begin
         resp = @session.repos.get(user: @gh.owner_name, repo: @gh.repo_name)
-        Logger.info("Got repo for #{@gh._id}")
+        Logger.info("Got repo for #{@gh._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
       rescue
         Logger.error("Could not access #{@gh._id}")
       end
@@ -82,7 +82,7 @@ module Mobilize
       @session ||= Github.login
       begin
         resp = @session.repos.collaborators.list(user: @gh.owner_name, repo: @gh.repo_name)
-        Logger.info("Got collaborators for #{@gh._id}")
+        Logger.info("Got collaborators for #{@gh._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
       rescue
         Logger.error("Could not access #{@gh._id}")
       end
