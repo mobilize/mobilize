@@ -13,6 +13,7 @@ class TransferTest < MiniTest::Unit::TestCase
     ENV['AWS_ACCESS_KEY_ID']=ENV['MOB_TEST_AWS_ACCESS_KEY_ID']
     ENV['AWS_SECRET_ACCESS_KEY']=ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY']
     ENV['MOB_EC2_DEF_REGION']=ENV['MOB_TEST_EC2_DEF_REGION']
+    ENV['MOB_EC2_PRIV_KEY_PATH']=ENV['MOB_TEST_EC2_PRIV_KEY_PATH']
     @ec2 = Mobilize::Ec2.find_or_create_by(@ec2_params)
     #create user from owner
     @user = Mobilize::User.find_or_create_by(
