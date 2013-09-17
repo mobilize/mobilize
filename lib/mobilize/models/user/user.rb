@@ -10,18 +10,29 @@ module Mobilize
     validates :active, presence: true
 
     def ssh_name
-      @user = self
-      return @user.id.gsub("@","-")
+      return self.id.gsub("@","-")
     end
 
     def ec2
-      @user = self
-      Ec2.find(@user.ec2_id)
+      Ec2.find(self.ec2_id)
     end
 
-    def home_dir
+    def home
+      return "/home/#{self.ssh_name}/#{Mobilize.db.name}"
+    end
+
+    def transfers
+      Transfer.where(user_id: self.id).to_a
+    end
+
+    def purge_orphan_transfers
+      #deletes any transfers in the remote, but not in the database
       @user = self
-      return "/home/#{@user.ssh_name}"
+      remotes = @user.ec2.ssh("ls #{@user.home}/transfers").split("\n")
+      locals = @user.transfers.map{|t| t.name}
+      remotes.reject{|r| locals.include?(r)}.each do |r|
+        Transfer.new(name: r).purge!
+      end
     end
   end
 end
