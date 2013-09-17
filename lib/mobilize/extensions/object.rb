@@ -11,19 +11,21 @@ class Object
     @exc = nil
     curr_retries = 0
     identifier = "#{@obj.to_s} #{method_name.to_s}"
-    while curr_retries < total_retries and @result.nil?
+    success = false
+    while curr_retries < total_retries and success == false
       begin
         @result = @obj.send(method_name,*args,&blk)
+        success = true
       rescue => @exc
-        retries += 1
-        Logger.info("Failed #{identifier} with #{@exc.to_s}")
-        Logger.info("Retrying #{identifier}; #{curr_retries.to_s} of #{total_retries.to_s} time(s)")
+        curr_retries += 1
+        Mobilize::Logger.info("Failed #{identifier} with #{@exc.to_s}")
+        Mobilize::Logger.info("Retrying #{identifier}; #{curr_retries.to_s} of #{total_retries.to_s} time(s)")
       end
     end
-    if @result.nil?
-      Logger.error("Unable to #{identifier} with: #{@exc.to_s}")
+    if success==false
+      Mobilize::Logger.error("Unable to #{identifier} with: #{@exc.to_s}")
     else
-      Logger.info("Ran #{identifier} successfully with #{curr_retries} retries")
+      Mobilize::Logger.info("Ran #{identifier} successfully with #{curr_retries} retries")
     end
     return @result
   end

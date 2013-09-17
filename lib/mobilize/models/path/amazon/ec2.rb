@@ -163,7 +163,6 @@ module Mobilize
         scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
           Logger.info("#{name}: #{sent}/#{total}")
         end
-        @result = true
       end
       return @result
     end
