@@ -5,7 +5,8 @@ module Net
   module SSH
     module Connection
       class Session
-        def run(command)
+        #except=true means exception will be raised on exit_code != 0
+        def run(command, except=true)
           @ssh = self
           stdout_data = ""
           stderr_data = ""
@@ -34,7 +35,11 @@ module Net
             end
           end
           @ssh.loop
-          {stdout: stdout_data, stderr: stderr_data, exit_code: exit_code, exit_signal: exit_signal}
+          result={stdout: stdout_data, stderr: stderr_data, exit_code: exit_code, exit_signal: exit_signal}
+          if except and exit_code!=0
+            raise stderr_data
+          end
+          return result
         end
       end
     end

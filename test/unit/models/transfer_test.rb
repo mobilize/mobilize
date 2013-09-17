@@ -1,6 +1,7 @@
 require "test_helper"
 class TransferTest < MiniTest::Unit::TestCase
   def setup
+    Mongoid.purge!
     @ec2_params={
       name:ENV['MOB_TEST_EC2_NAME'],
       ami:ENV['MOB_TEST_EC2_AMI'],
@@ -19,7 +20,7 @@ class TransferTest < MiniTest::Unit::TestCase
       active: true,
       google_login: ENV['MOB_TEST_GOOGLE_LOGIN'],
       github_login: ENV['MOB_TEST_GITHUB_LOGIN'],
-      ec2_public_key: `ssh-keygen -y -f #{ENV['MOB_TEST_EC2_PRIV_KEY_PATH']}`.strip
+      ec2_id: @ec2.id
     )
     #set github params
     ENV['MOB_OWNER_GITHUB_LOGIN']=ENV['MOB_TEST_OWNER_GITHUB_LOGIN']
@@ -35,12 +36,12 @@ class TransferTest < MiniTest::Unit::TestCase
       user_id: @user.id,
       command: "ls @path",
       path_ids: [@github.id],
-      replace_params: {"@path"=>"mobilize"}
+      gsubs: {"@path"=>"mobilize"}
     )
   end
 
   def test_execute
     stdout = @transfer.execute
-    assert_in_delta stdout.length, 1, 100
+    assert_in_delta stdout.length, 1, 1000
   end
 end

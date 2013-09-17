@@ -19,9 +19,7 @@ module Mobilize
       Ec2.find(@user.ec2_id)
     end
 
-    #creates an account and home directory
-    #on home ec2 node
-    def find_or_create_home
+    def home_dir
       @user = self
       return "/home/#{@user.ssh_name}"
     end

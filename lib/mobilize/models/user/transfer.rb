@@ -6,87 +6,119 @@ module Mobilize
     field :name, type: String, default:->{Time.now.utc.strftime("%Y%m%d%H%M%S")}
     field :command, type: String #command to be executed on the remote
     field :path_ids, type: Array #paths that need to be loaded before deploy to ec2
-    field :replace_params, type: Hash #params to be replaced after load, before deploy
+    field :gsubs, type: Hash #params to be replaced after load, before deploy
     field :_id, type: String, default:->{"#{user_id}:#{name}"}
 
     def user
-      @transfer = self
-      Ssh.find(@transfer.user_id)
+      User.find(self.user_id)
+    end
+
+    def ec2
+      self.user.ec2
+    end
+
+    def ssh
+      self.user.ec2.ssh
+    end
+
+    def home_dir
+      self.user.home_dir
     end
 
     def loc_dir
-      @transfer = self
-      return "#{Mobilize.root}/tmp/mobilize/#{@transfer.user.home_dir}/#{@transfer.name}"
+      return "#{Mobilize.root}/tmp/mobilize#{self.home_dir}/#{self.name}"
     end
 
     def rem_dir
-      @transfer = self
-      return "#{@transfer.user.home_dir}/#{@transfer.name}"
+      return "#{self.home_dir}/#{self.name}"
     end
 
-    #replaces any replace_params in files with the replacement value given
-    def replace
+    #gsubs keys in files with the replacement value given
+    def gsub!
       @transfer = self
-      @transfer.replace_params.each do |k,v|
+      @transfer.gsubs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s)
-        replace_cmd = "cd #{@transfer.loc_dir} && (find ./ -type f | xargs sed -i 's/#{@string1}/#{@string2}/g')"
+        replace_cmd = "cd #{@transfer.loc_dir} && (find . -type f -not -iwholename '*.git*' | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
+        Logger.info("Replaced #{@string1} with #{@string2} for #{@transfer.id}")
       end
     end
 
     #load paths into local directory
     def load
       @transfer = self
-      @user = @ssh.user
       #clear out local
       FileUtils.rm_r(@transfer.loc_dir,force: true)
       FileUtils.mkdir_p(@transfer.loc_dir)
       #load each path into loc_dir
       @transfer.path_ids.each do |path_id|
         @path = Path.find(path_id)
-        @path.load(@user.id,@transfer.loc_dir)
+        @path.load(@transfer.user_id,@transfer.loc_dir)
         Logger.info("Loaded #{@path.id} into #{@transfer.loc_dir}")
       end
       #write command to stdin folder in local
       File.open("#{@transfer.loc_dir}/stdin","w") {|f| f.print(@transfer.command)}
       Logger.info("Wrote stdin to local: #{@transfer.loc_dir}")
-      return @transfer.loc_dir
+      #replace any items that need it
+      @transfer.gsub! unless @transfer.gsubs.nil? or @transfer.gsubs.empty?
+      #compress local dir
+      "cd #{@transfer.loc_dir}/.. && tar -zcvf #{@transfer.name}.tar.gz #{@transfer.name}".popen4(true)
+      Logger.info("Compressed local to: #{@transfer.loc_dir}.tar.gz")
+      #return path to local dir file
+      return "#{@transfer.loc_dir}.tar.gz"
+    end
+
+    def refresh_rem_dir
+      @transfer = self
+      @ssh = @transfer.ssh
+      rem_dir = @transfer.rem_dir
+      home_dir = @transfer.home_dir
+      #clear out and regenerate remote folder
+      @ssh.run("sudo rm -rf #{rem_dir}*")
+      Logger.info("Removed #{rem_dir}")
+      @ssh.run("sudo mkdir -p #{home_dir}")
+      Logger.info("Mkdir'ed #{home_dir}")
+      @ssh.run("sudo chown #{ENV['MOB_EC2_ROOT_USER']} #{home_dir}")
+      Logger.info("Chowned #{home_dir} to #{ENV['MOB_EC2_ROOT_USER']}")
+      Logger.info("Refreshed remote: #{home_dir}")
     end
 
     #deploy local directory to remote
     def deploy
       @transfer = self
-      @ec2 = @transfer.ec2
-      @ssh = @ec2.ssh
       #clear out and regenerate remote folder
-      ["sudo rm -rf #{@transfer.rem_dir}",
-       "mkdir -p #{@transfer.rem_dir}"
-      ].each{|cmd| @ssh.run(cmd)}
-      Logger.info("Cleared out remote: #{@transfer.rem_dir}")
-
+      @transfer.refresh_rem_dir
       #transfer local directory to remote
-      Net::SCP.start(@ec2.dns,ENV['MOB_EC2_ROOT_USER'],:keys=>ENV['MOB_EC2_PRIV_KEY_PATH']) do |scp|
-        scp.upload!(@transfer.loc_dir,@transfer.rem_dir,:recursive=>true)
+      Logger.info("Starting upload to remote for #{@transfer.id}")
+      rem_path = "#{@transfer.user.home_dir}/#{@transfer.name}.tar.gz"
+      loc_path = "#{@transfer.loc_dir}.tar.gz"
+      Net::SCP.start(@transfer.ec2.dns,ENV['MOB_EC2_ROOT_USER'],:keys=>ENV['MOB_EC2_PRIV_KEY_PATH']) do |scp|
+        scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
+          Logger.info("#{name}: #{sent}/#{total}")
+        end
       end
       Logger.info("uploaded local to remote for #{@transfer.id}")
-
+      @transfer.ssh.run("cd #{@transfer.home_dir} && tar -zxvf #{@transfer.name}.tar.gz")
+      Logger.info("Unpacked remote for #{@transfer.id}")
       #remove local dir
       FileUtils.rm_r(@transfer.loc_dir,:force=>true)
       Logger.info("Removed local for #{@transfer.loc_dir}")
-
-      #return full exec command with tee
-      start_cmd = "/bin/bash -l -c '(cd #{@transfer.rem_dir} && sh #{@transfer.rem_path} > >(tee stdout) 2> >(tee stderr >&2))'"
-
-      return start_cmd
+      exec_cmd = "(cd #{@transfer.rem_dir} && sh stdin) > #{@transfer.rem_dir}/stdout 2> #{@transfer.rem_dir}/stderr"
+      return exec_cmd
     end
 
     def execute
       @transfer = self
       @transfer.load
-      start_cmd = @transfer.deploy
-      result = @transfer.ec2.run(start_cmd)
-      return result[:stdout]
+      exec_cmd = @transfer.deploy
+      begin
+        @transfer.ssh.run(exec_cmd)
+        Logger.info("Completed transfer for #{@transfer.id}")
+      rescue
+        Logger.error("Failed transfer #{@transfer.id} with #{@transfer.stderr}")
+      end
+      return @transfer.stdout
     end
 
     def stdin

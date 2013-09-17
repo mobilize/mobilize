@@ -1,16 +1,24 @@
 require "test_helper"
 class GithubTest < MiniTest::Unit::TestCase
   def setup
+    Mongoid.purge!
     @git_pub = Mobilize::Github.find_or_create_by(
       owner_name: "mobilize",
       repo_name: "mobilize",
     )
-    @u = Mobilize::User.find_or_create_by(
-      id: ENV['MOB_TEST_USER_ID'],
+    @ec2_params={
+      name:ENV['MOB_TEST_EC2_NAME'],
+      ami:ENV['MOB_TEST_EC2_AMI'],
+      size:ENV['MOB_TEST_EC2_SIZE'],
+      keypair_name:ENV['MOB_TEST_EC2_KEYPAIR_NAME'],
+      security_group_names:ENV['MOB_TEST_EC2_SG_NAMES']
+    }
+    @ec2 = Mobilize::Ec2.find_or_create_by(@ec2_params)
+    @user = Mobilize::User.find_or_create_by(
       active: true,
       google_login: ENV['MOB_TEST_GOOGLE_LOGIN'],
       github_login: ENV['MOB_TEST_GITHUB_LOGIN'],
-      ec2_public_key: `ssh-keygen -y -f #{ENV['MOB_TEST_EC2_PRIV_KEY_PATH']}`.strip
+      ec2_id: @ec2.id
     )
     #populate the envs below if you need to test
     #private repository accessibility
@@ -42,9 +50,9 @@ class GithubTest < MiniTest::Unit::TestCase
     repo_dir_pub = @git_pub.load
     assert_in_delta "cd #{repo_dir_pub} && git status".popen4.length, 1, 1000
     FileUtils.rm_r(repo_dir_pub, force: true)
-    Mobilize::Logger.info("Deleted folder for #{@git_pub._id}")
+    Mobilize::Logger.info("Deleted folder for #{@git_pub.id}")
     if @git_priv
-      repo_dir_priv = @git_priv.load(@u._id)
+      repo_dir_priv = @git_priv.load(@user.id)
       assert_in_delta "cd #{repo_dir_priv} && git status".popen4.length, 1, 1000
       FileUtils.rm_r(repo_dir_priv, force: true)
     end

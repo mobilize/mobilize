@@ -28,6 +28,7 @@ end
 require 'pry'
 require "popen4"
 require 'net/ssh'
+require 'net/scp'
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
