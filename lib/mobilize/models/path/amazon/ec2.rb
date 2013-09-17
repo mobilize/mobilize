@@ -122,8 +122,7 @@ module Mobilize
         inst = insts.first
         Logger.info("Instance #{inst[:aws_instance_id]} found, assigning to #{@ec2.name}")
       elsif insts.empty?
-        #create new instance
-        inst = @ec2.launch
+        inst = nil
       end
       return inst
     end
@@ -140,7 +139,7 @@ module Mobilize
     def create_instance(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      inst = @ec2.resolve_instance
+      inst = @ec2.resolve_instance || @ec2.launch
       @ec2.sync_instance(inst)
       #wait around until the instance is running
       @ec2.wait_for_instance

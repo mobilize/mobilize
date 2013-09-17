@@ -24,15 +24,5 @@ module Mobilize
     def transfers
       Transfer.where(user_id: self.id).to_a
     end
-
-    def purge_orphan_transfers
-      #deletes any transfers in the remote, but not in the database
-      @user = self
-      remotes = @user.ec2.ssh("ls #{@user.home}/transfers").split("\n")
-      locals = @user.transfers.map{|t| t.name}
-      remotes.reject{|r| locals.include?(r)}.each do |r|
-        Transfer.new(name: r).purge!
-      end
-    end
   end
 end
