@@ -1,6 +1,7 @@
 require "test_helper"
 class Ec2Test < MiniTest::Unit::TestCase
   def setup
+    Mongoid.purge!
     @ec2_params={
       name:ENV['MOB_TEST_EC2_NAME'],
       ami:ENV['MOB_TEST_EC2_AMI'],
