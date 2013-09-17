@@ -30,11 +30,11 @@ module Mobilize
     end
 
     def loc_dir
-      return "#{Mobilize.root}/tmp/#{self.home_dir}/#{Mobilize.db.name}/#{self.name}"
+      return "#{Mobilize.root}/tmp/#{self.home_dir}/#{self.name}"
     end
 
     def rem_dir
-      return "#{self.home_dir}/#{Mobilize.db.name}/#{self.name}"
+      return "#{self.home_dir}/#{self.name}"
     end
 
     #gsubs keys in files with the replacement value given
@@ -43,7 +43,7 @@ module Mobilize
       @transfer.gsubs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s)
-        replace_cmd = "cd #{@transfer.loc_dir} && (find . -type f -not -iwholename '*.git*' | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
+        replace_cmd = "cd #{@transfer.loc_dir} && (find . -type f | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
         Logger.info("Replaced #{@string1} with #{@string2} for #{@transfer.id}")
       end
