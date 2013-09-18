@@ -25,7 +25,7 @@ module Mobilize
       return @session
     end
 
-    def Ec2.instances(session=nil, params={aws_state: 'running'})
+    def Ec2.instances(session=nil, params={aws_state: ['running','pending']})
       @session = session || Ec2.login
       all_insts = @session.describe_instances.map{|i| i.with_indifferent_access}
       filtered_insts = Ec2.filter_instances(all_insts,@session, params)
@@ -33,14 +33,14 @@ module Mobilize
       return filtered_insts
     end
 
-    def Ec2.filter_instances(all_insts,session = nil,params={aws_state: 'running'})
+    def Ec2.filter_instances(all_insts,session = nil,params={aws_state: ['running','pending']})
       all_insts.select do |i|
-        match_array = params.map{|k,v| i[k] == v}.uniq
+        match_array = params.map{|k,v| v.to_a.include?(i[k])}.uniq
         match_array.length == 1 and match_array.first == true
       end
     end
 
-    def Ec2.instances_by_name(name,session=nil,params={aws_state: 'running'})
+    def Ec2.instances_by_name(name,session=nil,params={aws_state: ['running','pending']})
       @session = session || Ec2.login
       Logger.info("filtered instances by name #{name}")
       Ec2.instances(@session).select{|i| i[:tags][:name] == name}
@@ -65,7 +65,10 @@ module Mobilize
     def instance(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      inst = Ec2.instances(@session,{aws_instance_id: @ec2.instance_id}).first
+      inst = Ec2.instances(@session,
+               {aws_instance_id: @ec2.instance_id,
+                aws_state: ['running','pending']}).first
+      inst = @ec2.create_instance(@session) if inst.nil?
       @ec2.sync_instance(inst)
       return inst
     end
