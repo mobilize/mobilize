@@ -44,8 +44,8 @@ module Mobilize
 
     def Ec2.instances_by_name(name,session=nil,params={aws_state: ['running','pending']})
       @session = session || Ec2.login
-      Logger.info("filtered instances by name #{name}")
-      Ec2.instances(@session).select{|i| i[:tags][:name] == name}
+      insts = Ec2.instances(@session).select{|i| i[:tags][:name] == name}
+      Logger.info("found #{insts.length.to_s} instances by name #{name}")
     end
 
 

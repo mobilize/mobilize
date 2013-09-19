@@ -2,9 +2,8 @@ require "test_helper"
 class Ec2Test < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @ec2 = Mobilize::Ec2.find_or_create_by(
-      name: Mobilize.config.minitest.ec2.worker_name
-    )
+    @worker_name = Mobilize.config.minitest.ec2.worker_name
+    @ec2 = Mobilize::Ec2.new(name: @worker_name)
     #create session based off of definites
     @session = Mobilize::Ec2.login
   end
@@ -24,7 +23,7 @@ class Ec2Test < MiniTest::Unit::TestCase
     #and assign to database object, making them equal
     instance_id = @ec2.instance_id
     @ec2.delete
-    @ec2 = Mobilize::Ec2.new(@ec2_params)
+    @ec2 = Mobilize::Ec2.new(name: @worker_name)
     @ec2.save!
     assert_equal @ec2.instance_id, instance_id
     #finally, find_or_create_instance should return
@@ -37,6 +36,6 @@ class Ec2Test < MiniTest::Unit::TestCase
     @ec2.save!
     assert @ec2.instance(@session)[:aws_state], "running"
     @ec2.purge!(@session)
-    assert_equal Mobilize::Ec2.instances_by_name(@ec2_params[:name],@session), []
+    assert_equal Mobilize::Ec2.instances_by_name(@worker_name, @session), []
   end
 end

@@ -3,24 +3,24 @@ class GithubTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     @git_pub = Mobilize::Github.find_or_create_by(
-      owner_name: Config::Minitest::Github::Public.owner_name,
-      repo_name: Config::Minitest::Github::Public.repo_name,
+      owner_name: Mobilize.config.minitest.github.public.owner_name,
+      repo_name: Mobilize.config.minitest.github.public.repo_name,
     )
     @ec2 = Mobilize::Ec2.find_or_create_by(
-      name: Config::Minitest::Ec2.worker_name
+      name: Mobilize.config.minitest.ec2.worker_name
     )
     @user = Mobilize::User.find_or_create_by(
       active: true,
-      google_login: Config::Minitest::Google.login,
-      github_login: Config::Minitest::Github.login,
+      google_login: Mobilize.config.minitest.google.login,
+      github_login: Mobilize.config.minitest.github.login,
       ec2_id: @ec2.id
     )
     #populate the envs below if you need to test
     #private repository accessibility
     priv_git_hash = {
-        domain: Config::Minitest::Github::Private.domain,
-        owner_name: Config::Minitest::Github::Private.owner_name,
-        repo_name: Config::Minitest::Github::Private.repo_name
+        domain: Mobilize.config.minitest.github.private.domain,
+        owner_name: Mobilize.config.minitest.github.private.owner_name,
+        repo_name: Mobilize.config.minitest.github.private.repo_name
       }
     #make sure everything is defined as expected
     if priv_git_hash.values.compact.length==3

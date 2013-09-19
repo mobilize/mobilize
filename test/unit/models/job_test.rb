@@ -12,10 +12,10 @@ class JobTest < MiniTest::Unit::TestCase
       github_login: Mobilize.config.minitest.github.login,
       ec2_id: @ec2.id
     )
-    #create github instance for job
+    #create public github instance for job
     @github = Mobilize::Github.find_or_create_by(
-      owner_name: Mobilize.config.minitest.github.owner_name,
-      repo_name: Mobilize.config.minitest.github.repo_name
+      owner_name: Mobilize.config.minitest.github.public.owner_name,
+      repo_name: Mobilize.config.minitest.github.public.repo_name
     )
     #create job
     @job = Mobilize::Job.find_or_create_by(
