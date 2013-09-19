@@ -7,7 +7,7 @@ class JobTest < MiniTest::Unit::TestCase
       ami:ENV['MOB_TEST_EC2_AMI'],
       size:ENV['MOB_TEST_EC2_SIZE'],
       keypair_name:ENV['MOB_TEST_EC2_KEYPAIR_NAME'],
-      security_group_names:ENV['MOB_TEST_EC2_SG_NAMES']
+      security_groups:ENV['MOB_TEST_EC2_SG_NAMES']
     }
     #set global envs from test
     ENV['AWS_ACCESS_KEY_ID']=ENV['MOB_TEST_AWS_ACCESS_KEY_ID']

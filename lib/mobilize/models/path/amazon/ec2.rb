@@ -4,10 +4,10 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
-    field :ami, type: String, default:->{Config::Ec2.default_ami}
-    field :size, type: String, default:->{Config::Ec2.default_size}
-    field :keypair_name, type: String, default:->{Config::Ec2.default_keypair_name}
-    field :security_group_names, type: Array, default:->{Config::Ec2.default_security_groups}
+    field :ami, type: String, default:->{Config::Ec2.ami}
+    field :size, type: String, default:->{Config::Ec2.size}
+    field :keypair_name, type: String, default:->{Config::Ec2.keypair_name}
+    field :security_groups, type: Array, default:->{Config::Ec2.security_groups}
     field :instance_id, type: String
     field :dns, type: String #public dns
     field :ip, type: String #private ip
@@ -19,7 +19,7 @@ module Mobilize
 
     def Ec2.login(access_key_id=Config::Aws.access_key_id,
                       secret_access_key=Config::Aws.secret_access_key,
-                      region=Config::Ec2.default_region)
+                      region=Config::Ec2.region)
       @session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
       Logger.info("Logged into ec2 for region #{region}")
       return @session
@@ -79,7 +79,7 @@ module Mobilize
         ami: rem_inst[:aws_image_id],
         size: rem_inst[:instance_type],
         keypair_name: rem_inst[:keypair_name],
-        security_group_names: rem_inst[:group_ids],
+        security_groups: rem_inst[:group_ids],
         instance_id: rem_inst[:aws_instance_id],
         dns: rem_inst[:dns_name],
         ip: rem_inst[:aws_private_ip_address]
@@ -109,7 +109,7 @@ module Mobilize
     def launch(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_group_names, instance_type: @ec2.size}
+      inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_groups, instance_type: @ec2.size}
       inst = @session.launch_instances(@ec2.ami, inst_params).first
       @session.create_tag(inst[:aws_instance_id],"name", @ec2.name)
       return inst

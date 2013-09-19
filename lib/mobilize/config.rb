@@ -1,5 +1,14 @@
 module Mobilize
   module Config
+    def Config.load!
+      #goes through ~/.mobrc file
+      mob_yml_path = File.expand_path("~/.mob.yml")
+      unless File.exists?(mob_yml_path)
+        Logger.error("no ~/.mob.yml file found; please run `mob configure` to set up a default file, " +
+              "and be sure to populate values appropriate to your setup")
+      end
+    end
+
     def Config.local_cache
       ENV['MOB_LOCAL_TMP_DIR'] || "#{Mobilize.root}/tmp"
     end
