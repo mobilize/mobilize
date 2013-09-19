@@ -1,10 +1,12 @@
 #sample config yml for mobilize
 #entries w a preceding $ will be loaded from environment vars
 development:
+  object:
+    send_total_retries: 3
   workers:
-    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
   servers:
-    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -23,16 +25,18 @@ development:
       login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 #test includes special variables for running
 #tests, found under `minitest`
 test:
+  object:
+    send_total_retries: 3
   workers:
-    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
   servers:
-    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -51,7 +55,7 @@ test:
       login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
   minitest:
@@ -70,10 +74,12 @@ test:
         owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
         repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
+  object:
+    send_total_retries: 3
   workers:
-    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
   servers:
-    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -92,14 +98,16 @@ staging:
       login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
+  object:
+    send_total_retries: 3
   workers:
-    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
   servers:
-    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -118,6 +126,6 @@ production:
       login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
