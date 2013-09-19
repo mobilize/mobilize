@@ -27,7 +27,7 @@ module Mobilize
 
     #tmp folder for caching jobs
     def tmp
-      return "#{Mobilize.tmp}/jobs/#{self.user.ssh_name}/#{self.name}"
+      return "#{Config.tmp}/jobs/#{self.user.ssh_name}/#{self.name}"
     end
 
     def purge!
@@ -55,10 +55,10 @@ module Mobilize
       #clear out and regenerate remote folder
       @job.ssh("sudo mkdir -p #{@job.home}")
       Logger.info("Created #{@job.home}")
-      @job.ssh("sudo chown #{Mobilize.ec2_root_user} #{@job.user.home}")
-      Logger.info("Chowned #{@job.user.home} to #{Mobilize.ec2_root_user}")
-      @job.ssh("sudo chown #{Mobilize.ec2_root_user} #{@job.home}")
-      Logger.info("Chowned #{@job.home} to #{Mobilize.ec2_root_user}")
+      @job.ssh("sudo chown #{Config::Ec2.root_user} #{@job.user.home}")
+      Logger.info("Chowned #{@job.user.home} to #{Config::Ec2.root_user}")
+      @job.ssh("sudo chown #{Config::Ec2.root_user} #{@job.home}")
+      Logger.info("Chowned #{@job.home} to #{Config::Ec2.root_user}")
       return true
     end
 

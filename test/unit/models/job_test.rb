@@ -1,5 +1,5 @@
 require "test_helper"
-class TransferTest < MiniTest::Unit::TestCase
+class JobTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     @ec2_params={
@@ -33,7 +33,7 @@ class TransferTest < MiniTest::Unit::TestCase
       repo_name: 'mobilize'
     )
     #create transfer
-    @transfer = Mobilize::Transfer.find_or_create_by(
+    @transfer = Mobilize::Job.find_or_create_by(
       user_id: @user.id,
       command: "ls @path",
       path_ids: [@github.id],

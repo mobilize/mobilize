@@ -6,7 +6,7 @@ class Object
   end
   def send_w_retries(method_name, *args,&blk)
     @obj = self
-    total_retries = Mobilize.send_total_retries
+    total_retries = Mobilize::Config::Object.send_total_retries
     @result = nil
     @exc = nil
     curr_retries = 0

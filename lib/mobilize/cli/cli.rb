@@ -21,26 +21,5 @@ module Mobilize
       opt_parser.parse!(args)
       Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
     end
-
-    #execute command on given ec2 node
-    #with user defined by ENV['MOB_EC2_USER']
-    def Cli.ec2(args)
-      options={}
-      opt_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: mob ec2 -n node -c command"
-
-        opts.on("-n", "--node NODE", "name of ec2 node on which to execute command") do |n|
-          options[:node_name] = n
-        end
-
-        opts.on("-c", "--command C", "Command to execute on the node") do |c|
-          options[:command] = c
-        end
-      end
-      opt_parser.parse!(args)
-      #by default, execute on master node
-      options[:node_name] ||= ENV['MOB_EC2_MASTER_NAME']
-      Mobilize::Ec2.find_by(options[:node_name]).execute(options[:command])
-    end
   end
 end

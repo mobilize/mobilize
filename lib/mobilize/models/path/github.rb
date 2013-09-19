@@ -31,7 +31,7 @@ module Mobilize
     end
 
     def Github.login
-      @session = ::Github.new(login: Mobilize.owner_github_login, password: Mobilize.owner_github_password)
+      @session = ::Github.new(login: Config::Github.owner_login, password: Config::Github.owner_password)
       Logger.info("Logged into Github.")
       return @session
     end
@@ -115,7 +115,7 @@ module Mobilize
       #determine if the user in question is a collaborator on the repo
       @github.verify_collaborator(user_id)
       #thus verified, get the ssh key and pull down the repo
-      key_value = File.read(Mobilize.owner_github_ssh_key_path)
+      key_value = File.read(Config::Github.owner_ssh_key_path)
       #create key file, set permissions, write key
       key_file_path = run_dir + "/key.ssh"
       File.open(key_file_path,"w") {|f| f.print(key_value)}
