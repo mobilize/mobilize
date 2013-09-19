@@ -46,6 +46,7 @@ module Mobilize
       @session = session || Ec2.login
       insts = Ec2.instances(@session).select{|i| i[:tags][:name] == name}
       Logger.info("found #{insts.length.to_s} instances by name #{name}")
+      return insts
     end
 
 
