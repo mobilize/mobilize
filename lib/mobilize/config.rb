@@ -1,7 +1,10 @@
 module Mobilize
   module Config
-    def Config.tmp
-      ENV['MOB_TMP_DIR'] || "#{Mobilize.root}/tmp"
+    def Config.local_cache
+      ENV['MOB_LOCAL_TMP_DIR'] || "#{Mobilize.root}/tmp"
+    end
+    def Config.remote_cache
+      ENV['MOB_REMOTE_TMP_DIR'] || "/tmp"
     end
     module Ec2
       def Ec2.root_user

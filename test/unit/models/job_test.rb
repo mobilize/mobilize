@@ -27,13 +27,13 @@ class JobTest < MiniTest::Unit::TestCase
     ENV['MOB_OWNER_GITHUB_LOGIN']=ENV['MOB_TEST_OWNER_GITHUB_LOGIN']
     ENV['MOB_OWNER_GITHUB_PASSWORD']=ENV['MOB_TEST_OWNER_GITHUB_PASSWORD']
     ENV['MOB_OWNER_GITHUB_SSH_KEY_PATH']=ENV['MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH']
-    #create github instance for transfer
+    #create github instance for job
     @github = Mobilize::Github.find_or_create_by(
       owner_name: 'mobilize',
       repo_name: 'mobilize'
     )
-    #create transfer
-    @transfer = Mobilize::Job.find_or_create_by(
+    #create job
+    @job = Mobilize::Job.find_or_create_by(
       user_id: @user.id,
       command: "ls @path",
       path_ids: [@github.id],
@@ -42,7 +42,7 @@ class JobTest < MiniTest::Unit::TestCase
   end
 
   def test_execute
-    stdout = @transfer.execute
+    stdout = @job.execute
     assert_in_delta stdout.length, 1, 1000
   end
 end

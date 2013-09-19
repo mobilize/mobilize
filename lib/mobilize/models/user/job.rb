@@ -25,9 +25,13 @@ module Mobilize
       self.user.ec2.scp(loc_path,rem_path)
     end
 
-    #tmp folder for caching jobs
-    def tmp
-      return "#{Config.tmp}/jobs/#{self.user.ssh_name}/#{self.name}"
+    #cache folder
+    def local_cache
+      return "#{Config.local_cache}/jobs/#{self.user.ssh_name}/#{self.name}"
+    end
+
+    def remote_cache
+      return "#{Config.remote_cache}/jobs/#{self.user.ssh_name}/#{self.name}"
     end
 
     def purge!
@@ -40,41 +44,37 @@ module Mobilize
     def purge_local
       @job = self
       #remove local dir
-      FileUtils.rm_r(@job.tmp,:force=>true)
-      Logger.info("Removed local for #{@job.tmp}")
+      FileUtils.rm_r(@job.local_cache,:force=>true)
+      Logger.info("Removed local for #{@job.local_cache}")
     end
 
     def purge_remote
       @job = self
-      @job.ssh("sudo rm -rf #{@job.tmp}*")
-      Logger.info("Removed #{@job.tmp}")
+      @job.ssh("sudo rm -rf #{@job.remote_cache}*")
+      Logger.info("Removed #{@job.remote_cache}*")
     end
 
-    def create_home
+    def create_remote
       @job = self
       #clear out and regenerate remote folder
-      @job.ssh("sudo mkdir -p #{@job.home}")
-      Logger.info("Created #{@job.home}")
-      @job.ssh("sudo chown #{Config::Ec2.root_user} #{@job.user.home}")
-      Logger.info("Chowned #{@job.user.home} to #{Config::Ec2.root_user}")
-      @job.ssh("sudo chown #{Config::Ec2.root_user} #{@job.home}")
-      Logger.info("Chowned #{@job.home} to #{Config::Ec2.root_user}")
+      @job.ssh("mkdir -p #{@job.remote_cache}")
+      Logger.info("Created #{@job.remote_cache}")
       return true
     end
 
     def clear_remote
       @job = self
       @job.purge_remote
-      @job.create_home
-      Logger.info("Cleared remote: #{home}")
+      @job.create_remote
+      Logger.info("Cleared remote: #{@job.remote_cache}")
     end
 
     #clear out local folder to load remote contents
     def clear_local
       @job = self
       @job.purge_local
-      FileUtils.mkdir_p(@job.tmp)
-      Logger.info("Cleared local at #{@job.tmp}")
+      FileUtils.mkdir_p(@job.local_cache)
+      Logger.info("Cleared local at #{@job.local_cache}")
       return true
     end
 
@@ -84,7 +84,7 @@ module Mobilize
       @job.gsubs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s)
-        replace_cmd = "cd #{@job.tmp} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
+        replace_cmd = "cd #{@job.local_cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
         Logger.info("Replaced #{@string1} with #{@string2} for #{@job.id}")
       end
@@ -97,7 +97,7 @@ module Mobilize
         if resque
           Resque.enqueue!(@path.id,@job.id)
         else
-          @path.load(@job.user_id,@job.tmp)
+          @path.load(@job.user_id,@job.local_cache)
         end
       end
       return true
@@ -105,14 +105,14 @@ module Mobilize
 
     def load_stdin
       @job = self
-      File.open("#{@job.tmp}/stdin","w") {|f| f.print(@job.command)}
-      Logger.info("Wrote stdin to local: #{@job.tmp}")
+      File.open("#{@job.local_cache}/stdin","w") {|f| f.print(@job.command)}
+      Logger.info("Wrote stdin to local: #{@job.local_cache}")
     end
 
     def compress_local
       @job = self
-      "cd #{@job.tmp}/.. && tar -zcvf #{@job.name}.tar.gz #{@job.name}".popen4(true)
-      Logger.info("Compressed local to: #{@job.tmp}.tar.gz")
+      "cd #{@job.local_cache}/.. && tar -zcvf #{@job.name}.tar.gz #{@job.name}".popen4(true)
+      Logger.info("Compressed local to: #{@job.local_cache}.tar.gz")
     end
 
     #load paths into local directory
@@ -128,16 +128,17 @@ module Mobilize
       #compress local dir
       @job.compress_local
       #return path to local dir file
-      return "#{@job.tmp}.tar.gz"
+      return "#{@job.local_cache}.tar.gz"
     end
 
     def transfer
       Logger.info("Starting transfer for #{@job.id}")
-      rem_path = "#{@job.home}/#{@job.name}.tar.gz"
-      loc_path = "#{@job.tmp}.tar.gz"
-      @job.scp(loc_path,rem_path)
+      local_path = "#{@job.local_cache}.tar.gz"
+      remote_path = "#{@job.remote_cache}.tar.gz"
+      @job.scp(local_path,remote_path)
       Logger.info("Transfered #{@job.id} to remote")
-      @job.ssh("cd #{@job.home} && tar -zxvf #{@job.name}.tar.gz")
+      remote_cache_parent = @job.remote_cache.split("/")[0..-2].join("/")
+      @job.ssh("cd #{remote_cache_parent} && tar -zxvf #{@job.name}.tar.gz")
       Logger.info("Unpacked remote for #{@job.id}")
       return true
     end
@@ -150,7 +151,7 @@ module Mobilize
       #transfer local directory to remote
       @job.transfer
       @job.purge_local
-      exec_cmd = "(cd #{@job.tmp} && sh stdin) > #{@job.tmp}/stdout 2> #{@job.tmp}/stderr"
+      exec_cmd = "(cd #{@job.remote_cache} && sh stdin) > #{@job.remote_cache}/stdout 2> #{@job.remote_cache}/stderr"
       return exec_cmd
     end
 
@@ -173,7 +174,7 @@ module Mobilize
     def_each :stdin, :stdout, :stderr do |stream|
       @job = self
       Logger.info("retrieving #{stream.to_s} for #{@job.id}")
-      @job.ssh("cat #{@job.tmp}/#{stream.to_s}")[:stdout]
+      @job.ssh("cat #{@job.remote_cache}/#{stream.to_s}")[:stdout]
     end
   end
 end
