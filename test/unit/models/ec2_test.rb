@@ -2,6 +2,11 @@ require "test_helper"
 class Ec2Test < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
+    #set global envs from test params defined
+    ENV['AWS_ACCESS_KEY_ID']=ENV['MOB_TEST_AWS_ACCESS_KEY_ID']
+    ENV['AWS_SECRET_ACCESS_KEY']=ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY']
+    ENV['MOB_EC2_DEF_REGION']=ENV['MOB_TEST_EC2_DEF_REGION']
+    ENV['MOB_EC2_PRIV_KEY_PATH']=ENV['MOB_TEST_EC2_PRIV_KEY_PATH']
     @ec2_params={
       name:ENV['MOB_TEST_EC2_NAME'],
       ami:ENV['MOB_TEST_EC2_AMI'],
@@ -10,11 +15,6 @@ class Ec2Test < MiniTest::Unit::TestCase
       security_group_names:ENV['MOB_TEST_EC2_SG_NAMES']
     }
     @ec2 = Mobilize::Ec2.new(@ec2_params)
-    #set global envs from test
-    ENV['AWS_ACCESS_KEY_ID']=ENV['MOB_TEST_AWS_ACCESS_KEY_ID']
-    ENV['AWS_SECRET_ACCESS_KEY']=ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY']
-    ENV['MOB_EC2_DEF_REGION']=ENV['MOB_TEST_EC2_DEF_REGION']
-    ENV['MOB_EC2_PRIV_KEY_PATH']=ENV['MOB_TEST_EC2_PRIV_KEY_PATH']
     #create session based off of definites
     @session = Mobilize::Ec2.login(ENV['MOB_TEST_AWS_ACCESS_KEY_ID'],
                                    ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY'],

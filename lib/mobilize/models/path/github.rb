@@ -11,102 +11,111 @@ module Mobilize
     validates :owner_name, :repo_name, presence: true
 
     def http_url
-      @gh = self
-      "https://#{@gh.domain}/#{@gh.owner_name}/#{@gh.repo_name}"
+      @github = self
+      "https://#{@github.domain}/#{@github.owner_name}/#{@github.repo_name}"
     end
 
     def git_http_url
-      @gh = self
-      "https://#{@gh.domain}/#{@gh.owner_name}/#{@gh.repo_name}.git"
+      @github = self
+      "https://#{@github.domain}/#{@github.owner_name}/#{@github.repo_name}.git"
     end
 
     def git_ssh_url
-      @gh = self
-      "git@#{@gh.domain}:#{@gh.owner_name}/#{@gh.repo_name}.git"
+      @github = self
+      "git@#{@github.domain}:#{@github.owner_name}/#{@github.repo_name}.git"
     end
 
     def url
-      @gh = self
-      @gh.http_url
+      @github = self
+      @github.http_url
     end
 
     def Github.login
-      @session = ::Github.new(login: ENV['MOB_OWNER_GITHUB_LOGIN'], password: ENV['MOB_OWNER_GITHUB_PASSWORD'])
+      @session = ::Github.new(login: Mobilize.owner_github_login, password: Mobilize.owner_github_password)
       Logger.info("Logged into Github.")
       return @session
     end
 
     def is_private?(session=nil)
-      @gh = self
+      @github = self
       @session = session || Github.login
       begin
-        resp = @session.repos.get(user: @gh.owner_name, repo: @gh.repo_name)
-        Logger.info("Got repo for #{@gh._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
+        resp = @session.repos.get(user: @github.owner_name, repo: @github.repo_name)
+        Logger.info("Got repo for #{@github._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
       rescue
-        Logger.error("Could not access #{@gh._id}")
+        Logger.error("Could not access #{@github._id}")
       end
       if resp.body[:private]
-        Logger.info("repo #{@gh._id} is private")
+        Logger.info("repo #{@github._id} is private")
         return true
       else
-        Logger.info("repo #{@gh._id} is public")
+        Logger.info("repo #{@github._id} is public")
         return false
       end
+    end
+
+    #performs a github load in preparation for a Transfer
+    def Github.perform(github_id,transfer_id)
+      @github = Github.find(github_id)
+      @transfer = Transfer.find(transfer_id)
+      @github.load(@transfer.user_id,@transfer.local)
+      return true
     end
 
     #clones repo into temp folder with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
     def load(user_id=nil,run_dir=Dir.mktmpdir)
-      @gh = self
+      @github = self
       @session ||= Github.login
-      repo_dir = if @gh.is_private?(@session)
-                   @gh.priv_load(user_id,run_dir)
+      repo_dir = if @github.is_private?(@session)
+                   @github.priv_load(user_id,run_dir)
                  else
-                   @gh.pub_load(run_dir)
+                   @github.pub_load(run_dir)
                  end
+      Logger.info("Loaded #{@github.id} into #{run_dir}")
       return repo_dir
     end
 
     def pub_load(run_dir)
-      @gh = self
+      @github = self
       cmd = "cd #{run_dir} && " +
-            "git clone -q #{@gh.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
+            "git clone -q #{@github.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
       cmd.popen4(true)
-      Logger.info("Loaded public git repo #{@gh._id}")
-      return "#{run_dir}/#{@gh.repo_name}"
+      Logger.info("Loaded public git repo #{@github._id}")
+      return "#{run_dir}/#{@github.repo_name}"
     end
 
     def collaborators(session=nil)
-      @gh = self
+      @github = self
       @session ||= Github.login
       begin
-        resp = @session.repos.collaborators.list(user: @gh.owner_name, repo: @gh.repo_name)
-        Logger.info("Got collaborators for #{@gh._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
+        resp = @session.repos.collaborators.list(user: @github.owner_name, repo: @github.repo_name)
+        Logger.info("Got collaborators for #{@github._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
       rescue
-        Logger.error("Could not access #{@gh._id}")
+        Logger.error("Could not access #{@github._id}")
       end
       return resp.body.map{|b| b[:login]}
     end
 
     def verify_collaborator(user_id, session=nil)
-      @gh = self
+      @github = self
       @session = session || Github.login
       u = User.find(user_id)
-      if @gh.collaborators.include?(u.github_login)
-        Logger.info("Verified user #{u._id} has access to #{@gh._id}")
+      if @github.collaborators.include?(u.github_login)
+        Logger.info("Verified user #{u._id} has access to #{@github._id}")
         return true
       else
-        Logger.error("User #{u._id} does not have access to #{@gh._id}")
+        Logger.error("User #{u._id} does not have access to #{@github._id}")
       end
     end
 
     def priv_load(user_id,run_dir)
-      @gh = self
+      @github = self
       #determine if the user in question is a collaborator on the repo
-      @gh.verify_collaborator(user_id)
+      @github.verify_collaborator(user_id)
       #thus verified, get the ssh key and pull down the repo
-      key_value = File.read(ENV['MOB_OWNER_GITHUB_SSH_KEY_PATH'])
+      key_value = File.read(Mobilize.owner_github_ssh_key_path)
       #create key file, set permissions, write key
       key_file_path = run_dir + "/key.ssh"
       File.open(key_file_path,"w") {|f| f.print(key_value)}
@@ -119,12 +128,12 @@ module Mobilize
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{git_file_path} && " +
             "cd #{run_dir} && " +
-            "git clone -q #{@gh.git_ssh_url} --depth=1"
+            "git clone -q #{@github.git_ssh_url} --depth=1"
       cmd.popen4(true)
       #remove aux files
       [key_file_path, git_file_path].each{|fp| FileUtils.rm(fp,force: true)}
-      Logger.info("Loaded private git repo #{@gh._id}")
-      return "#{run_dir}/#{@gh.repo_name}"
+      Logger.info("Loaded private git repo #{@github._id}")
+      return "#{run_dir}/#{@github.repo_name}"
     end
   end
 end

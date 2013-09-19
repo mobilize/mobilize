@@ -17,12 +17,8 @@ module Mobilize
       Ec2.find(self.ec2_id)
     end
 
-    def home
-      return "/home/#{self.ssh_name}/#{Mobilize.db.name}"
-    end
-
-    def transfers
-      Transfer.where(user_id: self.id).to_a
+    def jobs
+      Job.where(user_id: self.id).to_a
     end
   end
 end
