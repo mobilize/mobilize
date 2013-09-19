@@ -10,6 +10,8 @@ module Mobilize
 
     validates :owner_name, :repo_name, presence: true
 
+    @@config = Mobilize.config
+
     def http_url
       @github = self
       "https://#{@github.domain}/#{@github.owner_name}/#{@github.repo_name}"
@@ -31,7 +33,7 @@ module Mobilize
     end
 
     def Github.login
-      @session = ::Github.new(login: Config::Github.owner_login, password: Config::Github.owner_password)
+      @session = ::Github.new(login: @@config.github.owner_login, password: @@config.github.owner_password)
       Logger.info("Logged into Github.")
       return @session
     end
@@ -115,7 +117,7 @@ module Mobilize
       #determine if the user in question is a collaborator on the repo
       @github.verify_collaborator(user_id)
       #thus verified, get the ssh key and pull down the repo
-      key_value = File.read(Config::Github.owner_ssh_key_path)
+      key_value = File.read(@@config.github.owner_ssh_key_path)
       #create key file, set permissions, write key
       key_file_path = run_dir + "/key.ssh"
       File.open(key_file_path,"w") {|f| f.print(key_value)}

@@ -2,35 +2,20 @@ require "test_helper"
 class JobTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @ec2_params={
-      name:ENV['MOB_TEST_EC2_NAME'],
-      ami:ENV['MOB_TEST_EC2_AMI'],
-      size:ENV['MOB_TEST_EC2_SIZE'],
-      keypair_name:ENV['MOB_TEST_EC2_KEYPAIR_NAME'],
-      security_groups:ENV['MOB_TEST_EC2_SG_NAMES']
-    }
-    #set global envs from test
-    ENV['AWS_ACCESS_KEY_ID']=ENV['MOB_TEST_AWS_ACCESS_KEY_ID']
-    ENV['AWS_SECRET_ACCESS_KEY']=ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY']
-    ENV['MOB_EC2_DEF_REGION']=ENV['MOB_TEST_EC2_DEF_REGION']
-    ENV['MOB_EC2_PRIV_KEY_PATH']=ENV['MOB_TEST_EC2_PRIV_KEY_PATH']
-    @ec2 = Mobilize::Ec2.find_or_create_by(@ec2_params)
+    @ec2 = Mobilize::Ec2.find_or_create_by(
+      name: Mobilize.config.minitest.ec2.worker_name
+    )
     #create user from owner
     @user = Mobilize::User.find_or_create_by(
-      id: ENV['MOB_TEST_USER_ID'],
       active: true,
-      google_login: ENV['MOB_TEST_GOOGLE_LOGIN'],
-      github_login: ENV['MOB_TEST_GITHUB_LOGIN'],
+      google_login: Mobilize.config.minitest.google.login,
+      github_login: Mobilize.config.minitest.github.login,
       ec2_id: @ec2.id
     )
-    #set github params
-    ENV['MOB_OWNER_GITHUB_LOGIN']=ENV['MOB_TEST_OWNER_GITHUB_LOGIN']
-    ENV['MOB_OWNER_GITHUB_PASSWORD']=ENV['MOB_TEST_OWNER_GITHUB_PASSWORD']
-    ENV['MOB_OWNER_GITHUB_SSH_KEY_PATH']=ENV['MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH']
     #create github instance for job
     @github = Mobilize::Github.find_or_create_by(
-      owner_name: 'mobilize',
-      repo_name: 'mobilize'
+      owner_name: Mobilize.config.minitest.github.owner_name,
+      repo_name: Mobilize.config.minitest.github.repo_name
     )
     #create job
     @job = Mobilize::Job.find_or_create_by(

@@ -4,10 +4,10 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
-    field :ami, type: String, default:->{Config::Ec2.ami}
-    field :size, type: String, default:->{Config::Ec2.size}
-    field :keypair_name, type: String, default:->{Config::Ec2.keypair_name}
-    field :security_groups, type: Array, default:->{Config::Ec2.security_groups}
+    field :ami, type: String, default:->{@@config.ec2.ami}
+    field :size, type: String, default:->{@@config.ec2.size}
+    field :keypair_name, type: String, default:->{@@config.ec2.keypair_name}
+    field :security_groups, type: Array, default:->{@@config.ec2.security_groups}
     field :instance_id, type: String
     field :dns, type: String #public dns
     field :ip, type: String #private ip
@@ -17,9 +17,11 @@ module Mobilize
 
     after_create :find_or_create_instance
 
-    def Ec2.login(access_key_id=Config::Aws.access_key_id,
-                      secret_access_key=Config::Aws.secret_access_key,
-                      region=Config::Ec2.region)
+    @@config = Mobilize.config
+
+    def Ec2.login(access_key_id=@@config.aws.access_key_id,
+                      secret_access_key=@@config.aws.secret_access_key,
+                      region=@@config.ec2.region)
       @session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
       Logger.info("Logged into ec2 for region #{region}")
       return @session
@@ -151,8 +153,8 @@ module Mobilize
 
     def ssh(command,except=true)
       @ec2 = self
-      ssh_args = {keys: Config::Ec2.private_key_path,paranoid: false}
-      @result = Net::SSH.send_w_retries("start",@ec2.dns,Config::Ec2.root_user,ssh_args) do |ssh|
+      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
+      @result = Net::SSH.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |ssh|
         ssh.run(command,except)
       end
       return @result
@@ -160,8 +162,8 @@ module Mobilize
 
     def scp(loc_path, rem_path)
       @ec2 = self
-      ssh_args = {keys: Config::Ec2.private_key_path,paranoid: false}
-      @result = Net::SCP.send_w_retries("start",@ec2.dns,Config::Ec2.root_user,ssh_args) do |scp|
+      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
+      @result = Net::SCP.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |scp|
         scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
           Logger.info("#{name}: #{sent}/#{total}")
         end

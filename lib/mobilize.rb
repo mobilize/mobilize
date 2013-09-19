@@ -13,6 +13,9 @@ require "mobilize/config"
 
 module Mobilize
   @@config = Config.new
+  def Mobilize.config
+    @@config
+  end
 
   #folder where project is installed
   def Mobilize.root

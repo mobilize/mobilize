@@ -2,10 +2,9 @@ require "test_helper"
 class Ec2Test < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @ec2_params={
-      name:Config::Minitest::Ec2.worker_name
-    }
-    @ec2 = Mobilize::Ec2.new(@ec2_params)
+    @ec2 = Mobilize::Ec2.find_or_create_by(
+      name: Mobilize.config.minitest.ec2.worker_name
+    )
     #create session based off of definites
     @session = Mobilize::Ec2.login
   end
