@@ -1,0 +1,131 @@
+#sample config yml for mobilize
+#entries w a preceding $ will be loaded from environment vars
+development:
+  object:
+    send_total_retries: 3
+  workers:
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
+  servers:
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
+  aws:
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
+  ec2:
+    keypair_name: mobilize
+    region: 'us-west-1'
+    ami: 'ami-fe002cbb'
+    size: 't1.micro'
+    security_groups:
+    - 'default'
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
+    root_user: 'ubuntu'
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  google:
+    owner:
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+  github:
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
+#test includes special variables for running
+#tests, found under `minitest`
+test:
+  object:
+    send_total_retries: 3
+  workers:
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
+  servers:
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
+  aws:
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
+  ec2:
+    keypair_name: mobilize
+    region: 'us-west-1'
+    ami: 'ami-fe002cbb'
+    size: 't1.micro'
+    security_groups:
+    - 'default'
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
+    root_user: 'ubuntu'
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  google:
+    owner:
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+  github:
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
+  minitest:
+    google:
+      login: <%=ENV['MOB_MINITEST_GOOGLE_LOGIN']%>
+    ec2:
+      worker_name: <%=ENV['MOB_MINITEST_EC2_WORKER_NAME']%>
+    github:
+      login: <%=ENV['MOB_MINITEST_GITHUB_LOGIN']%>
+      public:
+        domain: github.com
+        owner_name: mobilize
+        repo_name: mobilize
+      private:
+        domain: github.com
+        owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
+        repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
+staging:
+  object:
+    send_total_retries: 3
+  workers:
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
+  servers:
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
+  aws:
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
+  ec2:
+    keypair_name: mobilize
+    region: 'us-west-1'
+    ami: 'ami-fe002cbb'
+    size: 't1.micro'
+    security_groups:
+    - 'default'
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
+    root_user: 'ubuntu'
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  google:
+    owner:
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+  github:
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
+production:
+  object:
+    send_total_retries: 3
+  workers:
+    cache: <%=ENV['MOB_WORKER_CACHE']%>
+  servers:
+    cache: <%=ENV['MOB_SERVER_CACHE']%>
+  aws:
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
+  ec2:
+    keypair_name: mobilize
+    region: 'us-west-1'
+    ami: 'ami-fe002cbb'
+    size: 't1.micro'
+    security_groups:
+    - 'default'
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
+    root_user: 'ubuntu'
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  google:
+    owner:
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+  github:
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>

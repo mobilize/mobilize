@@ -2,23 +2,10 @@ require "test_helper"
 class Ec2Test < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @ec2_params={
-      name:ENV['MOB_TEST_EC2_NAME'],
-      ami:ENV['MOB_TEST_EC2_AMI'],
-      size:ENV['MOB_TEST_EC2_SIZE'],
-      keypair_name:ENV['MOB_TEST_EC2_KEYPAIR_NAME'],
-      security_group_names:ENV['MOB_TEST_EC2_SG_NAMES']
-    }
-    @ec2 = Mobilize::Ec2.new(@ec2_params)
-    #set global envs from test
-    ENV['AWS_ACCESS_KEY_ID']=ENV['MOB_TEST_AWS_ACCESS_KEY_ID']
-    ENV['AWS_SECRET_ACCESS_KEY']=ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY']
-    ENV['MOB_EC2_DEF_REGION']=ENV['MOB_TEST_EC2_DEF_REGION']
-    ENV['MOB_EC2_PRIV_KEY_PATH']=ENV['MOB_TEST_EC2_PRIV_KEY_PATH']
+    @worker_name = Mobilize.config.minitest.ec2.worker_name
+    @ec2 = Mobilize::Ec2.new(name: @worker_name)
     #create session based off of definites
-    @session = Mobilize::Ec2.login(ENV['MOB_TEST_AWS_ACCESS_KEY_ID'],
-                                   ENV['MOB_TEST_AWS_SECRET_ACCESS_KEY'],
-                                   ENV['MOB_TEST_EC2_DEF_REGION'])
+    @session = Mobilize::Ec2.login
   end
 
   #make sure defaults are working as expected
@@ -36,7 +23,7 @@ class Ec2Test < MiniTest::Unit::TestCase
     #and assign to database object, making them equal
     instance_id = @ec2.instance_id
     @ec2.delete
-    @ec2 = Mobilize::Ec2.new(@ec2_params)
+    @ec2 = Mobilize::Ec2.new(name: @worker_name)
     @ec2.save!
     assert_equal @ec2.instance_id, instance_id
     #finally, find_or_create_instance should return
@@ -49,6 +36,6 @@ class Ec2Test < MiniTest::Unit::TestCase
     @ec2.save!
     assert @ec2.instance(@session)[:aws_state], "running"
     @ec2.purge!(@session)
-    assert_equal Mobilize::Ec2.instances_by_name(@ec2_params[:name],@session), []
+    assert_equal Mobilize::Ec2.instances_by_name(@worker_name, @session), []
   end
 end

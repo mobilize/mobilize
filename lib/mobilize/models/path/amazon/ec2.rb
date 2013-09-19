@@ -4,10 +4,10 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
-    field :ami, type: String, default:->{ENV['MOB_EC2_DEF_AMI']}
-    field :size, type: String, default:->{ENV['MOB_EC2_DEF_SIZE']}
-    field :keypair_name, type: String, default:->{ENV['MOB_EC2_DEF_KEYPAIR_NAME']}
-    field :security_group_names, type: Array, default:->{ENV['MOB_EC2_DEF_SG_NAMES'].split(",")}
+    field :ami, type: String, default:->{@@config.ec2.ami}
+    field :size, type: String, default:->{@@config.ec2.size}
+    field :keypair_name, type: String, default:->{@@config.ec2.keypair_name}
+    field :security_groups, type: Array, default:->{@@config.ec2.security_groups}
     field :instance_id, type: String
     field :dns, type: String #public dns
     field :ip, type: String #private ip
@@ -17,15 +17,17 @@ module Mobilize
 
     after_create :find_or_create_instance
 
-    def Ec2.login(access_key_id=ENV['AWS_ACCESS_KEY_ID'],
-                      secret_access_key=ENV['AWS_SECRET_ACCESS_KEY'],
-                      region=ENV['MOB_EC2_DEF_REGION'])
+    @@config = Mobilize.config
+
+    def Ec2.login(access_key_id=@@config.aws.access_key_id,
+                      secret_access_key=@@config.aws.secret_access_key,
+                      region=@@config.ec2.region)
       @session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
       Logger.info("Logged into ec2 for region #{region}")
       return @session
     end
 
-    def Ec2.instances(session=nil, params={aws_state: 'running'})
+    def Ec2.instances(session=nil, params={aws_state: ['running','pending']})
       @session = session || Ec2.login
       all_insts = @session.describe_instances.map{|i| i.with_indifferent_access}
       filtered_insts = Ec2.filter_instances(all_insts,@session, params)
@@ -33,17 +35,18 @@ module Mobilize
       return filtered_insts
     end
 
-    def Ec2.filter_instances(all_insts,session = nil,params={aws_state: 'running'})
+    def Ec2.filter_instances(all_insts,session = nil,params={aws_state: ['running','pending']})
       all_insts.select do |i|
-        match_array = params.map{|k,v| i[k] == v}.uniq
+        match_array = params.map{|k,v| v.to_a.include?(i[k])}.uniq
         match_array.length == 1 and match_array.first == true
       end
     end
 
-    def Ec2.instances_by_name(name,session=nil,params={aws_state: 'running'})
+    def Ec2.instances_by_name(name,session=nil,params={aws_state: ['running','pending']})
       @session = session || Ec2.login
-      Logger.info("filtered instances by name #{name}")
-      Ec2.instances(@session).select{|i| i[:tags][:name] == name}
+      insts = Ec2.instances(@session).select{|i| i[:tags][:name] == name}
+      Logger.info("found #{insts.length.to_s} instances by name #{name}")
+      return insts
     end
 
 
@@ -65,7 +68,10 @@ module Mobilize
     def instance(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      inst = Ec2.instances(@session,{aws_instance_id: @ec2.instance_id}).first
+      inst = Ec2.instances(@session,
+               {aws_instance_id: @ec2.instance_id,
+                aws_state: ['running','pending']}).first
+      inst = @ec2.create_instance(@session) if inst.nil?
       @ec2.sync_instance(inst)
       return inst
     end
@@ -76,7 +82,7 @@ module Mobilize
         ami: rem_inst[:aws_image_id],
         size: rem_inst[:instance_type],
         keypair_name: rem_inst[:keypair_name],
-        security_group_names: rem_inst[:group_ids],
+        security_groups: rem_inst[:group_ids],
         instance_id: rem_inst[:aws_instance_id],
         dns: rem_inst[:dns_name],
         ip: rem_inst[:aws_private_ip_address]
@@ -106,7 +112,7 @@ module Mobilize
     def launch(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_group_names, instance_type: @ec2.size}
+      inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_groups, instance_type: @ec2.size}
       inst = @session.launch_instances(@ec2.ami, inst_params).first
       @session.create_tag(inst[:aws_instance_id],"name", @ec2.name)
       return inst
@@ -122,8 +128,7 @@ module Mobilize
         inst = insts.first
         Logger.info("Instance #{inst[:aws_instance_id]} found, assigning to #{@ec2.name}")
       elsif insts.empty?
-        #create new instance
-        inst = @ec2.launch
+        inst = nil
       end
       return inst
     end
@@ -140,7 +145,7 @@ module Mobilize
     def create_instance(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      inst = @ec2.resolve_instance
+      inst = @ec2.resolve_instance || @ec2.launch
       @ec2.sync_instance(inst)
       #wait around until the instance is running
       @ec2.wait_for_instance
@@ -149,8 +154,8 @@ module Mobilize
 
     def ssh(command,except=true)
       @ec2 = self
-      ssh_args = {keys: ENV['MOB_EC2_PRIV_KEY_PATH'],paranoid: false}
-      @result = Net::SSH.send_w_retries("start",@ec2.dns,ENV['MOB_EC2_ROOT_USER'],ssh_args) do |ssh|
+      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
+      @result = Net::SSH.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |ssh|
         ssh.run(command,except)
       end
       return @result
@@ -158,8 +163,8 @@ module Mobilize
 
     def scp(loc_path, rem_path)
       @ec2 = self
-      ssh_args = {keys: ENV['MOB_EC2_PRIV_KEY_PATH'],paranoid: false}
-      @result = Net::SCP.send_w_retries("start",@ec2.dns,ENV['MOB_EC2_ROOT_USER'],ssh_args) do |scp|
+      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
+      @result = Net::SCP.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |scp|
         scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
           Logger.info("#{name}: #{sent}/#{total}")
         end

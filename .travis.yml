@@ -8,10 +8,11 @@ services:
 gemfile:
 - Gemfile
 script: rake install && 
+  mob configure && 
   mob decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
   mob decode -p 'ec2_ssh_' -l 23 -f ec2_ssh_test.ssh && chmod 0400 ec2_ssh_test.ssh && 
-  export MOB_TEST_EC2_PRIV_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
-  export MOB_TEST_OWNER_GITHUB_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && 
+  export MOB_EC2_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
+  export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && 
   rake test
 notifications:
   recipients:
@@ -21,16 +22,16 @@ branches:
   - master
 env:
   global:
-#mob_test_owner_github_password
-  - secure: "fatwGEFiDXpcgcIk6TUZpyP4mJcEY/uTHXO5ZMWBorcznJ7dxb12UjUDsyl3EFnG3v4s/MThGGNx9mhmb1OnClO+oHUim1TB3OAvHGF3WOM03rwnGMTvkV4VVIpEXc5bOzE8fSWn02X9Guiv6Sh5ycA1T7wpf5Pr6Xgja6Hi99g="
-#mob_test_private_github_repo
-  - secure: "U8WspBw8NQRekwYrZOYrfUeV4qgaWscQy8izTtlHJmqaZ4hI89itzIA69GWA9p0ouwoXgubY1jXVPJgWkZsPvXTWPjw2TH8Kt8lk6l8po0NT7SPpq3ic+c4KScWfITZYGSisVc9A3WU589xCXBWMV4y27IpUWZ0rMatBikybFjs="
-#mob_test_aws_access_key_id
-  - secure: "ecuiyIY1BnOdNVH/C+QUlVFOG44xnXAh4v1Bi/JsqQSuwfdw3UDU52fzNRT9e4ezMNQzLJTgoRNw3TyM+/dsWE5fQPySONavBBJ8wqExj0xKsNx0Q9tRdRmHpgG4aV74vguwBDU0CVODNRncW03BHDClqBb/xz9SHKXQEaoBzCE="
-#mob_test_aws_secret_access_key
-  - secure: "Zrbv1R4qSCc/1vQEFRZ1UMTEEYxyLJKUzGnx7T/zex7fszQlhHEiZZuCH/5yWNkrPeApqR47Tw+oLhiWFw+Yivk4xEBji8VVrRec0ZT/ZkX2kH1ykE+E3blpzeWHRPKn68ZD56uK409NW5f3BVvNzdju47IGXHvHkq2llBXsESA="
-#mob_test_ec2_keypair_name
-  - secure: "meMH/Z03JtnPIgkSkUOoJhgsbsM6613w8XMZ8t9p/+P23M9q1ioMhWyzOCluSE9kbOUvcibjPUl4D4cC42KXoeL6Y3y0zO78w5LIxVhCV0OPx9hLPX9CkLWm2ySg0ECQcg4siXP+EZF3NYI/sZm5/LyfT9sgGnyvyopPzBb6qY8="
+#mob_google_owner_password
+  - secure: "UQW3iQhj8COssk0kp3TmyJic2fcv9OSL1c+i5INnOZ2agLxNX44lxGgwr0JgrEXzvLh23U38w5uvqG3nfSPYZ3q/c1Ja/wpBpPSMWIJVnuFeWqsDmeA9ahcqLeGnTCd+PbwQIbRocZsp+1BljHvGdHQYxNQh9JGzFfs09Fbp+m0="
+#mob_github_owner_password
+  - secure: "fC94leSur+z+gY7b+2Xw7aw4AG9UVLoX6Sj5TNdtEg6zKouMF4ged6Fbfr5wdgcV02nhAMEmDcueksv1KaG6hA46aAOZgam36Uite32qxZjPv0I6qc8Bosf7WwL36WZ0NixIbrkIILaCJY4jZYpZyXkOdDiuQ+04Zo5Hs79O+R0="
+#mob_minitest_github_private_repo
+  - secure: "jpF67KXn8ThlxcE1STfbSRPbzIw9FVHTcFeX0EhkbkcXUUg97ysundzscsy9bSeW9iF+lq0CndG08tuhsk/eLg8IIDruScX1qcGq9CjvJXSsnH/pOpLBNi+U3BtMnX+JWrtWjTo/X6nQmEQbkV3h0NbjLPov/kZj9ByjCbF7xW8="
+#mob_aws_access_key_id
+  - secure: "VLjn4AjouXlxkgTY0yEtjkRRRsNZyEhJn/FR1/b2inCig+9ZvFUVP30Y3adjWThnkvZV1gmaNuE9SByDQCoSqvId0g/i0T5TD2GR0xT0Xvbra31LS9w2ktAuYXEVPQJnnPngiJs5C/o+qsIPofr82UjhSjgDsZLp5krGK9efWrY="
+#mob_aws_secret_access_key
+  - secure: "lPNQr6aVfS+DOXr0QPaFEe9aFQrpTlkwR4ajH29YM9yG4RUySK0N4+rbJkiinFUDxiWgbNcA9xkpb9xB1W8LIcsUQI7MLl76F0OjEHo6svvPZ34QX7kcO0+O5cIqhkRcqUtp5dounGjzVR0SgTOYGvevPNlRlArzHA9sn/n+Mvs="
 #git_ssh_00
   - secure: "FnoCpSbl9IhtgmxKBO7iYK8vOtKEr+NJN3F9Pt0up/Ln634VrKM8UvB0jz0uolo5b0idNNHkahry7z5xc3RIUINdbn2lEeshgyph8M+RHg8s/kEtM7XyLP+i932qkCHfaCmZkRBer2pZOKFzav1WrMoF+qGaINudZuq1Hx5EWJ4="
 #git_ssh_01
@@ -125,28 +126,21 @@ env:
   - secure: "eooQwuYrgorsv36rHNiHldWUnsV7s147+HrPvjr1t71ZLwy6c6KaoMc800jX7RUe4ryo33eMhV6GfROD34Hn7N8DeVxldUDt97je9F2WwEY7tb33DDpOCuUznylx7OEvtrirljHNAsniq2D1RRV+y+MNe2KTWBdJ9LVWEk4GFsk="
 #ec2_ssh_23
   - secure: "juCbLwT06bXCNs+eh4L/3dVBH9ANc0CgDIuBHx3g/wSsfaCcP4MoZLNQLeIDlEHEWBs67aXWyBMNFgDetrelChjYiWl6z7zg+m1Fe630Q2j8SLIZ9t1DvXdkQKBo0u6yT7HXkeSkgFig9MuWpVxB3mKKihewBeFLhjJYOJP+oyk="
-#mob_test_google_login
-  - "MOB_TEST_GOOGLE_LOGIN=mobilize.server@gmail.com"
-#mob_test_user_id
-  - "MOB_TEST_USER_ID=mobilize.server@gmail.com"
-#mob_test_github_login
-  - "MOB_TEST_GITHUB_LOGIN=mobilize"
-#mob_test_owner_github_login
-  - "MOB_TEST_OWNER_GITHUB_LOGIN=mobilize"
-#mob_test_private_github_domain
-  - "MOB_TEST_PRIVATE_GITHUB_DOMAIN='github.com'"
-#mob_test_private_github_owner
-  - "MOB_TEST_PRIVATE_GITHUB_OWNER='mobilize'"
-#mob_test_ec2_def_region
-  - "MOB_TEST_EC2_DEF_REGION='us-west-1'"
-#mob_test_ec2_name
-  - "MOB_TEST_EC2_NAME='mobilize-test'"
-#mob_test_ec2_ami
-  - "MOB_TEST_EC2_AMI='ami-fe002cbb'"
-#mob_test_ec2_size
-  - "MOB_TEST_EC2_SIZE='t1.micro'"
-#mob_test_ec2_sg_names
-  - "MOB_TEST_EC2_SG_NAMES='default'"
-#mob_test_ec2_root_user
-  - "MOB_EC2_ROOT_USER='ubuntu'"
-#something I put in to make the commit take
+#mob_worker_cache
+  - "MOB_WORKER_CACHE=/tmp/mobilize"
+#mob_server_cache
+  - "MOB_SERVER_CACHE=/tmp/mobilize"
+#mob_google_owner_login
+  - "MOB_GOOGLE_OWNER_LOGIN=mobilize.server@gmail.com"
+#mob_github_owner_login
+  - "MOB_GITHUB_OWNER_LOGIN=mobilize"
+#mob_minitest_google_login
+  - "MOB_MINITEST_GOOGLE_LOGIN=mobilize.server@gmail.com"
+#mob_minitest_github_login
+  - "MOB_MINITEST_GITHUB_LOGIN=mobilize"
+#mob_minitest_github_private_domain
+  - "MOB_MINITEST_GITHUB_PRIVATE_DOMAIN='github.com'"
+#mob_minitest_github_private_owner
+  - "MOB_MINITEST_GITHUB_PRIVATE_OWNER='mobilize'"
+#mob_minitest_ec2_worker_name
+  - "MOB_MINITEST_EC2_WORKER_NAME='mobilize-test'"
