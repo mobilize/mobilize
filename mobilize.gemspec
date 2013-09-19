@@ -33,4 +33,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "log4r","1.1.10"
   spec.add_runtime_dependency "net-ssh","2.7.0"
   spec.add_runtime_dependency "net-scp","1.1.2"
+  spec.add_runtime_dependency "settingslogic"
 end

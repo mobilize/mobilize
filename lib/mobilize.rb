@@ -1,6 +1,19 @@
 require "mobilize/version"
 
+require "mobilize/logger"
+mob_yml_path = File.expand_path("~/.mob.yml")
+unless File.exists?(mob_yml_path)
+  Mobilize:: Logger.error("no ~/.mob.yml file found; " +
+                          "please run `mob configure` to set up a default file, " +
+                          "and be sure to populate environment variables appropriate to your setup")
+end
+
+require "settingslogic"
+require "mobilize/config"
+
 module Mobilize
+  @@config = Config.new
+
   #folder where project is installed
   def Mobilize.root
     ENV['PWD']
@@ -9,16 +22,14 @@ module Mobilize
   def Mobilize.console
     Mobilize.pry
   end
+  def Mobilize.db
+    Mongoid.session(:default)[:database].database
+  end
   def Mobilize.env
     #use MOBILIZE_ENV to manually set your environment when you start your app
     ENV['MOBILIZE_ENV'] || "development"
   end
-  def Mobilize.db
-    Mongoid.session(:default)[:database].database
-  end
 end
-
-require "mobilize/config"
 
 require 'pry'
 require "popen4"
@@ -28,8 +39,6 @@ require 'net/scp'
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
 Mongoid.load!(mongoid_config_path, Mobilize.env)
-
-require "mobilize/logger"
 
 deploy_dir = "#{Mobilize.root}/config/deploy"
 require "#{deploy_dir}/travis"

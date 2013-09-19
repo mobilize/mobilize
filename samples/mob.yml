@@ -2,12 +2,12 @@
 #entries w a preceding $ will be loaded from environment vars
 development:
   workers:
-    cache: $MOB_WORKER_TMP_DIR
+    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
   servers:
-    cache: $MOB_SERVER_TMP_DIR
+    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
   aws:
-    access_key_id: $MOB_AWS_ACCESS_KEY_ID
-    secret_access_key: $MOB_AWS_SECRET_ACCESS_KEY
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
   ec2:
     keypair_name: mobilize
     region: 'us-west-1'
@@ -15,27 +15,27 @@ development:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: $MOB_EC2_PRIVATE_KEY_PATH
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
     root_user: 'ubuntu'
-    owner_user: $MOB_EC2_OWNER_USER
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: $MOB_GOOGLE_OWNER_LOGIN
-      password: $MOB_GOOGLE_OWNER_PASSWORD
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: $MOB_GITHUB_SSH_KEY_PATH
-    owner_login: $MOB_GITHUB_OWNER_LOGIN
-    owner_password: $MOB_GITHUB_OWNER_PASSWORD
+    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 #test includes special variables for running
 #tests, found under `minitest`
 test:
   workers:
-    cache: $MOB_WORKER_TMP_DIR
+    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
   servers:
-    cache: $MOB_SERVER_TMP_DIR
+    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
   aws:
-    access_key_id: $MOB_AWS_ACCESS_KEY_ID
-    secret_access_key: $MOB_AWS_SECRET_ACCESS_KEY
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
   ec2:
     keypair_name: mobilize
     region: 'us-west-1'
@@ -43,40 +43,40 @@ test:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: $MOB_EC2_PRIVATE_KEY_PATH
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
     root_user: 'ubuntu'
-    owner_user: $MOB_EC2_OWNER_USER
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: $MOB_GOOGLE_OWNER_LOGIN
-      password: $MOB_GOOGLE_OWNER_PASSWORD
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: $MOB_GITHUB_SSH_KEY_PATH
-    owner_login: $MOB_GITHUB_OWNER_LOGIN
-    owner_password: $MOB_GITHUB_OWNER_PASSWORD
+    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
   minitest:
     google:
-      login: $MOB_MINITEST_GOOGLE_LOGIN
+      login: <%=ENV['MOB_MINITEST_GOOGLE_LOGIN']%>
     ec2:
-      worker_name: $MOB_MINITEST_EC2_WORKER_NAME
+      worker_name: <%=ENV['MOB_MINITEST_EC2_WORKER_NAME']%>
     github:
-      login: $MOB_MINITEST_GITHUB_LOGIN
+      login: <%=ENV['MOB_MINITEST_GITHUB_LOGIN']%>
       public:
         domain: github.com
         owner_name: mobilize
         repo_name: mobilize
       private:
         domain: github.com
-        owner_name: $MOB_MINITEST_GITHUB_PRIVATE_OWNER
-        repo_name: $MOB_MINITEST_GITHUB_PRIVATE_REPO
+        owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
+        repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
   workers:
-    cache: $MOB_WORKER_TMP_DIR
+    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
   servers:
-    cache: $MOB_SERVER_TMP_DIR
+    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
   aws:
-    access_key_id: $MOB_AWS_ACCESS_KEY_ID
-    secret_access_key: $MOB_AWS_SECRET_ACCESS_KEY
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
   ec2:
     keypair_name: mobilize
     region: 'us-west-1'
@@ -84,25 +84,25 @@ staging:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: $MOB_EC2_PRIVATE_KEY_PATH
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
     root_user: 'ubuntu'
-    owner_user: $MOB_EC2_OWNER_USER
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: $MOB_GOOGLE_OWNER_LOGIN
-      password: $MOB_GOOGLE_OWNER_PASSWORD
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: $MOB_GITHUB_SSH_KEY_PATH
-    owner_login: $MOB_GITHUB_OWNER_LOGIN
-    owner_password: $MOB_GITHUB_OWNER_PASSWORD
+    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
   workers:
-    cache: $MOB_WORKER_TMP_DIR
+    cache: <%=ENV['MOB_WORKER_TMP_DIR']%>
   servers:
-    cache: $MOB_SERVER_TMP_DIR
+    cache: <%=ENV['MOB_SERVER_TMP_DIR']%>
   aws:
-    access_key_id: $MOB_AWS_ACCESS_KEY_ID
-    secret_access_key: $MOB_AWS_SECRET_ACCESS_KEY
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
   ec2:
     keypair_name: mobilize
     region: 'us-west-1'
@@ -110,14 +110,14 @@ production:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: $MOB_EC2_PRIVATE_KEY_PATH
+    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
     root_user: 'ubuntu'
-    owner_user: $MOB_EC2_OWNER_USER
+    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: $MOB_GOOGLE_OWNER_LOGIN
-      password: $MOB_GOOGLE_OWNER_PASSWORD
+      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
-    ssh_key_path: $MOB_GITHUB_SSH_KEY_PATH
-    owner_login: $MOB_GITHUB_OWNER_LOGIN
-    owner_password: $MOB_GITHUB_OWNER_PASSWORD
+    ssh_key_path: <%=ENV['MOB_GITHUB_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
