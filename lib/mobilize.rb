@@ -8,13 +8,16 @@ module Mobilize
 end
 
 require "mobilize/logger"
+
+require 'fileutils'
+require 'optparse'
+cli_dir = "mobilize/cli"
+require "#{cli_dir}/cli"
+
 mob_yml_path = File.expand_path("~/.mob.yml")
 unless File.exists?(mob_yml_path)
-  Mobilize:: Logger.error("no ~/.mob.yml file found; " +
-                          "please run `mob configure` to set up a default file, " +
-                          "and be sure to populate environment variables appropriate to your setup")
+  Mobilize::Cli.configure(args=[])
 end
-
 
 require "settingslogic"
 require "mobilize/config"
@@ -84,7 +87,3 @@ require "#{google_dir}/gfile"
 require "#{gbook_dir}/gbook"
 require "#{gbook_dir}/gtab"
 require "#{gbook_dir}/grange"
-
-require 'optparse'
-cli_dir = "mobilize/cli"
-require "#{cli_dir}/cli"

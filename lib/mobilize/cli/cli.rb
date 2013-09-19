@@ -34,13 +34,13 @@ module Mobilize
       opt_parser.parse!(args)
       mob_yml_path = File.expand_path("~/.mob.yml")
       if File.exists?(mob_yml_path) and options[:force] != true
-        Mobilize:: Logger.error("~/.mob.yml found; please run with -f  option to overwrite with default")
+        Mobilize::Logger.error("~/.mob.yml found; please run with -f  option to overwrite with default")
       else
         if File.exists?(mob_yml_path)
-          Mobilize:: Logger.info("Forcing overwrite of existing ~/.mob.yml")
+          Mobilize::Logger.info("Forcing overwrite of existing ~/.mob.yml")
         end
         FileUtils.cp("#{Mobilize.root}/samples/mob.yml",mob_yml_path)
-        Mobilize:: Logger.info("Wrote default configs to ~/.mob.yml")
+        Mobilize::Logger.info("Wrote default configs to ~/.mob.yml")
       end
     end
   end
