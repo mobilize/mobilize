@@ -1,5 +1,12 @@
 require "mobilize/version"
 
+module Mobilize
+  #folder where project is installed
+  def Mobilize.root
+    ENV['PWD']
+  end
+end
+
 require "mobilize/logger"
 mob_yml_path = File.expand_path("~/.mob.yml")
 unless File.exists?(mob_yml_path)
@@ -8,6 +15,7 @@ unless File.exists?(mob_yml_path)
                           "and be sure to populate environment variables appropriate to your setup")
 end
 
+
 require "settingslogic"
 require "mobilize/config"
 
@@ -15,11 +23,6 @@ module Mobilize
   @@config = Config.new
   def Mobilize.config
     @@config
-  end
-
-  #folder where project is installed
-  def Mobilize.root
-    ENV['PWD']
   end
   #force Mobilize context when running `bundle console`
   def Mobilize.console
