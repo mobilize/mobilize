@@ -21,5 +21,27 @@ module Mobilize
       opt_parser.parse!(args)
       Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
     end
+    #copy configuration to home folder if it's not already there
+    def Cli.configure(args)
+      options={}
+      opt_parser = OptionParser.new do |opts|
+        opts.banner = "Usage: mob configure [-f --force]"
+
+        opts.on("-f", "--force", "Force overwrite of existing .mob.yml") do |f|
+          options[:force] = true
+        end
+      end
+      opt_parser.parse!(args)
+      mob_yml_path = File.expand_path("~/.mob.yml")
+      if File.exists?(mob_yml_path) and options[:force] != true
+        Mobilize:: Logger.error("~/.mob.yml found; please run with -f  option to overwrite with default")
+      else
+        if File.exists?(mob_yml_path)
+          Mobilize:: Logger.info("Forcing overwrite of existing ~/.mob.yml")
+        end
+        FileUtils.cp("#{Mobilize.root}/samples/mob.yml",mob_yml_path)
+        Mobilize:: Logger.info("Wrote default configs to ~/.mob.yml")
+      end
+    end
   end
 end
