@@ -28,11 +28,11 @@ module Mobilize
     end
 
     def worker_cache
-      return "#{@@config.worker_cache}/jobs/#{self.user.ssh_name}/#{self.name}"
+      return "#{@@config.workers.cache}/jobs/#{self.user.ssh_name}/#{self.name}"
     end
 
     def server_cache
-      return "#{@@config.server_cache}/jobs/#{self.user.ssh_name}/#{self.name}"
+      return "#{@@config.servers.cache}/jobs/#{self.user.ssh_name}/#{self.name}"
     end
 
     def purge!
