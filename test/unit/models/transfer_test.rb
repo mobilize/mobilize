@@ -12,13 +12,13 @@ class TransferTest < MiniTest::Unit::TestCase
       github_login: Mobilize.config.minitest.github.login,
       ec2_id: @ec2.id
     )
-    #create public github instance for job
+    #create public github instance for transfer
     @github = Mobilize::Github.find_or_create_by(
       owner_name: Mobilize.config.minitest.github.public.owner_name,
       repo_name: Mobilize.config.minitest.github.public.repo_name
     )
-    #create job
-    @job = Mobilize::Transfer.find_or_create_by(
+    #create transfer
+    @transfer = Mobilize::Transfer.find_or_create_by(
       user_id: @user.id,
       command: "ls @path",
       path_ids: [@github.id],
@@ -27,7 +27,7 @@ class TransferTest < MiniTest::Unit::TestCase
   end
 
   def test_execute
-    stdout = @job.execute
+    stdout = @transfer.execute
     assert_in_delta stdout.length, 1, 1000
   end
 end

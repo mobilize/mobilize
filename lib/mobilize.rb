@@ -63,7 +63,7 @@ models_dir = "mobilize/models"
 user_dir = "#{models_dir}/user"
 require "#{user_dir}/user"
 require "#{user_dir}/schedule"
-require "#{user_dir}/job"
+require "#{user_dir}/transfer"
 
 path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"

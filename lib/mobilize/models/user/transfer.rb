@@ -3,7 +3,7 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :user_id, type: String
-    field :name, type: String
+    field :name, type: String, default:->{Time.now.utc.strftime("%Y%m%d%H%M%S")}
     field :command, type: String #command to be executed on the server
     field :path_ids, type: Array #paths that need to be loaded before deploy to ec2
     field :gsubs, type: Hash #params to be replaced after load, before deploy
