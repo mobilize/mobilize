@@ -2,28 +2,13 @@ require "test_helper"
 class JobTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @ec2 = Mobilize::Ec2.find_or_create_by(
-      name: Mobilize.config.minitest.ec2.worker_name
-    )
+    @ec2 = TestHelper.ec2
     #create user from owner
-    @user = Mobilize::User.find_or_create_by(
-      active: true,
-      google_login: Mobilize.config.minitest.google.login,
-      github_login: Mobilize.config.minitest.github.login,
-      ec2_id: @ec2.id
-    )
+    @user = TestHelper.user(@ec2)
     #create public github instance for job
-    @github = Mobilize::Github.find_or_create_by(
-      owner_name: Mobilize.config.minitest.github.public.owner_name,
-      repo_name: Mobilize.config.minitest.github.public.repo_name
-    )
+    @github = TestHelper.github_pub
     #create job
-    @job = Mobilize::Job.find_or_create_by(
-      user_id: @user.id,
-      command: "ls @path",
-      path_ids: [@github.id],
-      gsubs: {"@path"=>"mobilize"}
-    )
+    @job = TestHelper.job(@user,@github)
   end
 
   def test_execute

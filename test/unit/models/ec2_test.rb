@@ -3,7 +3,7 @@ class Ec2Test < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     @worker_name = Mobilize.config.minitest.ec2.worker_name
-    @ec2 = Mobilize::Ec2.new(name: @worker_name)
+    @ec2 = TestHelper.test_ec2
     #create session based off of definites
     @session = Mobilize::Ec2.login
   end
