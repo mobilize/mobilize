@@ -5,7 +5,7 @@ module Mobilize
     field :user_id, type: String
     field :name, type: String
     field :active, type: Boolean
-    field :trigger, type: String
+    field :frequency, type: String
 
     def transfers
       Transfer.where(cron_id: self.id).to_a

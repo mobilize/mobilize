@@ -44,7 +44,8 @@ module TestHelper
     Mobilize::Job.find_or_create_by(
       user_id: user.id,
       command: "ls @path",
-      path_ids: [github.id],
+      input_path_ids: [github.id],
+      output_path_ids: [gsheet.id],
       gsubs: {"@path"=>"mobilize"}
     )
   end

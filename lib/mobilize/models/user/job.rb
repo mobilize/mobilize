@@ -6,8 +6,9 @@ module Mobilize
     field :job_id, type: String
     field :name, type: String, default:->{Time.now.utc.strftime("%Y%m%d%H%M%S")}
     field :command, type: String #command to be executed on the server
-    field :path_ids, type: Array #paths that need to be loaded before deploy to ec2
-    field :gsubs, type: Hash #params to be replaced after load, before deploy
+    field :input_path_ids, type: Array #paths that need to be read for deploy to ec2
+    field :output_path_ids, type: Array #paths that will be written after deploy to ec2
+    field :gsubs, type: Hash #params to be replaced after read, before deploy
     field :_id, type: String, default:->{"#{user_id}:#{name}"}
 
     @@config = Mobilize.config
@@ -71,7 +72,7 @@ module Mobilize
       Logger.info("Cleared server: #{@job.server_cache}")
     end
 
-    #clear out worker folder to load server contents
+    #clear out worker folder to commit server contents
     def clear_worker
       @job = self
       @job.purge_worker
@@ -92,23 +93,23 @@ module Mobilize
       end
     end
 
-    def load_paths(resque=false)
+    def read_paths(resque=false)
       @job = self
-      @job.path_ids.each do |path_id|
+      @job.input_path_ids.each do |path_id|
         @path = Path.find(path_id)
         if resque
           Resque.enqueue!(@path.id,@job.id)
         else
-          @path.load(@job.user_id,@job.worker_cache)
+          @path.read(@job.user_id,@job.worker_cache)
         end
       end
       return true
     end
 
-    def load_stdin
+    def read_stdin
       @job = self
       File.open("#{@job.worker_cache}/stdin","w") {|f| f.print(@job.command)}
-      Logger.info("Wrote stdin to worker: #{@job.worker_cache}")
+      Logger.info("Read stdin into worker: #{@job.worker_cache}")
     end
 
     def compress_worker
@@ -117,14 +118,14 @@ module Mobilize
       Logger.info("Compressed worker to: #{@job.worker_cache}.tar.gz")
     end
 
-    #load paths into worker directory
-    def load(resque=false)
+    #read paths into worker directory
+    def read(resque=false)
       @job = self
       @job.clear_worker
-      #load each path into worker
-      @job.load_paths(resque)
+      #read each path into worker
+      @job.read_paths(resque)
       #write command to stdin folder in worker
-      @job.load_stdin
+      @job.read_stdin
       #replace any items that need it
       @job.gsub! unless @job.gsubs.nil? or @job.gsubs.empty?
       #compress worker dir
@@ -158,7 +159,7 @@ module Mobilize
 
     def execute
       @job = self
-      @job.load
+      @job.read
       @job.deploy
       begin
         exec_cmd = "(cd #{@job.server_cache} && sh stdin) > " +

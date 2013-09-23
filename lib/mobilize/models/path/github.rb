@@ -56,36 +56,36 @@ module Mobilize
       end
     end
 
-    #performs a github load in preparation for a Transfer
+    #performs a github read in preparation for a Transfer
     def Github.perform(github_id,transfer_id)
       @github = Github.find(github_id)
       @transfer = Transfer.find(transfer_id)
-      @github.load(@transfer.user_id,@transfer.local)
+      @github.read(@transfer.user_id,@transfer.local)
       return true
     end
 
     #clones repo into temp folder with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
-    def load(user_id=nil,run_dir=Dir.mktmpdir)
+    def read(user_id=nil,dir=Dir.mktmpdir)
       @github = self
       @session ||= Github.login
       repo_dir = if @github.is_private?(@session)
-                   @github.priv_load(user_id,run_dir)
+                   @github.priv_read(user_id,dir)
                  else
-                   @github.pub_load(run_dir)
+                   @github.pub_read(dir)
                  end
-      Logger.info("Loaded #{@github.id} into #{run_dir}")
+      Logger.info("Read #{@github.id} into #{dir}")
       return repo_dir
     end
 
-    def pub_load(run_dir)
+    def pub_read(dir)
       @github = self
-      cmd = "cd #{run_dir} && " +
+      cmd = "cd #{dir} && " +
             "git clone -q #{@github.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
       cmd.popen4(true)
-      Logger.info("Loaded public git repo #{@github._id}")
-      return "#{run_dir}/#{@github.repo_name}"
+      Logger.info("Read public git repo #{@github._id}")
+      return "#{dir}/#{@github.repo_name}"
     end
 
     def collaborators(session=nil)
@@ -112,32 +112,32 @@ module Mobilize
       end
     end
 
-    def priv_load(user_id,run_dir)
+    def priv_read(user_id,dir)
       @github = self
       #determine if the user in question is a collaborator on the repo
       @github.verify_collaborator(user_id)
       #thus verified, get the ssh key and pull down the repo
-      git_files = @github.add_git_files(run_dir)
+      git_files = @github.add_git_files(dir)
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{git_files.first} && " +
-            "cd #{run_dir} && " +
+            "cd #{dir} && " +
             "git clone -q #{@github.git_ssh_url} --depth=1"
       cmd.popen4(true)
       #remove aux files
       git_files.each{|fp| FileUtils.rm(fp,force: true)}
-      Logger.info("Loaded private git repo #{@github._id}")
-      return "#{run_dir}/#{@github.repo_name}"
+      Logger.info("Read private git repo #{@github._id}")
+      return "#{dir}/#{@github.repo_name}"
     end
 
-    def add_git_files(run_dir)
+    def add_git_files(dir)
       key_value = File.read(@@config.github.owner_ssh_key_path)
       #create key file, set permissions, write key
-      key_file_path = run_dir + "/key.ssh"
+      key_file_path = dir + "/key.ssh"
       File.open(key_file_path,"w") {|f| f.print(key_value)}
       "chmod 0600 #{key_file_path}".popen4
       #set git to not check strict host
       git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' -i #{key_file_path} \"$@\""
-      git_ssh_file_path = run_dir + "/git.ssh"
+      git_ssh_file_path = dir + "/git.ssh"
       File.open(git_ssh_file_path,"w") {|f| f.print(git_ssh_cmd)}
       "chmod 0700 #{git_ssh_file_path}".popen4
       Logger.info("Added git files for repo #{@github._id}")
