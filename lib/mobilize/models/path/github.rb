@@ -117,6 +117,19 @@ module Mobilize
       #determine if the user in question is a collaborator on the repo
       @github.verify_collaborator(user_id)
       #thus verified, get the ssh key and pull down the repo
+      git_files = @github.add_git_files(run_dir)
+      #add keys, clone repo, go to specific revision, execute command
+      cmd = "export GIT_SSH=#{git_files.first} && " +
+            "cd #{run_dir} && " +
+            "git clone -q #{@github.git_ssh_url} --depth=1"
+      cmd.popen4(true)
+      #remove aux files
+      git_files.each{|fp| FileUtils.rm(fp,force: true)}
+      Logger.info("Loaded private git repo #{@github._id}")
+      return "#{run_dir}/#{@github.repo_name}"
+    end
+
+    def add_git_files(run_dir)
       key_value = File.read(@@config.github.owner_ssh_key_path)
       #create key file, set permissions, write key
       key_file_path = run_dir + "/key.ssh"
@@ -124,18 +137,11 @@ module Mobilize
       "chmod 0600 #{key_file_path}".popen4
       #set git to not check strict host
       git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' -i #{key_file_path} \"$@\""
-      git_file_path = run_dir + "/git.ssh"
-      File.open(git_file_path,"w") {|f| f.print(git_ssh_cmd)}
-      "chmod 0700 #{git_file_path}".popen4
-      #add keys, clone repo, go to specific revision, execute command
-      cmd = "export GIT_SSH=#{git_file_path} && " +
-            "cd #{run_dir} && " +
-            "git clone -q #{@github.git_ssh_url} --depth=1"
-      cmd.popen4(true)
-      #remove aux files
-      [key_file_path, git_file_path].each{|fp| FileUtils.rm(fp,force: true)}
-      Logger.info("Loaded private git repo #{@github._id}")
-      return "#{run_dir}/#{@github.repo_name}"
+      git_ssh_file_path = run_dir + "/git.ssh"
+      File.open(git_ssh_file_path,"w") {|f| f.print(git_ssh_cmd)}
+      "chmod 0700 #{git_ssh_file_path}".popen4
+      Logger.info("Added git files for repo #{@github._id}")
+      return [git_ssh_file_path, key_file_path]
     end
   end
 end

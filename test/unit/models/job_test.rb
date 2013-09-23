@@ -1,5 +1,5 @@
 require "test_helper"
-class TransferTest < MiniTest::Unit::TestCase
+class JobTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     @ec2 = Mobilize::Ec2.find_or_create_by(
@@ -12,13 +12,13 @@ class TransferTest < MiniTest::Unit::TestCase
       github_login: Mobilize.config.minitest.github.login,
       ec2_id: @ec2.id
     )
-    #create public github instance for transfer
+    #create public github instance for job
     @github = Mobilize::Github.find_or_create_by(
       owner_name: Mobilize.config.minitest.github.public.owner_name,
       repo_name: Mobilize.config.minitest.github.public.repo_name
     )
-    #create transfer
-    @transfer = Mobilize::Transfer.find_or_create_by(
+    #create job
+    @job = Mobilize::Job.find_or_create_by(
       user_id: @user.id,
       command: "ls @path",
       path_ids: [@github.id],
@@ -27,7 +27,7 @@ class TransferTest < MiniTest::Unit::TestCase
   end
 
   def test_execute
-    stdout = @transfer.execute
+    stdout = @job.execute
     assert_in_delta stdout.length, 1, 1000
   end
 end

@@ -1,5 +1,8 @@
 module Mobilize
   module Cli
+
+    @@config = Mobilize.config
+
     #decode base64 encoded strings that have been encrypted in travis
     def Cli.decode(args)
       options={}
@@ -21,6 +24,13 @@ module Mobilize
       opt_parser.parse!(args)
       Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
     end
+    #start up resque worker
+    def Cli.resque
+      worker = ::Resque::Worker.new(@@config.resque.queue)
+      worker.term_child=1
+      Logger.info("Started Resque worker")
+      worker.work(5) #check every 5 seconds
+    end
     #copy configuration to home folder if it's not already there
     def Cli.configure(args)
       options={}
@@ -34,14 +44,15 @@ module Mobilize
       opt_parser.parse!(args)
       mob_yml_path = File.expand_path("~/.mob.yml")
       if File.exists?(mob_yml_path) and options[:force] != true
-        Mobilize::Logger.error("~/.mob.yml found; please run with -f  option to overwrite with default")
+        Mobilize:: Logger.error("~/.mob.yml found; please run with -f  option to overwrite with default")
       else
         if File.exists?(mob_yml_path)
-          Mobilize::Logger.info("Forcing overwrite of existing ~/.mob.yml")
+          Mobilize:: Logger.info("Forcing overwrite of existing ~/.mob.yml")
         end
         FileUtils.cp("#{Mobilize.root}/samples/mob.yml",mob_yml_path)
-        Mobilize::Logger.info("Wrote default configs to ~/.mob.yml")
+        Mobilize:: Logger.info("Wrote default configs to ~/.mob.yml")
       end
     end
+
   end
 end

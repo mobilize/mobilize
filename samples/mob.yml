@@ -1,6 +1,8 @@
 #sample config yml for mobilize
 #entries w a preceding $ will be loaded from environment vars
 development:
+  resque:
+    queue: mobilize
   object:
     send_total_retries: 3
   workers:
@@ -31,6 +33,8 @@ development:
 #test includes special variables for running
 #tests, found under `minitest`
 test:
+  resque:
+    queue: mobilize
   object:
     send_total_retries: 3
   workers:
@@ -74,6 +78,8 @@ test:
         owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
         repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
+  resque:
+    queue: mobilize
   object:
     send_total_retries: 3
   workers:
@@ -102,6 +108,8 @@ staging:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
+  resque:
+    queue: mobilize
   object:
     send_total_retries: 3
   workers:
