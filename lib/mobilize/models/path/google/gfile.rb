@@ -68,9 +68,13 @@ module Mobilize
           rem = remotes.select{|r| r.resource_id == @gfile.key}.first
         end
         if rem
-          Logger.info("You have #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name} -- you should delete all incorrect versions.")
+          Logger.info("You have #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name};" +
+                      " you should delete all incorrect versions."
+                     )
         else
-          Logger.error("There are #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name} and no local key; you should delete all incorrect versions.")
+          Logger.error("There are #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name}" + 
+                       " and no local key; you should delete all incorrect versions."
+                      )
         end
       elsif remotes.length == 1
         rem = remotes.first
@@ -86,23 +90,35 @@ module Mobilize
       @gfile = self
       rem = @gfile.remote(@session)
       acls = rem.acl.to_enum.to_a
-      role_hash = {owner: [], reader: [], writer: []}
+      roles = {owner: [], reader: [], writer: []}
       acls.each do |a|
         scope = if a.scope.nil?
                   a.with_key ? "link" : "everyone"
                 else
                   a.scope
                 end
-        role_hash[a.role.to_sym] << scope
+        roles[a.role.to_sym] << scope
       end
       @gfile.update_attributes(
         name: rem.title,
         key: rem.resource_id,
-        owner: role_hash[:owner].first,
-        readers: role_hash[:reader],
-        writers: role_hash[:writer]
+        owner: roles[:owner].first,
+        readers: roles[:reader],
+        writers: roles[:writer]
       )
       return true
+    end
+
+    def read(session=nil)
+      @session = session || Gfile.login
+      @gfile = self
+
+    end
+
+    def write(session=nil)
+      @session = session || Gfile.login
+      @gfile = self
+
     end
   end
 end
