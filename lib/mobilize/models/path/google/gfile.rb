@@ -3,12 +3,12 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :key, type: String
-    field :_id, type: String, default:->{ key }
     field :name, type: String
-    field :owner_email, type: Array
-    field :reader_emails, type: Array
-    field :writer_emails, type: Array
-   
+    field :owner, type: Array
+    field :readers, type: Array
+    field :writers, type: Array
+    field :_id, type: String, default:->{"gfile://#{owner_email}/#{name}"}
+
     @@config = Mobilize.config
 
     def Gfile.get_password(email)
@@ -30,48 +30,79 @@ module Mobilize
       return @session
     end
 
-    def Gfile.files_by_name(name,session=nil)
+    def Gfile.remotes_by_name(name,session=nil)
       @session = session || Gfile.login
-      files = @session.files(title: name, "title-exact" => "true")
-      Logger.info("found #{files.length.to_s} files by name #{name}")
-      return files
+      remotes = @session.files(title: name, "title-exact" => "true")
+      Logger.info("found #{remotes.length.to_s} remotes by name #{name}")
+      return remotes
     end
 
-    def Gfile.files_by_owner(email,session=nil)
+    def Gfile.remotes_by_owner(email,session=nil)
       @session = session || Gfile.login
-      files = @session.files(owner: email)
-      Logger.info("found #{files.length.to_s} files by owner #{email}")
-      return files
+      remotes = @session.files(owner: email)
+      Logger.info("found #{remotes.length.to_s} remotes by owner #{email}")
+      return remotes
     end
 
-    def acls(session=nil)
-      return self.instance(session).acl.to_enum.to_a
+    def Gfile.remotes_by_owner_and_name(email,name,session=nil)
+      @session = session || Gfile.login
+      remotes = @session.files(owner: email, title: name, "title-exact" => "true")
+      return remotes
     end
 
-    def owner_acl(acls=nil)
-      @acls = acls || @gfile.acls
+    def find_or_create_remote(session=nil)
+      @gfile = self
+      @session = session || Gfile.login
+      #create remote file with a blank string if there isn't one
+      rem = @gfile.remote(@session) || @session.upload_from_string("",@gfile.name)
+      @gfile.sync(rem)
+      return rem
+    end
+
+    def remote(session=nil)
+      @gfile = self
+      @session = session || Gfile.login
+      remotes = Gfile.remotes_by_owner_and_name(@gfile.owner_email,@gfile.name,@session)
+      if remotes.length>1
+        if @gfile.key
+          rem = remotes.select{|r| r.resource_id == @gfile.key}.first
+        end
+        if rem
+          Logger.info("You have #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name} -- you should delete all incorrect versions.")
+        else
+          Logger.error("There are #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name} and no local key; you should delete all incorrect versions.")
+        end
+      elsif remotes.length == 1
+        rem = remotes.first
+        Logger.info("Remote #{rem.resource_id} found, assigning to #{@gfile.id}")
+      elsif remotes.empty?
+        rem = nil
+      end
+      return rem
     end
 
     def sync(session=nil)
-      session ||= Gfile.login
+      @session = session || Gfile.login
       @gfile = self
-      @acls = @gfile.acls
+      rem = @gfile.remote(@session)
+      acls = rem.acl.to_enum.to_a
+      role_hash = {owner: [], reader: [], writer: []}
+      acls.each do |a|
+        scope = if a.scope.nil?
+                  a.with_key ? "link" : "everyone"
+                else
+                  a.scope
+                end
+        role_hash[a.role.to_sym] << scope
+      end
       @gfile.update_attributes(
-        name: @gfile.title,
-        owner_email: @gfile.owner(@acls),
-        reader_emails: @gfile.readers(@acls),
-        writer_emails: @gfile.writers(@acls)
+        name: rem.title,
+        key: rem.resource_id,
+        owner: role_hash[:owner].first,
+        readers: role_hash[:reader],
+        writers: role_hash[:writer]
       )
-    end
-
-    def reader_acls(session=nil)
-      @gfile = self
-      @session ||= Gfile.login
-    end
-
-    def writer_acls(session=nil)
-      @gfile = self
-      @session ||= Gfile.login
+      return true
     end
   end
 end

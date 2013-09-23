@@ -145,11 +145,11 @@ module Mobilize
     def create_instance(session=nil)
       @ec2 = self
       @session = session || Ec2.login
-      inst = @ec2.resolve_instance || @ec2.launch
+      inst = @ec2.resolve_instance(@session) || @ec2.launch(@session)
       @ec2.sync(inst)
       #wait around until the instance is running
-      @ec2.wait_for_instance
-      return @ec2.instance
+      @ec2.wait_for_instance(@session)
+      return @ec2.instance(@session)
     end
 
     def ssh(command,except=true)
