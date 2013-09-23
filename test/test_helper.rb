@@ -8,8 +8,8 @@ require 'mobilize'
 #drop test database
 Mongoid.purge!
 module TestHelper
-  def TestHelper.ec2
-    return Mobilize::Ec2.new(name: @worker_name)
+  def TestHelper.new_ec2(name)
+    return Mobilize::Ec2.new(name: name)
   end
   def TestHelper.github_pub
     return Mobilize::Github.find_or_create_by(

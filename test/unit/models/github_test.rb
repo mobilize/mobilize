@@ -1,12 +1,13 @@
 require "test_helper"
-require "./ec2_test"
 class GithubTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @github_pub = TestHelper.test_github_pub
-    @ec2 = TestHelper.test_ec2
-    @user = TestHelper.test_user(@ec2)
-    @github_priv = TestHelper.test_github_priv
+    @github_pub = TestHelper.github_pub
+    @worker_name = Mobilize.config.minitest.ec2.worker_name
+    @ec2 = TestHelper.new_ec2(@worker_name)
+    @ec2.save!
+    @user = TestHelper.user(@ec2)
+    @github_priv = TestHelper.github_priv
   end
 
   #make sure defaults are working as expected

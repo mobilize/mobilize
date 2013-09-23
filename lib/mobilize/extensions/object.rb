@@ -7,6 +7,7 @@ class Object
   def send_w_retries(method_name, *args,&blk)
     @obj = self
     total_retries = Mobilize.config.object.send_total_retries
+    sleep_time = Mobilize.config.object.send_sleep_time
     @result = nil
     @exc = nil
     curr_retries = 0
@@ -18,7 +19,8 @@ class Object
         success = true
       rescue => @exc
         curr_retries += 1
-        Mobilize::Logger.info("Failed #{identifier} with #{@exc.to_s}")
+        Mobilize::Logger.info("Failed #{identifier} with #{@exc.to_s}; Sleeping for #{sleep_time.to_s}")
+        sleep sleep_time
         Mobilize::Logger.info("Retrying #{identifier}; #{curr_retries.to_s} of #{total_retries.to_s} time(s)")
       end
     end
