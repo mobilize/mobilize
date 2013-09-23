@@ -25,8 +25,13 @@ development:
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+    worker:
+      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
+      accounts:
+      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
+        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
@@ -58,8 +63,13 @@ test:
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+    worker:
+      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
+      accounts:
+      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
+        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
@@ -104,8 +114,13 @@ staging:
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+    worker:
+      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
+      accounts:
+      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
+        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
@@ -135,8 +150,13 @@ production:
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+    worker:
+      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
+      accounts:
+      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
+        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>

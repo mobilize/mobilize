@@ -72,11 +72,11 @@ module Mobilize
                {aws_instance_id: @ec2.instance_id,
                 aws_state: ['running','pending']}).first
       inst = @ec2.create_instance(@session) if inst.nil?
-      @ec2.sync_instance(inst)
+      @ec2.sync(inst)
       return inst
     end
 
-    def sync_instance(rem_inst)
+    def sync(rem_inst)
       @ec2 = self
       @ec2.update_attributes(
         ami: rem_inst[:aws_image_id],
@@ -146,7 +146,7 @@ module Mobilize
       @ec2 = self
       @session = session || Ec2.login
       inst = @ec2.resolve_instance || @ec2.launch
-      @ec2.sync_instance(inst)
+      @ec2.sync(inst)
       #wait around until the instance is running
       @ec2.wait_for_instance
       return @ec2.instance

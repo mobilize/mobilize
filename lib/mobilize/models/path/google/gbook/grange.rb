@@ -1,5 +1,5 @@
 module Mobilize
-  class GrangePath < GfilePath
+  class Grange < Gfile
     include Mongoid::Document
     include Mongoid::Timestamps
   end

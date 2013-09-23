@@ -40,12 +40,12 @@ module TestHelper
       return nil
     end
   end
-  def TestHelper.job(user,github)
+  def TestHelper.job(user,input_path,output_path)
     Mobilize::Job.find_or_create_by(
       user_id: user.id,
       command: "ls @path",
-      input_path_ids: [github.id],
-      output_path_ids: [gsheet.id],
+      input_path_ids: [input_path.id],
+      output_path_ids: [output_path.id],
       gsubs: {"@path"=>"mobilize"}
     )
   end

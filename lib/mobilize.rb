@@ -83,3 +83,5 @@ require "#{google_dir}/gfile"
 require "#{gbook_dir}/gbook"
 require "#{gbook_dir}/gtab"
 require "#{gbook_dir}/grange"
+#patched from google-drive-ruby
+require "#{google_dir}/extensions/client_login_fetcher"

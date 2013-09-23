@@ -1,5 +1,5 @@
 module Mobilize
-  class GbookPath<GfilePath
+  class Gbook<Gfile
     include Mongoid::Document
     include Mongoid::Timestamps
   end

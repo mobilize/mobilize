@@ -49,6 +49,7 @@ module Mobilize
         if File.exists?(mob_yml_path)
           Mobilize:: Logger.info("Forcing overwrite of existing ~/.mob.yml")
         end
+        require 'fileutils'
         FileUtils.cp("#{Mobilize.root}/samples/mob.yml",mob_yml_path)
         Mobilize:: Logger.info("Wrote default configs to ~/.mob.yml")
       end
