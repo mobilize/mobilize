@@ -14,7 +14,7 @@ module TestHelper
   def TestHelper.user(ec2)
     Mobilize::User.find_or_create_by(
       active: true,
-      google_login: Mobilize.config.minitest.google.login,
+      google_login: Mobilize.config.minitest.google.email,
       github_login: Mobilize.config.minitest.github.login,
       ec2_id: ec2.id
     )
@@ -25,13 +25,13 @@ module TestHelper
     name: Mobilize.config.minitest.google.gfile_name
     )
   end
-  def TestHelper.github_pub
+  def TestHelper.github_public
     return Mobilize::Github.find_or_create_by(
              owner_name: Mobilize.config.minitest.github.public.owner_name,
              repo_name: Mobilize.config.minitest.github.public.repo_name,
            )
   end
-  def TestHelper.github_priv
+  def TestHelper.github_private
     domain = Mobilize.config.minitest.github.private.domain
     owner_name = Mobilize.config.minitest.github.private.owner_name
     repo_name = Mobilize.config.minitest.github.private.repo_name
@@ -42,7 +42,7 @@ module TestHelper
         repo_name: repo_name
       )
     else
-      Logger.info("missing private github params, returning nil for @github_priv")
+      Logger.info("missing private github params, returning nil for @github_private")
       return nil
     end
   end

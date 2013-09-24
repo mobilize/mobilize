@@ -21,16 +21,18 @@ class GithubTest < MiniTest::Unit::TestCase
     assert_equal @github_public.git_ssh_url, "git@github.com:mobilize/mobilize.git"
   end
 
-  def test_load
+  def test_read
     dir_public = "#{@job.worker_cache}/#{@github_public.repo_name}"
-    @github_public.read(@github_session,dir_public)
-    assert_in_delta "cd #{dir_public} && git status".popen4.length, 1, 1000
+    FileUtils.mkdir_p(dir_public)
+    repo_dir_public = @github_public.read(@github_session,@user,dir_public)
+    assert_in_delta "cd #{repo_dir_public} && git status".popen4.length, 1, 1000
     FileUtils.rm_r(dir_public, force: true)
     Mobilize::Logger.info("Deleted folder for #{@github_public.id}")
     if @github_private
       dir_private = "#{@job.worker_cache}/#{@github_private.repo_name}"
-      @github_private.read(@github_session,@user,dir_public)
-      assert_in_delta "cd #{dir_private} && git status".popen4.length, 1, 1000
+      FileUtils.mkdir_p(dir_private)
+      repo_dir_private = @github_private.read(@github_session,@user,dir_private)
+      assert_in_delta "cd #{repo_dir_private} && git status".popen4.length, 1, 1000
       FileUtils.rm_r(dir_private, force: true)
     end
   end

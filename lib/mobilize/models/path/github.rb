@@ -71,13 +71,13 @@ module Mobilize
       @github = self
       @session = session
       @user = user
-      if @github.is_private?(@session)
-        @github.read_private(@user,dir)
-      else
-        @github.read_public(dir)
-      end
+      repo_dir = if @github.is_private?(@session)
+                   @github.read_private(@session,@user,dir)
+                 else
+                   @github.read_public(dir)
+                 end
       #get size of objects and log
-      log_cmd = "cd #{dir}/#{@github.repo_name} && git count-objects -H"
+      log_cmd = "cd #{repo_dir} && git count-objects -H"
       size = log_cmd.popen4
       Logger.info("Read #{@github.id} into #{dir}: #{size}")
       return repo_dir
@@ -104,11 +104,11 @@ module Mobilize
       return resp.body.map{|b| b[:login]}
     end
 
-    def verify_collaborator(user, session)
+    def verify_collaborator(session,user)
       @github = self
       @session = session
       @user = user
-      if @github.collaborators.include?(@user.github_login)
+      if @github.collaborators(@session).include?(@user.github_login)
         Logger.info("Verified user #{@user._id} has access to #{@github._id}")
         return true
       else
@@ -116,11 +116,12 @@ module Mobilize
       end
     end
 
-    def read_private(user,dir)
+    def read_private(session,user,dir)
       @github = self
       @user = user
+      @session = session
       #determine if the user in question is a collaborator on the repo
-      @github.verify_collaborator(@user)
+      @github.verify_collaborator(@session,@user)
       #thus verified, get the ssh key and pull down the repo
       git_files = @github.add_git_files(dir)
       #add keys, clone repo, go to specific revision, execute command
