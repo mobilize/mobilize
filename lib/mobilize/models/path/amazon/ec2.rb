@@ -28,7 +28,7 @@ module Mobilize
     def Ec2.instances(session, params={aws_state: ['running','pending']})
       @session = session
       all_insts = @session.describe_instances.map{|i| i.with_indifferent_access}
-      filtered_insts = Ec2.filter_instances(all_insts,@session, params)
+      filtered_insts = Ec2.filter_instances(all_insts,params)
       Logger.info("got #{filtered_insts.length.to_s} instances for #{@session.params[:region]}, params: #{params.to_s}")
       return filtered_insts
     end
