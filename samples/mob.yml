@@ -24,6 +24,11 @@ development:
     root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
@@ -62,21 +67,21 @@ test:
     root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
-    worker:
-      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
-      accounts:
-      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
-        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
   minitest:
     google:
-      login: <%=ENV['MOB_MINITEST_GOOGLE_LOGIN']%>
+      email: <%=ENV['MOB_MINITEST_GOOGLE_EMAIL']%>
     ec2:
       worker_name: <%=ENV['MOB_MINITEST_EC2_WORKER_NAME']%>
     github:
@@ -113,14 +118,14 @@ staging:
     root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
-    worker:
-      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
-      accounts:
-      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
-        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
@@ -149,14 +154,14 @@ production:
     root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
-    worker:
-      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
-      accounts:
-      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
-        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
