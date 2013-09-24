@@ -55,30 +55,30 @@ module Mobilize
       @session = session
       #create remote file with a blank string if there isn't one
       @remote = @gfile.remote(@session) || @session.upload_from_string("",@gfile.name)
-      @gfile.sync(rem)
+      @gfile.sync(@session)
       return @remote
     end
 
     def remote(session)
       @gfile = self
       @session = session
-      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner_email,@gfile.name,@session)
+      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner,@gfile.name,@session)
       if @remotes.length>1
         if @gfile.key
           @remote = @remotes.select{|r| r.resource_id == @gfile.key}.first
         end
-        if @rem
-          Logger.info("You have #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name};" +
+        if @remote
+          Logger.info("You have #{@remotes.length} remotes owned by #{@gfile.owner} and named #{@gfile.name};" +
                       " you should delete all incorrect versions."
                      )
         else
-          Logger.error("There are #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name}" + 
+          Logger.error("There are #{@remotes.length} remotes owned by #{@gfile.owner} and named #{@gfile.name}" + 
                        " and no local key; you should delete all incorrect versions."
                       )
         end
       elsif @remotes.length == 1
         @remote = @remotes.first
-        Logger.info("Remote #{rem.resource_id} found, assigning to #{@gfile.id}")
+        Logger.info("Remote #{@remote.resource_id} found, assigning to #{@gfile.id}")
       elsif @remotes.empty?
         @remote = nil
       end
@@ -110,12 +110,25 @@ module Mobilize
       return @remote
     end
 
+    def purge!(session)
+      @gfile = self
+      @session = session
+      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner,@gfile.name,@session)
+      @remotes.each do |remote|
+        remote.delete
+        Logger.info("Deleted remote #{remote.resource_id} for #{@gfile.id}")
+      end
+      @gfile.delete
+      Logger.info("#{@gfile.id} from DB")
+      return true
+    end
+
     def read(session,user,dir)
       @gfile = self
       @session = session
       @user = user
       @remote = @gfile.sync(@session)
-      if @gfile.readers.include?(@user.id)
+      if @user.id == @gfile.owner or @gfile.readers.include?(@user.id)
         gdrive_dir = "#{dir}/gdrive"
         FileUtils.mkdir_p(gdrive_dir)
         gdrive_file = "#{gdrive_dir}/#{@gfile.name}"
@@ -131,7 +144,7 @@ module Mobilize
       @gfile = self
       @user = user
       @remote = @gfile.find_or_create_remote(@session)
-      if @gfile.writers.include?(@user.id)
+      if @user.id == @gfile.owner or @gfile.writers.include?(@user.id)
         @remote.update_from_file(file)
         Logger.info("Uploaded #{file} from #{@gfile.id}")
       else

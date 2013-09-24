@@ -21,8 +21,8 @@ module TestHelper
   end
   def TestHelper.gfile
     Mobilize::Gfile.find_or_create_by(
-    owner: Mobilize.config.minitest.google.gfile_owner,
-    name: Mobilize.config.minitest.google.gfile_name
+    owner: Mobilize.config.minitest.google.email,
+    name: "test_file"
     )
   end
   def TestHelper.github_public
