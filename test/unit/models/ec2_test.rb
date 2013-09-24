@@ -3,39 +3,39 @@ class Ec2Test < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     @worker_name = Mobilize.config.minitest.ec2.worker_name
-    @ec2 = TestHelper.new_ec2(@worker_name)
+    @ec2 = TestHelper.ec2(@worker_name)
     #create session based off of definites
-    @session = Mobilize::Ec2.login
+    @ec2_session = Mobilize::Ec2.login
   end
 
   #make sure defaults are working as expected
   def test_login
-    assert_equal @session.class, Aws::Ec2
+    assert_equal @ec2_session.class, Aws::Ec2
   end
 
   def test_find_or_create_instance
     #make sure all instances with the test name are terminated
-    @ec2.purge!(@session)
-    #should create instance on saving @ec2, which triggers after_create
-    @ec2.save!
-    assert_equal @ec2.instance(@session)[:aws_state], "running"
+    @ec2.purge!(@ec2_session)
+    #should create instance on saving @ec2
+    @ec2.find_or_create_instance(@ec2_session)
+    assert_equal @ec2.instance(@ec2_session)[:aws_state], "running"
     #delete DB version, start over, should find existing instance
     #and assign to database object, making them equal
     instance_id = @ec2.instance_id
     @ec2.delete
-    @ec2 = TestHelper.new_ec2(@worker_name)
-    @ec2.save!
+    @ec2 = TestHelper.ec2(@worker_name)
+    @ec2.find_or_create_instance(@ec2_session)
     assert_equal @ec2.instance_id, instance_id
     #finally, find_or_create_instance should return
     #the same as simply instance
-    assert_equal @ec2.find_or_create_instance(@session), @ec2.instance(@session)
+    assert_equal @ec2.find_or_create_instance(@ec2_session), @ec2.instance(@session_ec2)
   end
 
   def test_purge!
     #make sure the instance is up and running for latest @ec2
-    @ec2.save!
-    assert @ec2.instance(@session)[:aws_state], "running"
-    @ec2.purge!(@session)
-    assert_equal Mobilize::Ec2.instances_by_name(@worker_name, @session), []
+    @ec2.find_or_create_instance(@ec2_session)
+    assert @ec2.instance(@ec2_session)[:aws_state], "running"
+    @ec2.purge!(@ec2_session)
+    assert_equal Mobilize::Ec2.instances_by_name(@worker_name, @ec2_session), []
   end
 end

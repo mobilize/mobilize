@@ -100,7 +100,8 @@ module Mobilize
         if resque
           Resque.enqueue!(@path.id,@job.id)
         else
-          @path.read(@job.user_id,@job.worker_cache)
+          @path_session = @path.class.login
+          @path.read(@path_session,@job.user_id,@job.worker_cache)
         end
       end
       return true

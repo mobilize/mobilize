@@ -10,7 +10,7 @@ class JobTest < MiniTest::Unit::TestCase
     #create public github instance for job
     @github = TestHelper.github_pub
     #create job
-    @job = TestHelper.job(@user,@github)
+    @job = TestHelper.job(@user,@github,@gfile)
   end
 
   def test_execute

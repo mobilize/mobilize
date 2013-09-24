@@ -7,7 +7,7 @@ module Mobilize
     field :owner, type: Array
     field :readers, type: Array
     field :writers, type: Array
-    field :_id, type: String, default:->{"gfile://#{owner_email}/#{name}"}
+    field :_id, type: String, default:->{"gfile://#{owner}/#{name}"}
 
     @@config = Mobilize.config
 
@@ -30,44 +30,44 @@ module Mobilize
       return @session
     end
 
-    def Gfile.remotes_by_name(name,session=nil)
-      @session = session || Gfile.login
-      remotes = @session.files(title: name, "title-exact" => "true")
+    def Gfile.remotes_by_name(name,session)
+      @session = session
+      @remotes = @session.files(title: name, "title-exact" => "true")
       Logger.info("found #{remotes.length.to_s} remotes by name #{name}")
-      return remotes
+      return @remotes
     end
 
-    def Gfile.remotes_by_owner(email,session=nil)
-      @session = session || Gfile.login
-      remotes = @session.files(owner: email)
+    def Gfile.remotes_by_owner(email,session)
+      @session = session
+      @remotes = @session.files(owner: email)
       Logger.info("found #{remotes.length.to_s} remotes by owner #{email}")
-      return remotes
+      return @remotes
     end
 
-    def Gfile.remotes_by_owner_and_name(email,name,session=nil)
-      @session = session || Gfile.login
-      remotes = @session.files(owner: email, title: name, "title-exact" => "true")
-      return remotes
+    def Gfile.remotes_by_owner_and_name(email,name,session)
+      @session = session
+      @remotes = @session.files(owner: email, title: name, "title-exact" => "true")
+      return @remotes
     end
 
-    def find_or_create_remote(session=nil)
+    def find_or_create_remote(session)
       @gfile = self
-      @session = session || Gfile.login
+      @session = session
       #create remote file with a blank string if there isn't one
-      rem = @gfile.remote(@session) || @session.upload_from_string("",@gfile.name)
+      @remote = @gfile.remote(@session) || @session.upload_from_string("",@gfile.name)
       @gfile.sync(rem)
-      return rem
+      return @rem
     end
 
-    def remote(session=nil)
+    def remote(session)
       @gfile = self
-      @session = session || Gfile.login
-      remotes = Gfile.remotes_by_owner_and_name(@gfile.owner_email,@gfile.name,@session)
-      if remotes.length>1
+      @session = session
+      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner_email,@gfile.name,@session)
+      if @remotes.length>1
         if @gfile.key
-          rem = remotes.select{|r| r.resource_id == @gfile.key}.first
+          @remote = @remotes.select{|r| r.resource_id == @gfile.key}.first
         end
-        if rem
+        if @rem
           Logger.info("You have #{remotes.length} remotes owned by #{@gfile.owner_email} and named #{@gfile.name};" +
                       " you should delete all incorrect versions."
                      )
@@ -76,20 +76,20 @@ module Mobilize
                        " and no local key; you should delete all incorrect versions."
                       )
         end
-      elsif remotes.length == 1
-        rem = remotes.first
+      elsif @remotes.length == 1
+        @remote = @remotes.first
         Logger.info("Remote #{rem.resource_id} found, assigning to #{@gfile.id}")
-      elsif remotes.empty?
-        rem = nil
+      elsif @remotes.empty?
+        @remote = nil
       end
-      return rem
+      return @rem
     end
 
-    def sync(session=nil)
-      @session = session || Gfile.login
+    def sync(session)
+      @session = session
       @gfile = self
-      rem = @gfile.remote(@session)
-      acls = rem.acl.to_enum.to_a
+      @remote = @gfile.remote(@session)
+      acls = @remote.acl.to_enum.to_a
       roles = {owner: [], reader: [], writer: []}
       acls.each do |a|
         scope = if a.scope.nil?
@@ -100,25 +100,42 @@ module Mobilize
         roles[a.role.to_sym] << scope
       end
       @gfile.update_attributes(
-        name: rem.title,
-        key: rem.resource_id,
+        name: @remote.title,
+        key: @remote.resource_id,
         owner: roles[:owner].first,
         readers: roles[:reader],
         writers: roles[:writer]
       )
-      return true
+      return @remote
     end
 
-    def read(session=nil)
-      @session = session || Gfile.login
+    def read(session,user,dir)
       @gfile = self
-
+      @session = session
+      @user = user
+      @remote = @gfile.sync(@session)
+      if @gfile.readers.include?(@user.id)
+        gdrive_dir = "#{dir}/gdrive"
+        FileUtils.mkdir_p(gdrive_dir)
+        gdrive_file = "#{gdrive_dir}/#{@gfile.name}"
+        @remote.download_to_file(gdrive_file)
+        Logger.info("Downloaded #{gdrive_file} from #{@gfile.id}")
+      else
+        Logger.error("User #{@user.id} does not have read access to #{@gfile.id}")
+      end
     end
 
-    def write(session=nil)
-      @session = session || Gfile.login
+    def write(session,user,file)
+      @session = session
       @gfile = self
-
+      @user = user
+      @remote = @gfile.sync(@session)
+      if @gfile.writers.include?(@user.id)
+        @remote.update_from_file(file)
+        Logger.info("Uploaded #{file} from #{@gfile.id}")
+      else
+        Logger.error("User #{@user.id} does not have write access to #{@gfile.id}")
+      end
     end
   end
 end

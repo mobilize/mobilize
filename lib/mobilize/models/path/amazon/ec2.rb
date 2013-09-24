@@ -15,8 +15,6 @@ module Mobilize
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
-    after_create :find_or_create_instance
-
     @@config = Mobilize.config
 
     def Ec2.login(access_key_id=@@config.aws.access_key_id,
@@ -27,32 +25,32 @@ module Mobilize
       return @session
     end
 
-    def Ec2.instances(session=nil, params={aws_state: ['running','pending']})
-      @session = session || Ec2.login
+    def Ec2.instances(session, params={aws_state: ['running','pending']})
+      @session = session
       all_insts = @session.describe_instances.map{|i| i.with_indifferent_access}
       filtered_insts = Ec2.filter_instances(all_insts,@session, params)
       Logger.info("got #{filtered_insts.length.to_s} instances for #{@session.params[:region]}, params: #{params.to_s}")
       return filtered_insts
     end
 
-    def Ec2.filter_instances(all_insts,session = nil,params={aws_state: ['running','pending']})
+    def Ec2.filter_instances(all_insts,params={aws_state: ['running','pending']})
       all_insts.select do |i|
         match_array = params.map{|k,v| v.to_a.include?(i[k])}.uniq
         match_array.length == 1 and match_array.first == true
       end
     end
 
-    def Ec2.instances_by_name(name,session=nil,params={aws_state: ['running','pending']})
-      @session = session || Ec2.login
+    def Ec2.instances_by_name(name,session,params={aws_state: ['running','pending']})
+      @session = session
       insts = Ec2.instances(@session).select{|i| i[:tags][:name] == name}
       Logger.info("found #{insts.length.to_s} instances by name #{name}")
       return insts
     end
 
 
-    def find_or_create_instance(session=nil)
+    def find_or_create_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       begin
         #check for an instance_id assigned, so verify and
         #update w any changes
@@ -65,9 +63,9 @@ module Mobilize
     end
 
     #find instance by ID, update DB record with latest from AWS
-    def instance(session=nil)
+    def instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       inst = Ec2.instances(@session,
                {aws_instance_id: @ec2.instance_id,
                 aws_state: ['running','pending']}).first
@@ -91,11 +89,11 @@ module Mobilize
       return @ec2
     end
 
-    def purge!(session=nil)
+    def purge!(session)
       #terminates the remote instance then
       #deletes the local database instance
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       #terminate instances by name
       insts = Ec2.instances_by_name(@ec2.name,@session)
       insts.each do |i|
@@ -109,18 +107,18 @@ module Mobilize
       return true
     end
 
-    def launch(session=nil)
+    def launch(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_groups, instance_type: @ec2.size}
       inst = @session.launch_instances(@ec2.ami, inst_params).first
       @session.create_tag(inst[:aws_instance_id],"name", @ec2.name)
       return inst
     end
 
-    def resolve_instance(session=nil)
+    def resolve_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       insts = Ec2.instances_by_name(@ec2.name,@session)
       if insts.length>1
         Logger.error("You have more than 1 running instance named #{@ec2.name} -- please investigate your configuration")
@@ -133,18 +131,18 @@ module Mobilize
       return inst
     end
 
-    def wait_for_instance(session=nil)
+    def wait_for_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       while (state=@ec2.instance(@session)[:aws_state]) != "running"
         Logger.info("Instance #{@ec2.instance_id} still at #{state} -- waiting 10 sec")
         sleep 10
       end
     end
 
-    def create_instance(session=nil)
+    def create_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       inst = @ec2.resolve_instance(@session) || @ec2.launch(@session)
       @ec2.sync(inst)
       #wait around until the instance is running

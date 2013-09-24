@@ -38,7 +38,7 @@ module Mobilize
       return @session
     end
 
-    def is_private?(session=nil)
+    def is_private?(session)
       @github = self
       @session = session || Github.login
       begin
@@ -67,19 +67,23 @@ module Mobilize
     #clones repo into temp folder with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
-    def read(user_id=nil,dir=Dir.mktmpdir)
+    def read(session,user,dir)
       @github = self
-      @session ||= Github.login
-      repo_dir = if @github.is_private?(@session)
-                   @github.priv_read(user_id,dir)
-                 else
-                   @github.pub_read(dir)
-                 end
-      Logger.info("Read #{@github.id} into #{dir}")
+      @session = session
+      @user = user
+      if @github.is_private?(@session)
+        @github.read_private(@user,dir)
+      else
+        @github.read_public(dir)
+      end
+      #get size of objects and log
+      log_cmd = "cd #{dir}/#{@github.repo_name} && git count-objects -H"
+      size = log_cmd.popen4
+      Logger.info("Read #{@github.id} into #{dir}: #{size}")
       return repo_dir
     end
 
-    def pub_read(dir)
+    def read_public(dir)
       @github = self
       cmd = "cd #{dir} && " +
             "git clone -q #{@github.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
@@ -88,9 +92,9 @@ module Mobilize
       return "#{dir}/#{@github.repo_name}"
     end
 
-    def collaborators(session=nil)
+    def collaborators(session)
       @github = self
-      @session ||= Github.login
+      @session = session
       begin
         resp = @session.repos.collaborators.list(user: @github.owner_name, repo: @github.repo_name)
         Logger.info("Got collaborators for #{@github._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
@@ -100,22 +104,23 @@ module Mobilize
       return resp.body.map{|b| b[:login]}
     end
 
-    def verify_collaborator(user_id, session=nil)
+    def verify_collaborator(user, session)
       @github = self
-      @session = session || Github.login
-      u = User.find(user_id)
-      if @github.collaborators.include?(u.github_login)
-        Logger.info("Verified user #{u._id} has access to #{@github._id}")
+      @session = session
+      @user = user
+      if @github.collaborators.include?(@user.github_login)
+        Logger.info("Verified user #{@user._id} has access to #{@github._id}")
         return true
       else
-        Logger.error("User #{u._id} does not have access to #{@github._id}")
+        Logger.error("User #{@user._id} does not have access to #{@github._id}")
       end
     end
 
-    def priv_read(user_id,dir)
+    def read_private(user,dir)
       @github = self
+      @user = user
       #determine if the user in question is a collaborator on the repo
-      @github.verify_collaborator(user_id)
+      @github.verify_collaborator(@user)
       #thus verified, get the ssh key and pull down the repo
       git_files = @github.add_git_files(dir)
       #add keys, clone repo, go to specific revision, execute command
