@@ -26,14 +26,16 @@ class GithubTest < MiniTest::Unit::TestCase
     FileUtils.mkdir_p(dir_public)
     repo_dir_public = @github_public.read(@github_session,@user,dir_public)
     assert_in_delta "cd #{repo_dir_public} && git status".popen4.length, 1, 1000
-    FileUtils.rm_r(dir_public, force: true)
     Mobilize::Logger.info("Deleted folder for #{@github_public.id}")
     if @github_private
       dir_private = "#{@job.worker_cache}/#{@github_private.repo_name}"
       FileUtils.mkdir_p(dir_private)
       repo_dir_private = @github_private.read(@github_session,@user,dir_private)
       assert_in_delta "cd #{repo_dir_private} && git status".popen4.length, 1, 1000
-      FileUtils.rm_r(dir_private, force: true)
     end
+  end
+
+  def teardown
+    FileUtils.rm_r(@job.worker_cache, force: true)
   end
 end

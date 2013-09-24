@@ -56,7 +56,7 @@ module Mobilize
       #create remote file with a blank string if there isn't one
       @remote = @gfile.remote(@session) || @session.upload_from_string("",@gfile.name)
       @gfile.sync(rem)
-      return @rem
+      return @remote
     end
 
     def remote(session)
@@ -82,13 +82,14 @@ module Mobilize
       elsif @remotes.empty?
         @remote = nil
       end
-      return @rem
+      return @remote
     end
 
     def sync(session)
       @session = session
       @gfile = self
       @remote = @gfile.remote(@session)
+      Logger.error("Could not find remote for #{@gfile.id}") unless @remote
       acls = @remote.acl.to_enum.to_a
       roles = {owner: [], reader: [], writer: []}
       acls.each do |a|
@@ -129,7 +130,7 @@ module Mobilize
       @session = session
       @gfile = self
       @user = user
-      @remote = @gfile.sync(@session)
+      @remote = @gfile.find_or_create_remote(@session)
       if @gfile.writers.include?(@user.id)
         @remote.update_from_file(file)
         Logger.info("Uploaded #{file} from #{@gfile.id}")

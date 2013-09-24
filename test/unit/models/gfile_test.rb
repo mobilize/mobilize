@@ -2,7 +2,8 @@ require "test_helper"
 class GfileTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @gfile = TestHelper.gfile
+    @gfile_name = Mobilize.config.minitest.gfile.name
+    @gfile = TestHelper.gfile(@gfile_name)
     @worker_name = Mobilize.config.minitest.ec2.worker_name
     @ec2 = TestHelper.ec2(@worker_name)
     @user = TestHelper.user(@ec2)
@@ -10,26 +11,34 @@ class GfileTest < MiniTest::Unit::TestCase
     @gfile_session = Gfile.login
   end
 
-  #make sure defaults are working as expected
-  def test_create
-    assert_equal @gfile.domain, "github.com"
-    assert_equal @github_public.owner_name, "mobilize"
-    assert_equal @github_public.repo_name, "mobilize"
-    assert_equal @github_public.http_url, "https://github.com/mobilize/mobilize"
-    assert_equal @github_public.git_http_url, "https://github.com/mobilize/mobilize.git"
-    assert_equal @github_public.git_ssh_url, "git@github.com:mobilize/mobilize.git"
+  def test_find_or_create_remote
+    #remove all remotes for this file
+    @gfile.purge!(@gfile_session)
+    @gfile = TestHelper.gfile(@gfile_name)
+    @remote = @gfile.find_or_create_remote(@gfile_session)
+    #delete DB version, start over, should find existing instance
+    #with same key
+    key = @gfile.key
+    @gfile.delete
+    @gfile = TestHelper.gfile(@gfile_name)
+    @gfile.find_or_create_remote(@gfile_session)
+    assert_equal @gfile.key, key
   end
 
-  def test_load
-    dir_public = "#{@job.worker_cache}/#{@github_public.repo_name}"
-    @github_public.read(@session,dir_public)
-    assert_in_delta "cd #{dir_public} && git status".popen4.length, 1, 1000
-    FileUtils.rm_r(dir_public, force: true)
-    Mobilize::Logger.info("Deleted folder for #{@github_public.id}")
-    if @github_private
-      dir_private = "#{@job.worker_cache}/#{@github_private.repo_name}"
-      assert_in_delta "cd #{dir_private} && git status".popen4.length, 1, 1000
-      FileUtils.rm_r(dir_private, force: true)
-    end
+  def test_write_and_read
+    test_dir = "#{@job.worker_cache}/gdrive"
+    test_input_string = "test_file_string"
+    test_input_path = "#{@test_dir}/#{@gfile_name}.in"
+    FileUtils.mkdir_p(test_dir)
+    File.open(test_input_path,'w') {|f| f.print(test_file_string)}
+    @gfile.write(@gfile_session,@user,test_input_path)
+    @gfile.read(@gfile_session,@user,test_dir)
+    test_output_path = "#{test_dir}/#{@gfile.name}"
+    test_output_string = File.read(test_output_path)
+    assert_equal test_input_string, test_output_string
+  end
+  
+  def teardown
+    FileUtils.rm_r(@job.worker_cache, force: true)
   end
 end
