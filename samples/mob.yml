@@ -3,6 +3,7 @@
 development:
   resque:
     queue: mobilize
+    workers: 5
   object:
     send_total_retries: 3
     send_sleep_time: 5
@@ -46,6 +47,7 @@ development:
 test:
   resque:
     queue: mobilize
+    workers: 5
   object:
     send_total_retries: 3
     send_sleep_time: 5
@@ -97,6 +99,7 @@ test:
 staging:
   resque:
     queue: mobilize
+    workers: 5
   object:
     send_total_retries: 3
     send_sleep_time: 5
@@ -133,6 +136,7 @@ staging:
 production:
   resque:
     queue: mobilize
+    workers: 5
   object:
     send_total_retries: 3
     send_sleep_time: 5

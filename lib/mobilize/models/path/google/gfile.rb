@@ -9,21 +9,21 @@ module Mobilize
     field :writers, type: Array
     field :_id, type: String, default:->{"gfile://#{owner}/#{name}"}
 
-    @@config = Mobilize.config
+    @@config = Mobilize.config.google
 
     def Gfile.get_password(email)
-      if email == @@config.google.owner.email
-        password = @@config.google.owner.password
+      if email == @@config.owner.email
+        password = @@config.owner.password
         Logger.info("Got password for google owner email #{email}")
       else
-        password = @@config.google.worker.accounts.select{|w| w.email == email}.first
+        password = @@config.worker.accounts.select{|w| w.email == email}.first
         Logger.error("Could not find password for email #{email}") unless password
         Logger.info("Got password for google worker email #{email}")
       end
       return password
     end
 
-    def Gfile.login(email=@@config.google.owner.email)
+    def Gfile.login(email=@@config.owner.email)
       password = Gfile.get_password(email)
       @session = ::GoogleDrive.login(email,password)
       Logger.info("Logged into Google Drive.")

@@ -6,11 +6,11 @@ module Mobilize
     field :domain, type: String, default:->{"github.com"}
     field :owner_name, type: String
     field :repo_name, type: String
-    field :_id, type: String, default:->{"#{domain}:#{owner_name}/#{repo_name}"}
+    field :_id, type: String, default:->{"github::#{domain}/#{owner_name}/#{repo_name}"}
 
     validates :owner_name, :repo_name, presence: true
 
-    @@config = Mobilize.config
+    @@config = Mobilize.config.github
 
     def http_url
       @github = self
@@ -33,7 +33,7 @@ module Mobilize
     end
 
     def Github.login
-      @session = ::Github.new(login: @@config.github.owner_login, password: @@config.github.owner_password)
+      @session = ::Github.new(login: @@config.owner_login, password: @@config.owner_password)
       Logger.info("Logged into Github.")
       return @session
     end
@@ -56,11 +56,11 @@ module Mobilize
       end
     end
 
-    #performs a github read in preparation for a Transfer
-    def Github.perform(github_id,transfer_id)
+    #performs a github read in preparation for a Task
+    def Github.perform(github_id,task_id)
       @github = Github.find(github_id)
-      @transfer = Transfer.find(transfer_id)
-      @github.read(@transfer.user_id,@transfer.local)
+      @task = Task.find(task_id)
+      @github.read(@task.user_id,@task.local)
       return true
     end
 
@@ -136,7 +136,7 @@ module Mobilize
     end
 
     def add_git_files(dir)
-      key_value = File.read(@@config.github.owner_ssh_key_path)
+      key_value = File.read(@@config.owner_ssh_key_path)
       #create key file, set permissions, write key
       key_file_path = dir + "/key.ssh"
       File.open(key_file_path,"w") {|f| f.print(key_value)}

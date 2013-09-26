@@ -4,10 +4,10 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
-    field :ami, type: String, default:->{@@config.ec2.ami}
-    field :size, type: String, default:->{@@config.ec2.size}
-    field :keypair_name, type: String, default:->{@@config.ec2.keypair_name}
-    field :security_groups, type: Array, default:->{@@config.ec2.security_groups}
+    field :ami, type: String, default:->{@@config.ami}
+    field :size, type: String, default:->{@@config.size}
+    field :keypair_name, type: String, default:->{@@config.keypair_name}
+    field :security_groups, type: Array, default:->{@@config.security_groups}
     field :instance_id, type: String
     field :dns, type: String #public dns
     field :ip, type: String #private ip
@@ -15,11 +15,48 @@ module Mobilize
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
-    @@config = Mobilize.config
+    @@config = Mobilize.config.ec2
 
-    def Ec2.login(access_key_id=@@config.aws.access_key_id,
-                      secret_access_key=@@config.aws.secret_access_key,
-                      region=@@config.ec2.region)
+    def cache
+      return "#{@@config.cache}/jobs/#{self.user.ssh_name}/#{self.name}"
+    end
+
+    def create_server
+      @job = self
+      #clear out and regenerate server folder
+      @job.ssh("mkdir -p #{@job.server_cache}")
+      Logger.info("Created #{@job.server_cache}")
+      return true
+    end
+
+    def clear_server
+      @job = self
+      @job.purge_server
+      @job.create_server
+      Logger.info("Cleared server: #{@job.server_cache}")
+    end
+
+    def read_stdin
+      @job = self
+      File.open("#{@job.worker_cache}/stdin","w") {|f| f.print(@job.command)}
+      Logger.info("Read stdin into worker: #{@job.worker_cache}")
+    end
+
+    def compress_worker
+      @job = self
+      "cd #{@job.worker_cache}/.. && tar -zcvf #{@job.name}.tar.gz #{@job.name}".popen4(true)
+      Logger.info("Compressed worker to: #{@job.worker_cache}.tar.gz")
+    end
+
+    def purge
+      @job = self
+      @job.ssh("sudo rm -rf #{@job.server_cache}*")
+      Logger.info("Removed #{@job.server_cache}*")
+    end
+
+    def Ec2.login(access_key_id=Mobilize.config.aws.access_key_id,
+                      secret_access_key=Mobilize.config.aws.secret_access_key,
+                      region=@@config.region)
       @session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
       Logger.info("Logged into ec2 for region #{region}")
       return @session
@@ -150,10 +187,29 @@ module Mobilize
       return @ec2.instance(@session)
     end
 
+    def run(session,job)
+      @session = session
+      @job = job
+      @job.clear_server
+      #job worker directory to server
+      @job.commit
+      @job.purge_worker
+      begin
+        exec_cmd = "(cd #{@job.server_cache} && sh stdin) > " +
+                   "#{@job.server_cache}/stdout 2> " +
+                   "#{@job.server_cache}/stderr"
+        @job.ssh(exec_cmd)
+        Logger.info("Completed job for #{@job.id}")
+      rescue
+        Logger.error("Failed job #{@job.id} with #{@job.stderr}")
+      end
+      return @job.stdout      
+    end
+   
     def ssh(command,except=true)
       @ec2 = self
-      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
-      @result = Net::SSH.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |ssh|
+      ssh_args = {keys: @@config.private_key_path,paranoid: false}
+      @result = Net::SSH.send_w_retries("start",@ec2.dns,@@config.root_user,ssh_args) do |ssh|
         ssh.run(command,except)
       end
       return @result
@@ -161,8 +217,8 @@ module Mobilize
 
     def scp(loc_path, rem_path)
       @ec2 = self
-      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
-      @result = Net::SCP.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |scp|
+      ssh_args = {keys: @@config.private_key_path,paranoid: false}
+      @result = Net::SCP.send_w_retries("start",@ec2.dns,@@config.root_user,ssh_args) do |scp|
         scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
           Logger.info("#{name}: #{sent}/#{total}")
         end

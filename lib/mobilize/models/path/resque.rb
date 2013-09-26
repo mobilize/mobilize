@@ -4,9 +4,9 @@ module Mobilize
     @@config = Mobilize.config
 
     def Resque.workers(state="all")
-      workers = ::Resque.workers.select{|w| w.queues.first == @@config.resque.queue}
+      workers = ::Resque.workers.select{|w| w.queues.first == @@config.queue}
       return workers if state == 'all'
-      working_workers = workers.select{|w| w.job['queue'] == @@config.resque.queue}
+      working_workers = workers.select{|w| w.job['queue'] == @@config.queue}
       return working_workers if state == 'working'
       idle_workers = workers.select{|w| w.job['queue'].nil?}
       return idle_workers if state == 'idle'
@@ -22,14 +22,14 @@ module Mobilize
     end
 
     def Resque.failures
-      ::Resque::Failure.all(0,0).select{|f| f['queue'] == @@config.resque.queue}
+      ::Resque::Failure.all(0,0).select{|f| f['queue'] == @@config.queue}
     end
 
     #active state refers to jobs that are either queued or working
     def Resque.jobs(state="active")
       working_jobs =  Resque.workers('working').map{|w| w.job['payload']}
       return working_jobs if state == 'working'
-      queued_jobs = ::Resque.peek(@@config.resque.queue,0,0).to_a
+      queued_jobs = ::Resque.peek(@@config.queue,0,0).to_a
       return queued_jobs if state == 'queued'
       return working_jobs + queued_jobs if state == 'active'
       failed_jobs = Resque.failures.map{|f| f['payload']}
