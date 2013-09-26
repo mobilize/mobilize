@@ -11,6 +11,12 @@ module TestHelper
   def TestHelper.ec2(name)
     return Mobilize::Ec2.find_or_create_by(name: name)
   end
+  def TestHelper.ssh(ec2)
+    ec2.sshs.find_or_create_by(
+      user_name: Mobilize.config.minitest.ssh.user_name,
+      key_path: Mobilize.config.minitest.ssh.key_path
+    )
+  end
   def TestHelper.user(ec2)
     Mobilize::User.find_or_create_by(
       active: true,
@@ -46,14 +52,14 @@ module TestHelper
       return nil
     end
   end
-  #allow nil inputs and outputs for testing
-  def TestHelper.job(user,input_path=nil,output_path=nil)
-    Mobilize::Job.find_or_create_by(
-      user_id: user.id,
-      command: "ls @path",
-      input_path_ids: ([input_path.id ] if input_path),
-      output_path_ids: ([output_path.id] if output_path),
-      gsubs: {"@path"=>"mobilize"}
+  def TestHelper.job(user)
+    user.jobs.create
+  end
+  def TestHelper.task(job,path,call,args={})
+    @task = job.tasks.find_or_create_by(
+      path: path, call: call
     )
+    @task.update_attributes(args)
+    @task
   end
 end

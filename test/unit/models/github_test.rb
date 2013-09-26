@@ -2,13 +2,15 @@ require "test_helper"
 class GithubTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @github_public = TestHelper.github_public
-    @worker_name = Mobilize.config.minitest.ec2.worker_name
-    @ec2 = TestHelper.ec2(@worker_name)
-    @user = TestHelper.user(@ec2)
-    @github_private = TestHelper.github_private
-    @github_session = Github.login
-    @job = TestHelper.job(@user)
+    @github_public        = TestHelper.github_public
+    @worker_name          = Mobilize.config.minitest.ec2.worker_name
+    @ec2                  = TestHelper.ec2(@worker_name)
+    @user                 = TestHelper.user(@ec2)
+    @github_private       = TestHelper.github_private
+    @github_session       = Github.login
+    @job                  = TestHelper.job(@user)
+    @github_public_task   = TestHelper.task(@job,@github_public,"read")
+    @github_private_task  = TestHelper.task(@job,@github_private,"read")
   end
 
   #make sure defaults are working as expected
@@ -22,20 +24,17 @@ class GithubTest < MiniTest::Unit::TestCase
   end
 
   def test_read
-    dir_public = "#{@job.worker_cache}/#{@github_public.repo_name}"
-    FileUtils.mkdir_p(dir_public)
-    repo_dir_public = @github_public.read(@github_session,@user,dir_public)
-    assert_in_delta "cd #{repo_dir_public} && git status".popen4.length, 1, 1000
-    Mobilize::Logger.info("Deleted folder for #{@github_public.id}")
+    @github_public.clear_cache(@task)
+    @github_public.read(@task)
+    assert_in_delta "cd #{@github_public.cache(@task)} && git status".popen4.length, 1, 1000
     if @github_private
-      dir_private = "#{@job.worker_cache}/#{@github_private.repo_name}"
-      FileUtils.mkdir_p(dir_private)
-      repo_dir_private = @github_private.read(@github_session,@user,dir_private)
-      assert_in_delta "cd #{repo_dir_private} && git status".popen4.length, 1, 1000
+      @github_private.clear_cache(@task)
+      @github_private.read(@task)
+      assert_in_delta "cd #{@github_private.cache(@task)} && git status".popen4.length, 1, 1000
     end
   end
 
   def teardown
-    FileUtils.rm_r(@job.worker_cache, force: true)
+    FileUtils.rm_r(@task.cache, force: true)
   end
 end

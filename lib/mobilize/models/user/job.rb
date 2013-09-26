@@ -3,11 +3,8 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String, default:->{Time.now.utc.strftime("%Y%m%d%H%M%S")}
-    field :command, type: String #command to be executed on the server
-    field :gsubs, type: Hash #params to be replaced after read, before deploy
     field :_id, type: String, default:->{"#{self.user.id}/#{name}"}
     belongs_to :user
-    belongs_to :cron
     embeds_many :tasks
 
     @@config = Mobilize.config.job

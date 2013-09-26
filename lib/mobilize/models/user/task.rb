@@ -6,56 +6,59 @@ module Mobilize
     include Mongoid::Timestamps
     embedded_in :job
     belongs_to :path
+    field :stdin, type: String
+    field :gsubs, type: Hash
     field :call, type: String #method to call on path
     field :started_at, type: Time
     field :completed_at, type: Time
     field :failed_at, type: Time
+    field :retried_at, type: Time
     field :status_at, type: Time
+    field :status, type: String
+    field :retries, type: String
     field :_id, type: String, default:->{"#{self.job.id}::#{self.path.id}##{call}"}
 
     @@config = Mobilize.config.task
 
-    def initialize(job_id,path_id,name,status)
-      path_kind           = path_id.split("::").first
-      @path_model         = "Mobilize::#{path_kind.capitalize}".constantize
-      @path               = @path_model.find(path_id)
-      @job                = Job.find(job_id)
-      @name               = name
-      @status_message     = status.split("::").first
-      @status_time        = status.split("::").last
-    end
-
     def cache
-      return self.path.cache(self)
+      self.path.cache(self)
     end
 
-    def purge!
-      #deletes its own cache and all task caches
-      @job = self
-      FileUtils.rm_r(@job.cache,:force=>true)
-      Logger.info("Removed cache for #{@job}")
-      @job.tasks.each{|task| task.purge!}
+    def purge_cache
+      self.path.purge_cache(self)
     end
 
-    def status
+    def get_status
       #try to get status from redis first
-      #then try to get completeness from job
+      #then from job
     end
 
-    def Task.perform(job_id,path_id,name,status="queued::#{Time.now.utc}")
-      @task = Task.new(job_id,path_id,name,status)
+    def set_status(message)
+      #set status in redis first if possible
+      #then in DB
+    end
+
+    def Task.perform(task_id)
+      @task    = Task.find(task_id)
       @session = @task.path_model.session
       if @session
-        @task.set_status("working")
-        @path.send(@task.name,@task)
+        @task.set_status("started")
+        begin
+          @path.send(@task.name,@task)
+        rescue => @exc
+          @task.set_status("failed")
+          message = "Failed task #{@task.id} with #{@exc.to_s}"
+          if @task.retries < @@config.total_retries
+            Logger.info(message)
+          else
+            Logger.error(message)
+          end
+        end
         @task.set_status("complete")
+        Logger.info("Completed task #{@task.id}")
       else
         @task.requeue("No session available")
       end
-    end
-
-    def waiting?
-
     end
 
     def requeue(message)
@@ -69,6 +72,7 @@ module Mobilize
       Resque.enqueue(Task,@task.job.id,@task.path.id,@task.method,@task.status)
     end
 
+    #for SSH tasks only
     #defines 3 methods for retrieving each of the streams
     #as recorded in their files
     #def_each is included in extensions

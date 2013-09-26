@@ -67,6 +67,7 @@ module Mobilize
     def deploy(task)
       @ssh = self
       @task = task
+      @ssh.clear_cache(@task)
       Logger.info("Starting deploy for #{@task.id}")
       @ssh.read_stdin(@task)
       @ssh.gsub!(@task)
@@ -80,19 +81,12 @@ module Mobilize
     def run(task)
       @ssh = self
       @task = task
-      @ssh.clear_cache(@task)
       #job worker directory to server
       @ssh.deploy(@task)
-      @ssh.purge_cache(@task)
-      begin
-        exec_cmd = "(cd #{@ssh.cache(@task)} && sh stdin) > " +
-                   "#{@ssh.cache(@task)}/stdout 2> " +
-                   "#{@ssh.cache(@task)}/stderr"
-        @ssh.sh(exec_cmd)
-        Logger.info("Completed task #{@task.id}")
-      rescue
-        Logger.error("Failed task #{@task.id} with #{@task.stderr}")
-      end
+      exec_cmd = "(cd #{@ssh.cache(@task)} && sh stdin) > " +
+                 "#{@ssh.cache(@task)}/stdout 2> " +
+                 "#{@ssh.cache(@task)}/stderr"
+      @ssh.sh(exec_cmd)
       return true    
     end
    

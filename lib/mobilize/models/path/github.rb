@@ -93,8 +93,8 @@ module Mobilize
       #get size of objects and log
       log_cmd = "cd #{@github.cache(@task)} && git count-objects -H"
       size = log_cmd.popen4
-      Logger.info("Read #{@github.id} into #{dir}: #{size}")
-      return repo_dir
+      Logger.info("Read #{@github.id} into #{@github.cache(@task)}: #{size}")
+      return true
     end
 
     def read_public(task)
