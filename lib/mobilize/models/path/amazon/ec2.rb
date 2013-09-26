@@ -21,7 +21,7 @@ module Mobilize
                       secret_access_key=Mobilize.config.aws.secret_access_key,
                       region=@@config.region)
       @session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
-      Logger.info("Logged into ec2 for region #{region}")
+      Logger.info("Got ec2 session for region #{region}")
       return @session
     end
 

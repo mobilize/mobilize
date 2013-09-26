@@ -2,12 +2,10 @@ module Mobilize
   class Ssh < Path
     include Mongoid::Document
     include Mongoid::Timestamps
-    field :dns, type: String #dns for box
     field :user_name, type: String #username for box
     field :key_path, type: String #path to private key
+    belongs_to :ec2
     
-    @@config = Mobilize.config.ssh
-
     def cache(task)
       return task.job.cache
     end
@@ -101,7 +99,7 @@ module Mobilize
     def sh(command,except=true)
       @ssh = self
       ssh_args = {keys: @ssh.key_path,paranoid: false}
-      @result = Net::SSH.send_w_retries("start",@ssh.dns,@ssh.user_name,ssh_args) do |ssh|
+      @result = Net::SSH.send_w_retries("start",@ssh.ec2.dns,@ssh.user_name,ssh_args) do |ssh|
         ssh.run(command,except)
       end
       return @result
@@ -110,7 +108,7 @@ module Mobilize
     def cp(loc_path, rem_path)
       @ssh = self
       ssh_args = {keys: @ssh.key_path,paranoid: false}
-      @result = Net::SCP.send_w_retries("start",@ssh.dns,@ssh.user_name,ssh_args) do |scp|
+      @result = Net::SCP.send_w_retries("start",@ssh.ec2.dns,@ssh.user_name,ssh_args) do |scp|
         scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
           Logger.info("#{name}: #{sent}/#{total}")
         end

@@ -5,7 +5,7 @@ class Ec2Test < MiniTest::Unit::TestCase
     @worker_name = Mobilize.config.minitest.ec2.worker_name
     @ec2 = TestHelper.ec2(@worker_name)
     #create session based off of definites
-    @ec2_session = Mobilize::Ec2.login
+    @ec2_session = Mobilize::Ec2.session
   end
 
   #make sure defaults are working as expected
