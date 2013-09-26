@@ -35,9 +35,6 @@ cli_dir = "mobilize/cli"
 require "#{cli_dir}/cli"
 
 require 'pry'
-require "popen4"
-require 'net/ssh'
-require 'net/scp'
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
@@ -58,6 +55,7 @@ user_dir = "#{models_dir}/user"
 require "#{user_dir}/user"
 require "#{user_dir}/cron"
 require "#{user_dir}/job"
+require "#{user_dir}/task"
 
 path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
@@ -65,6 +63,11 @@ require 'github_api'
 require "#{path_dir}/github"
 require "resque"
 require "#{path_dir}/resque"
+
+require "popen4"
+require "net/ssh"
+require "net/scp"
+require "#{path_dir}/ssh"
 
 require "aws"
 amazon_dir = "#{path_dir}/amazon"

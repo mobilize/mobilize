@@ -1,6 +1,6 @@
 module Mobilize
   #an Ec2 resolves to an ec2 instance
-  class Ec2 < Path
+  class Ec2
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
@@ -11,38 +11,11 @@ module Mobilize
     field :instance_id, type: String
     field :dns, type: String #public dns
     field :ip, type: String #private ip
-    field :_id, type: String, default:->{ "#{self.to_s.downcase}::#{name}" }
+    field :_id, type: String, default:->{ name }
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
     @@config = Mobilize.config.ec2
-
-    def cache(task)
-      return "#{@@config.cache}/#{self.user.ssh_name}/#{task.job.name}"
-    end
-
-    def create_cache(task)
-      @ec2 = self
-      @task = task
-      #clear out and regenerate server folder
-      @ec2.ssh("mkdir -p #{@ec2.cache(@task)}")
-      Logger.info("Created cache for #{@task.id}")
-      return true
-    end
-
-    def clear_cache(task)
-      @ec2 = self
-      @task = task
-      @ec2.purge_cache(@task)
-      @ec2.create_cache(@task)
-      Logger.info("Cleared cache for #{@task.id}")
-    end
-
-    def purge_cache(task)
-      @job = self
-      @job.ssh("sudo rm -rf #{@job.server_cache}*")
-      Logger.info("Removed #{@job.server_cache}*")
-    end
 
     def Ec2.session(access_key_id=Mobilize.config.aws.access_key_id,
                       secret_access_key=Mobilize.config.aws.secret_access_key,
@@ -73,7 +46,6 @@ module Mobilize
       Logger.info("found #{insts.length.to_s} instances by name #{name}")
       return insts
     end
-
 
     def find_or_create_instance(session)
       @ec2 = self
@@ -173,45 +145,6 @@ module Mobilize
       #wait around until the instance is running
       @ec2.wait_for_instance(@session)
       return @ec2.instance(@session)
-    end
-
-    def run(session,job)
-      @session = session
-      @job = job
-      @job.clear_server
-      #job worker directory to server
-      @job.commit
-      @job.purge_worker
-      begin
-        exec_cmd = "(cd #{@job.server_cache} && sh stdin) > " +
-                   "#{@job.server_cache}/stdout 2> " +
-                   "#{@job.server_cache}/stderr"
-        @job.ssh(exec_cmd)
-        Logger.info("Completed job for #{@job.id}")
-      rescue
-        Logger.error("Failed job #{@job.id} with #{@job.stderr}")
-      end
-      return @job.stdout      
-    end
-   
-    def ssh(command,except=true)
-      @ec2 = self
-      ssh_args = {keys: @@config.private_key_path,paranoid: false}
-      @result = Net::SSH.send_w_retries("start",@ec2.dns,@@config.root_user,ssh_args) do |ssh|
-        ssh.run(command,except)
-      end
-      return @result
-    end
-
-    def scp(loc_path, rem_path)
-      @ec2 = self
-      ssh_args = {keys: @@config.private_key_path,paranoid: false}
-      @result = Net::SCP.send_w_retries("start",@ec2.dns,@@config.root_user,ssh_args) do |scp|
-        scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
-          Logger.info("#{name}: #{sent}/#{total}")
-        end
-      end
-      return @result
     end
   end
 end

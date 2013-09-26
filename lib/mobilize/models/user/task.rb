@@ -68,5 +68,15 @@ module Mobilize
       end
       Resque.enqueue(Task,@task.job.id,@task.path.id,@task.method,@task.status)
     end
+
+    #defines 3 methods for retrieving each of the streams
+    #as recorded in their files
+    #def_each is included in extensions
+    def_each :stdin, :stdout, :stderr do |stream|
+      @task = self
+      Logger.error("Not an SSH task") unless @task.path.class == Mobilize::Ssh
+      Logger.info("retrieving #{stream.to_s} for #{@task.id}")
+      @task.sh("cat #{@task.path.cache}/#{stream.to_s}")[:stdout]
+    end 
   end
 end

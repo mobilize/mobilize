@@ -137,7 +137,7 @@ module Mobilize
       #determine if the user in question is a collaborator on the repo
       @github.verify_collaborator(@task)
       #thus verified, get the ssh key and pull down the repo
-      @github.add_git_files(@task)
+      @github.add_git_file(@task)
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{git_files.first} && " +
             "cd #{@github.cache(@task)}/.. && " +
@@ -152,19 +152,13 @@ module Mobilize
       "#{self.cache(task)}/../git.ssh"
     end
 
-    def key_file_path
-      "#{self.cache(task)}/../key.ssh"
-    end
-
-    def add_git_files(task)
+    def add_git_file(task)
       @github = self
       @task = task
-      key_value = File.read(@@config.owner_ssh_key_path)
-      #create key file, set permissions, write key
-      File.open(@github.key_file_path(@task),"w") {|f| f.print(key_value)}
-      "chmod 0600 #{@github.key_file_path(@task)}".popen4
       #set git to not check strict host
-      git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' -i #{@github.key_file_path(@task)} \"$@\""
+      git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh " +
+                    "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
+                    "-i #{@@config.owner_ssh_key_path} \"$@\""
       File.open(@github.git_ssh_file_path(@task),"w") {|f| f.print(git_ssh_cmd)}
       "chmod 0700 #{@github.git_ssh_file_path(@task)}".popen4
       Logger.info("Added git files for repo #{@github._id}")
@@ -172,7 +166,7 @@ module Mobilize
     end
 
     def remove_git_files(task)
-      [self.git_ssh_file_path(task),self.key_file_path(task)].each{|fp| FileUtils.rm(fp,force: true)}
+      FileUtils.rm(self.git_ssh_file_path(task),force: true)
     end
   end
 end
