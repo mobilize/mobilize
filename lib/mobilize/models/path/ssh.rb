@@ -4,6 +4,7 @@ module Mobilize
     include Mongoid::Timestamps
     field :user_name, type: String #username for box
     field :key_path, type: String #path to private key
+    field :_id, type: String, default:->{"ssh::#{ec2_id}/#{user_name}"}
     belongs_to :ec2
     
     def cache(task)

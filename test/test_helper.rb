@@ -55,10 +55,11 @@ module TestHelper
   def TestHelper.job(user)
     user.jobs.create
   end
-  def TestHelper.task(job,path,call,args={})
+  def TestHelper.task(job,path,call,session,args={})
     @task = job.tasks.find_or_create_by(
       path: path, call: call
     )
+    @task.session = session
     @task.update_attributes(args)
     @task
   end

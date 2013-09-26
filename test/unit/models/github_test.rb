@@ -7,10 +7,11 @@ class GithubTest < MiniTest::Unit::TestCase
     @ec2                  = TestHelper.ec2(@worker_name)
     @user                 = TestHelper.user(@ec2)
     @github_private       = TestHelper.github_private
-    @github_session       = Github.login
     @job                  = TestHelper.job(@user)
-    @github_public_task   = TestHelper.task(@job,@github_public,"read")
-    @github_private_task  = TestHelper.task(@job,@github_private,"read")
+    #assign same session to both githubs
+    @github_session       = Mobilize::Github.session
+    @github_public_task   = TestHelper.task(@job,@github_public,"read",@github_session)
+    @github_private_task  = TestHelper.task(@job,@github_private,"read",@github_session)
   end
 
   #make sure defaults are working as expected
@@ -24,17 +25,17 @@ class GithubTest < MiniTest::Unit::TestCase
   end
 
   def test_read
-    @github_public.clear_cache(@task)
-    @github_public.read(@task)
-    assert_in_delta "cd #{@github_public.cache(@task)} && git status".popen4.length, 1, 1000
+    @github_public.clear_cache(@github_public_task)
+    @github_public.read(@github_public_task)
+    assert_in_delta "cd #{@github_public.cache(@github_public_task)} && git status".popen4.length, 1, 1000
     if @github_private
-      @github_private.clear_cache(@task)
-      @github_private.read(@task)
-      assert_in_delta "cd #{@github_private.cache(@task)} && git status".popen4.length, 1, 1000
+      @github_private.clear_cache(@github_private_task)
+      @github_private.read(@github_private_task)
+      assert_in_delta "cd #{@github_private.cache(@github_private_task)} && git status".popen4.length, 1, 1000
     end
   end
 
   def teardown
-    FileUtils.rm_r(@task.cache, force: true)
+    FileUtils.rm_r(@job.cache, force: true)
   end
 end

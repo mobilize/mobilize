@@ -4,7 +4,7 @@ module Mobilize
   class Task
     include Mongoid::Document
     include Mongoid::Timestamps
-    embedded_in :job
+    belongs_to :job
     belongs_to :path
     field :stdin, type: String
     field :gsubs, type: Hash
@@ -16,10 +16,16 @@ module Mobilize
     field :status_at, type: Time
     field :status, type: String
     field :retries, type: String
-    field :_id, type: String, default:->{"#{self.job.id}::#{self.path.id}##{call}"}
+    field :_id, type: String, default:->{"#{job_id}::#{path_id}##{call}"}
 
     @@config = Mobilize.config.task
 
+    attr_accessor :session #used to hold onto session object for task
+
+    def user
+      self.job.user
+    end
+    
     def cache
       self.path.cache(self)
     end

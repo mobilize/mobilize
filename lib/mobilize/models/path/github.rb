@@ -6,7 +6,7 @@ module Mobilize
     field :domain, type: String, default:->{"github.com"}
     field :owner_name, type: String
     field :repo_name, type: String
-    field :_id, type: String, default:->{"#{self.to_s.downcase}::#{domain}/#{owner_name}/#{repo_name}"}
+    field :_id, type: String, default:->{"github::#{domain}/#{owner_name}/#{repo_name}"}
 
     validates :owner_name, :repo_name, presence: true
 
@@ -71,11 +71,30 @@ module Mobilize
       return true
     end
 
+    def kind
+      self.class.to_s.downcase.split("::").last
+    end
+
     def clear_cache(task)
+      @path = self
+      @task = task
+      @path.purge_cache(@task)
+      @path.create_cache(@task)
+      Logger.info("Cleared cache for #{@task.id}")
+    end
+
+    def purge_cache(task)
+      @github = self
       @task = task
       FileUtils.rm_r(@github.cache(@task),force: true)
+      Logger.info("Purged cache for #{@task}")
+    end
+
+    def create_cache(task)
+      @github = self
+      @task = task
       FileUtils.mkdir_p(@github.cache(@task))
-      Logger.info("Cleared cache for #{@task}")
+      Logger.info("Created cache for #{@task}")
     end
 
     #clones repo into temp folder with depth of 1
@@ -84,7 +103,7 @@ module Mobilize
     def read(task)
       @github = self
       @task = task
-      @github.clear_cache
+      @github.clear_cache(@task)
       if @github.is_private?(@task)
         @github.read_private(@task)
       else
@@ -121,7 +140,7 @@ module Mobilize
 
     def verify_collaborator(task)
       @github = self
-      @task = task.session
+      @task = task
       @user = task.user
       if @github.collaborators(@task).include?(@user.github_login)
         Logger.info("Verified user #{@user._id} has access to #{@github._id}")
@@ -139,7 +158,7 @@ module Mobilize
       #thus verified, get the ssh key and pull down the repo
       @github.add_git_file(@task)
       #add keys, clone repo, go to specific revision, execute command
-      cmd = "export GIT_SSH=#{git_files.first} && " +
+      cmd = "export GIT_SSH=#{@github.git_ssh_file_path(@task)} && " +
             "cd #{@github.cache(@task)}/.. && " +
             "git clone -q #{@github.git_ssh_url} --depth=1"
       cmd.popen4(true)
