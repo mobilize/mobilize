@@ -13,15 +13,27 @@ module Mobilize
     @@config = Mobilize.config.job
 
     def cache
-      return "#{@@config.cache}/jobs/#{self.user.ssh_name}/#{self.name}"
+      return "#{@@config.cache}/#{self.user.ssh_name}/#{self.name}"
     end
 
-    def purge!
-      #deletes its own cache and all task caches
+    def purge_cache
+      #deletes its own cache and all task caches and removes self from db
       @job = self
+      @job.tasks.each{|task| task.purge_cache}
       FileUtils.rm_r(@job.cache,:force=>true)
-      Logger.info("Removed cache for #{@job}")
-      @job.tasks.each{|task| task.purge!}
+      Logger.info("Purged cache for #{@job}")
+    end
+
+    def compress_cache
+      @job = self
+      "cd #{@job.cache}/.. && tar -zcvf #{@job.name}.tar.gz #{@job.name}".popen4(true)
+      Logger.info("Compressed worker to: #{@job.cache}.tar.gz")
+    end
+
+    def read_stdin
+      @job = self
+      File.open("#{@job.cache}/stdin","w") {|f| f.print(@job.command)}
+      Logger.info("Read stdin into job cache for #{@job.id}")
     end
 
     #gsubs keys in files with the replacement value given

@@ -1,6 +1,6 @@
 module Mobilize
   #an Ec2 resolves to an ec2 instance
-  class Ec2
+  class Ec2 < Path
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
@@ -11,50 +11,40 @@ module Mobilize
     field :instance_id, type: String
     field :dns, type: String #public dns
     field :ip, type: String #private ip
-    field :_id, type: String, default:->{ name }
+    field :_id, type: String, default:->{ "#{self.to_s.downcase}::#{name}" }
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
     @@config = Mobilize.config.ec2
 
-    def cache
-      return "#{@@config.cache}/jobs/#{self.user.ssh_name}/#{self.name}"
+    def cache(task)
+      return "#{@@config.cache}/#{self.user.ssh_name}/#{task.job.name}"
     end
 
-    def create_server
-      @job = self
+    def create_cache(task)
+      @ec2 = self
+      @task = task
       #clear out and regenerate server folder
-      @job.ssh("mkdir -p #{@job.server_cache}")
-      Logger.info("Created #{@job.server_cache}")
+      @ec2.ssh("mkdir -p #{@ec2.cache(@task)}")
+      Logger.info("Created cache for #{@task.id}")
       return true
     end
 
-    def clear_server
-      @job = self
-      @job.purge_server
-      @job.create_server
-      Logger.info("Cleared server: #{@job.server_cache}")
+    def clear_cache(task)
+      @ec2 = self
+      @task = task
+      @ec2.purge_cache(@task)
+      @ec2.create_cache(@task)
+      Logger.info("Cleared cache for #{@task.id}")
     end
 
-    def read_stdin
-      @job = self
-      File.open("#{@job.worker_cache}/stdin","w") {|f| f.print(@job.command)}
-      Logger.info("Read stdin into worker: #{@job.worker_cache}")
-    end
-
-    def compress_worker
-      @job = self
-      "cd #{@job.worker_cache}/.. && tar -zcvf #{@job.name}.tar.gz #{@job.name}".popen4(true)
-      Logger.info("Compressed worker to: #{@job.worker_cache}.tar.gz")
-    end
-
-    def purge
+    def purge_cache(task)
       @job = self
       @job.ssh("sudo rm -rf #{@job.server_cache}*")
       Logger.info("Removed #{@job.server_cache}*")
     end
 
-    def Ec2.login(access_key_id=Mobilize.config.aws.access_key_id,
+    def Ec2.session(access_key_id=Mobilize.config.aws.access_key_id,
                       secret_access_key=Mobilize.config.aws.secret_access_key,
                       region=@@config.region)
       @session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
@@ -137,10 +127,8 @@ module Mobilize
         @session.terminate_instances([i[:aws_instance_id]])
         Logger.info("Terminated instance #{i[:aws_instance_id]}")
       end
-      if @ec2.created_at
-         Logger.info("Purged #{@ec2.name} from DB")
-         @ec2.delete
-      end
+      @ec2.delete
+      Logger.info("Purged #{@ec2.id} from DB")
       return true
     end
 

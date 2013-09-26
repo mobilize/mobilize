@@ -16,8 +16,8 @@ module Mobilize
     @@config = Mobilize.config.task
 
     def initialize(job_id,path_id,name,status)
-      @path_class         = 
-      @path_model         = "Mobilize::#{path_class.capitalize}".constantize
+      path_kind           = path_id.split("::").first
+      @path_model         = "Mobilize::#{path_kind.capitalize}".constantize
       @path               = @path_model.find(path_id)
       @job                = Job.find(job_id)
       @name               = name
@@ -26,7 +26,7 @@ module Mobilize
     end
 
     def cache
-      return "#{self.job.cache}/#{self.path_class}"
+      return self.path.cache(self)
     end
 
     def purge!
@@ -47,7 +47,7 @@ module Mobilize
       @session = @task.path_model.session
       if @session
         @task.set_status("working")
-        @path.send(@task.name,@session,@task.job)
+        @path.send(@task.name,@task)
         @task.set_status("complete")
       else
         @task.requeue("No session available")
@@ -63,7 +63,7 @@ module Mobilize
       #update status if the message has changed or if 
       #it has been longer than the log frequency
       if message != @task.status_message or 
-        Time.now.utc > (@task.status_time + @@config.requeue_log_frequency)
+        Time.now.utc > (@task.status_time + @@config.log_frequency)
         Logger.info(@task.status_message)
       end
       Resque.enqueue(Task,@task.job.id,@task.path.id,@task.method,@task.status)

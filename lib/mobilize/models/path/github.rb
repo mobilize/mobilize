@@ -6,7 +6,7 @@ module Mobilize
     field :domain, type: String, default:->{"github.com"}
     field :owner_name, type: String
     field :repo_name, type: String
-    field :_id, type: String, default:->{"github::#{domain}/#{owner_name}/#{repo_name}"}
+    field :_id, type: String, default:->{"#{self.to_s.downcase}::#{domain}/#{owner_name}/#{repo_name}"}
 
     validates :owner_name, :repo_name, presence: true
 
@@ -32,17 +32,24 @@ module Mobilize
       @github.http_url
     end
 
-    def Github.login
+    def Github.session
       @session = ::Github.new(login: @@config.owner_login, password: @@config.owner_password)
       Logger.info("Logged into Github.")
       return @session
     end
 
-    def is_private?(session)
+    #gives the directory that will store the git repo
+    def cache(task)
       @github = self
-      @session = session || Github.login
+      @task = task
+      return "#{@task.job.cache}/#{@github.kind}/#{@github.repo_name}"
+    end
+
+    def is_private?(task)
+      @github = self
+      @task = task
       begin
-        resp = @session.repos.get(user: @github.owner_name, repo: @github.repo_name)
+        resp = @task.session.repos.get(user: @github.owner_name, repo: @github.repo_name)
         Logger.info("Got repo for #{@github._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
       rescue
         Logger.error("Could not access #{@github._id}")
@@ -64,37 +71,45 @@ module Mobilize
       return true
     end
 
+    def clear_cache(task)
+      @task = task
+      FileUtils.rm_r(@github.cache(@task),force: true)
+      FileUtils.mkdir_p(@github.cache(@task))
+      Logger.info("Cleared cache for #{@task}")
+    end
+
     #clones repo into temp folder with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
-    def read(session,user,dir)
+    def read(task)
       @github = self
-      @session = session
-      @user = user
-      repo_dir = if @github.is_private?(@session)
-                   @github.read_private(@session,@user,dir)
-                 else
-                   @github.read_public(dir)
-                 end
+      @task = task
+      @github.clear_cache
+      if @github.is_private?(@task)
+        @github.read_private(@task)
+      else
+        @github.read_public(@task)
+      end
       #get size of objects and log
-      log_cmd = "cd #{repo_dir} && git count-objects -H"
+      log_cmd = "cd #{@github.cache(@task)} && git count-objects -H"
       size = log_cmd.popen4
       Logger.info("Read #{@github.id} into #{dir}: #{size}")
       return repo_dir
     end
 
-    def read_public(dir)
+    def read_public(task)
       @github = self
-      cmd = "cd #{dir} && " +
+      @task = task
+      cmd = "cd #{@github.cache(@task)}/.. && " +
             "git clone -q #{@github.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
       cmd.popen4(true)
       Logger.info("Read public git repo #{@github._id}")
-      return "#{dir}/#{@github.repo_name}"
+      return true
     end
 
-    def collaborators(session)
+    def collaborators(task)
       @github = self
-      @session = session
+      @session = task.session
       begin
         resp = @session.repos.collaborators.list(user: @github.owner_name, repo: @github.repo_name)
         Logger.info("Got collaborators for #{@github._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
@@ -104,11 +119,11 @@ module Mobilize
       return resp.body.map{|b| b[:login]}
     end
 
-    def verify_collaborator(session,user)
+    def verify_collaborator(task)
       @github = self
-      @session = session
-      @user = user
-      if @github.collaborators(@session).include?(@user.github_login)
+      @task = task.session
+      @user = task.user
+      if @github.collaborators(@task).include?(@user.github_login)
         Logger.info("Verified user #{@user._id} has access to #{@github._id}")
         return true
       else
@@ -116,38 +131,48 @@ module Mobilize
       end
     end
 
-    def read_private(session,user,dir)
+    def read_private(task)
       @github = self
-      @user = user
-      @session = session
+      @task = task
       #determine if the user in question is a collaborator on the repo
-      @github.verify_collaborator(@session,@user)
+      @github.verify_collaborator(@task)
       #thus verified, get the ssh key and pull down the repo
-      git_files = @github.add_git_files(dir)
+      @github.add_git_files(@task)
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{git_files.first} && " +
-            "cd #{dir} && " +
+            "cd #{@github.cache(@task)}/.. && " +
             "git clone -q #{@github.git_ssh_url} --depth=1"
       cmd.popen4(true)
-      #remove aux files
-      git_files.each{|fp| FileUtils.rm(fp,force: true)}
+      @github.remove_git_files(@task)
       Logger.info("Read private git repo #{@github._id}")
-      return "#{dir}/#{@github.repo_name}"
+      return true
     end
 
-    def add_git_files(dir)
+    def git_ssh_file_path(task)
+      "#{self.cache(task)}/../git.ssh"
+    end
+
+    def key_file_path
+      "#{self.cache(task)}/../key.ssh"
+    end
+
+    def add_git_files(task)
+      @github = self
+      @task = task
       key_value = File.read(@@config.owner_ssh_key_path)
       #create key file, set permissions, write key
-      key_file_path = dir + "/key.ssh"
-      File.open(key_file_path,"w") {|f| f.print(key_value)}
-      "chmod 0600 #{key_file_path}".popen4
+      File.open(@github.key_file_path(@task),"w") {|f| f.print(key_value)}
+      "chmod 0600 #{@github.key_file_path(@task)}".popen4
       #set git to not check strict host
-      git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' -i #{key_file_path} \"$@\""
-      git_ssh_file_path = dir + "/git.ssh"
-      File.open(git_ssh_file_path,"w") {|f| f.print(git_ssh_cmd)}
-      "chmod 0700 #{git_ssh_file_path}".popen4
+      git_ssh_cmd = "#!/bin/sh\nexec /usr/bin/ssh -o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' -i #{@github.key_file_path(@task)} \"$@\""
+      File.open(@github.git_ssh_file_path(@task),"w") {|f| f.print(git_ssh_cmd)}
+      "chmod 0700 #{@github.git_ssh_file_path(@task)}".popen4
       Logger.info("Added git files for repo #{@github._id}")
-      return [git_ssh_file_path, key_file_path]
+      return true
+    end
+
+    def remove_git_files(task)
+      [self.git_ssh_file_path(task),self.key_file_path(task)].each{|fp| FileUtils.rm(fp,force: true)}
     end
   end
 end
