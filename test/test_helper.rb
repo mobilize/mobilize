@@ -13,8 +13,9 @@ module TestHelper
   end
   def TestHelper.ssh(ec2)
     ec2.sshs.find_or_create_by(
+      ec2_id: ec2.id,
       user_name: Mobilize.config.minitest.ssh.user_name,
-      key_path: Mobilize.config.minitest.ssh.key_path
+      private_key_path: Mobilize.config.minitest.ssh.private_key_path
     )
   end
   def TestHelper.user(ec2)
@@ -53,11 +54,11 @@ module TestHelper
     end
   end
   def TestHelper.job(user)
-    user.jobs.create
+    user.jobs.create(user_id: user.id)
   end
   def TestHelper.task(job,path,call,session,args={})
     @task = job.tasks.find_or_create_by(
-      path: path, call: call
+      job_id: job.id, path_id: path.id, call: call
     )
     @task.session = session
     @task.update_attributes(args)

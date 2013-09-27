@@ -32,7 +32,7 @@ module Mobilize
       @path = self
       @task = task
       FileUtils.rm_r(@path.cache(@task),force: true)
-      Logger.info("Purged cache for #{@task}")
+      Logger.info("Purged cache for #{@task.id}")
     end
 
     def create_cache(task)

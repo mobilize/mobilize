@@ -16,6 +16,8 @@ module Mobilize
     field :status_at, type: Time
     field :status, type: String
     field :retries, type: String
+    field :job_id, type: String #need for id
+    field :path_id, type: String #need for id
     field :_id, type: String, default:->{"#{job_id}::#{path_id}##{call}"}
 
     @@config = Mobilize.config.task
@@ -46,10 +48,10 @@ module Mobilize
 
     #gsubs keys in files with the replacement value given
     def gsub!
-      @task = task
+      @task = self
       @task.gsubs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
-        @string2 = Regexp.escape(v.to_s)
+        @string2 = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
         replace_cmd = "cd #{@task.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
         Logger.info("Replaced #{@string1} with #{@string2} for #{@task.id}")
@@ -98,7 +100,7 @@ module Mobilize
       @task = self
       Logger.error("Not an SSH task") unless @task.path.class == Mobilize::Ssh
       Logger.info("retrieving #{stream.to_s} for #{@task.id}")
-      @task.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
+      @task.path.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
     end 
   end
 end

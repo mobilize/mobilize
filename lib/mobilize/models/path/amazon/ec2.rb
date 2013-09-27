@@ -12,6 +12,8 @@ module Mobilize
     field :dns, type: String #public dns
     field :ip, type: String #private ip
     field :_id, type: String, default:->{ name }
+    has_many :sshs
+    has_many :users
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 

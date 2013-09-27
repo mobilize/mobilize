@@ -5,6 +5,8 @@ class SshTest < MiniTest::Unit::TestCase
     @github_public        = TestHelper.github_public
     @worker_name          = Mobilize.config.minitest.ec2.worker_name
     @ec2                  = TestHelper.ec2(@worker_name)
+    @ec2_session          = Mobilize::Ec2.session
+    @ec2.find_or_create_instance(@ec2_session)
     @user                 = TestHelper.user(@ec2)
     @ssh                  = TestHelper.ssh(@ec2)
     @ssh_session          = Mobilize::Ssh.session
@@ -14,7 +16,7 @@ class SshTest < MiniTest::Unit::TestCase
     @ssh_task             = TestHelper.task(@job,@ssh,"run",@ssh_session,
                                             input: "ls path1",
                                             gsubs: {
-                                                    path1: @github_public.repo_name,
+                                                    path1: "github/#{@github_public.repo_name}",
                                                    }
                                             )
   end

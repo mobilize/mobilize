@@ -3,6 +3,7 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String, default:->{Time.now.utc.strftime("%Y%m%d%H%M%S")}
+    field :user_id, type: String #need for id
     field :_id, type: String, default:->{"#{user_id}/#{name}"}
     belongs_to :user
     has_many :tasks
