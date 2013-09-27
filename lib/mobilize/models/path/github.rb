@@ -6,6 +6,7 @@ module Mobilize
     field :domain, type: String, default:->{"github.com"}
     field :owner_name, type: String
     field :repo_name, type: String
+    field :name, type: String, default:->{repo_name}
     field :_id, type: String, default:->{"github://#{domain}/#{owner_name}/#{repo_name}"}
 
     validates :owner_name, :repo_name, presence: true
@@ -38,13 +39,6 @@ module Mobilize
       return @session
     end
 
-    #gives the directory that will store the git repo
-    def cache(task)
-      @github = self
-      @task = task
-      return "#{@task.job.cache}/github/#{@github.repo_name}"
-    end
-
     def is_private?(task)
       @github = self
       @task = task
@@ -61,36 +55,6 @@ module Mobilize
         Logger.info("repo #{@github._id} is public")
         return false
       end
-    end
-
-    #performs a github read in preparation for a Task
-    def Github.perform(github_id,task_id)
-      @github = Github.find(github_id)
-      @task = Task.find(task_id)
-      @github.read(@task.user_id,@task.local)
-      return true
-    end
-
-    def clear_cache(task)
-      @github = self
-      @task = task
-      @github.purge_cache(@task)
-      @github.create_cache(@task)
-      Logger.info("Cleared cache for #{@task.id}")
-    end
-
-    def purge_cache(task)
-      @github = self
-      @task = task
-      FileUtils.rm_r(@github.cache(@task),force: true)
-      Logger.info("Purged cache for #{@task}")
-    end
-
-    def create_cache(task)
-      @github = self
-      @task = task
-      FileUtils.mkdir_p(@github.cache(@task))
-      Logger.info("Created cache for #{@task}")
     end
 
     #clones repo into temp folder with depth of 1
@@ -115,7 +79,7 @@ module Mobilize
     def read_public(task)
       @github = self
       @task = task
-      cmd = "cd #{@github.cache(@task)}/.. && " +
+      cmd = "cd #{@github.cache_parent(@task)} && " +
             "git clone -q #{@github.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
       cmd.popen4(true)
       Logger.info("Read public git repo #{@github._id}")
@@ -155,7 +119,7 @@ module Mobilize
       @github.add_git_file(@task)
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{@github.git_ssh_file_path(@task)} && " +
-            "cd #{@github.cache(@task)}/.. && " +
+            "cd #{@github.cache_parent(@task)} && " +
             "git clone -q #{@github.git_ssh_url} --depth=1"
       cmd.popen4(true)
       @github.remove_git_files(@task)
@@ -164,7 +128,7 @@ module Mobilize
     end
 
     def git_ssh_file_path(task)
-      "#{self.cache(task)}/../git.ssh"
+      "#{self.cache_parent(task)}/git.ssh"
     end
 
     def add_git_file(task)

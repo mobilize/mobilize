@@ -110,36 +110,6 @@ module Mobilize
       return @remote
     end
 
-    def cache(task)
-      @gfile = self
-      @task = task
-      return "#{@task.job.cache}/gfile/#{@gfile.name}"
-    end
-
-    def clear_cache(task)
-      @gfile = self
-      @task = task
-      @gfile.purge_cache(@task)
-      @gfile.create_cache(@task)
-      Logger.info("Cleared cache for #{@task.id}")
-    end
-
-    def purge_cache(task)
-      @gfile = self
-      @task = task
-      FileUtils.rm_r(@gfile.cache(@task),force: true)
-      Logger.info("Purged cache for #{@task}")
-    end
-
-    def create_cache(task)
-      @gfile = self
-      @task = task
-      FileUtils.mkdir_p(@gfile.cache(@task))
-      #remove the actual directory so it can be written as file
-      FileUtils.rm_r(@gfile.cache(@task),force: true)
-      Logger.info("Created cache for #{@task}")
-    end
-
     #delete remote, cache, and local db object
     def purge!(task)
       @gfile = self

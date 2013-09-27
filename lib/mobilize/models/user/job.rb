@@ -9,6 +9,7 @@ module Mobilize
 
     @@config = Mobilize.config.job
 
+    #job overrides cache methods to act on root folder
     def cache
       return "#{@@config.cache}/#{self.user.ssh_name}/#{self.name}"
     end
