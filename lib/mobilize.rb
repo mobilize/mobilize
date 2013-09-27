@@ -9,16 +9,23 @@ end
 
 require "mobilize/logger"
 
-require "settingslogic"
-require 'fileutils'
 require "mobilize/config"
-#write mob.yml and resque_pool
-Mobilize::Config.write_files
-
+#write sample config files if not available
+["mob.yml","mongoid.yml","resque-pool.yml"].each do |file_name|
+  Mobilize::Config.write_sample(file_name)
+end
 module Mobilize
-  @@config = Config.new
-  def Mobilize.config
-    @@config
+  def Mobilize.config(model=nil)
+    @@config ||= begin
+                   Config.new
+                 rescue
+                   nil
+                 end
+    if @@config
+      model ? @@config.send(model) : @@config
+    else
+      Logger.info("Please configure #{model || "mobilize"} using `mob configure`")
+    end
   end
   #force Mobilize context when running `bundle console`
   def Mobilize.console
@@ -32,8 +39,8 @@ module Mobilize
     ENV['MOBILIZE_ENV'] || "development"
   end
 end
+Mobilize.config
 
-require 'optparse'
 cli_dir = "mobilize/cli"
 require "#{cli_dir}/cli"
 

@@ -1,8 +1,6 @@
+require 'optparse'
 module Mobilize
   module Cli
-
-    @@config = Mobilize.config
-
     #decode base64 encoded strings that have been encrypted in travis
     def Cli.decode(args)
       options={}
@@ -23,13 +21,6 @@ module Mobilize
       end
       opt_parser.parse!(args)
       Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
-    end
-    #start up resque worker
-    def Cli.resque
-      worker = ::Resque::Worker.new(@@config.resque.queue)
-      worker.term_child=1
-      Logger.info("Started Resque worker")
-      worker.work(5)
     end
     #copy configuration to home folder if it's not already there
     def Cli.configure(args)

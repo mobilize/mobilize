@@ -16,7 +16,7 @@ elsif cmd == 'decode'
   require 'mobilize'
   Mobilize::Cli.decode(ARGV)
 elsif cmd == 'configure'
-  require 'mobilize'
+  require "mobilize"
   Mobilize::Cli.configure(ARGV)
 elsif cmd == 'resque'
   set_env

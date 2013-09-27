@@ -11,7 +11,7 @@ module Mobilize
 
     validates :owner_name, :repo_name, presence: true
 
-    @@config = Mobilize.config.github
+    @@config = Mobilize.config("github")
 
     def http_url
       @github = self

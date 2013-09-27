@@ -8,7 +8,7 @@ module Mobilize
     belongs_to :user
     has_many :tasks
 
-    @@config = Mobilize.config.job
+    @@config = Mobilize.config("job")
 
     #job overrides cache methods to act on root folder
     def cache

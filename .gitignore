@@ -17,3 +17,6 @@ test/version_tmp
 tmp
 .DS_Store
 dump.rdb
+config/mob.yml
+config/mongoid.yml
+config/resque-pool.yml

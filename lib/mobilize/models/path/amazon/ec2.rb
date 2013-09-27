@@ -17,7 +17,7 @@ module Mobilize
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
-    @@config = Mobilize.config.ec2
+    @@config = Mobilize.config("ec2")
 
     def Ec2.session(access_key_id=Mobilize.config.aws.access_key_id,
                       secret_access_key=Mobilize.config.aws.secret_access_key,

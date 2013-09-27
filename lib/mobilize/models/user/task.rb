@@ -20,7 +20,7 @@ module Mobilize
     field :path_id, type: String #need for id
     field :_id, type: String, default:->{"#{job_id}::#{path_id}##{call}"}
 
-    @@config = Mobilize.config.task
+    @@config = Mobilize.config("task")
 
     attr_accessor :session #used to hold onto session object for task
 
