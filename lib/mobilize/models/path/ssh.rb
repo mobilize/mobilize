@@ -5,13 +5,14 @@ module Mobilize
     field :user_name, type: String #username for box
     field :private_key_path, type: String
     field :ec2_id, type: String #needed for id
+    field :home_dir, type: String, default:->{"/home/#{user_name}"}
     field :_id, type: String, default:->{"ssh://#{ec2_id}/#{user_name}"}
     belongs_to :ec2
    
     #ssh overrides all the cache methods to 
     #act on remote 
     def cache(task)
-      return task.job.cache
+      return "#{Mobilize.config.job.cache}/#{task.job.user.ssh_name}/#{task.job.name}".gsub("~",self.home_dir)
     end
 
     def create_cache(task)
@@ -43,7 +44,7 @@ module Mobilize
     def pack_cache(task)
       @ssh = self
       @task = task
-      "cd #{@task.cache}/.. && tar -zcvf #{@task.job.name}.tar.gz #{@task.job.name}".popen4(true)
+      "cd #{@task.job.cache}/.. && tar -zcvf #{@task.job.name}.tar.gz #{@task.job.name}".popen4(true)
       Logger.info("Packed cache for #{@task.id}")
     end
 

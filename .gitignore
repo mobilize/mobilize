@@ -18,3 +18,6 @@ tmp
 .DS_Store
 dump.rdb
 .mobilize
+config/mob.yml
+config/mongoid.yml
+config/resque-pool.yml

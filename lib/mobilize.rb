@@ -3,10 +3,9 @@ require "mobilize/version"
 module Mobilize
   #folder where project is installed
   def Mobilize.root
-    ENV['PWD']
+    File.expand_path("#{File.dirname(File.expand_path(__FILE__))}/..")
   end
 end
-
 require "mobilize/logger"
 
 require "#{Mobilize.root}/config/config"
