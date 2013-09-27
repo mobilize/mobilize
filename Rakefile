@@ -4,7 +4,6 @@ require "bundler/gem_tasks"
 # Tests
 #
 require 'rake/testtask'
-
 Rake::TestTask.new do |test|
   test.verbose = true
   test.libs << "test"
@@ -13,5 +12,7 @@ Rake::TestTask.new do |test|
 end
 task :default => :test
 
-#resque-pool
+#resque
+require 'mobilize'
+require 'resque/tasks'
 require 'resque/pool/tasks'

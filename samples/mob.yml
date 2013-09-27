@@ -1,13 +1,10 @@
 #sample config yml for mobilize
-#entries w a preceding $ will be loaded from environment vars
 development:
-  resque:
-    queue: mobilize
   object: #used for ssh
     send_total_retries: 3
     send_sleep_time: 5
   job:
-    cache: <%=ENV['MOB_JOB_CACHE']%>
+    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
     total_retries: 5 #how many times to retry task before job failure
@@ -21,7 +18,6 @@ development:
     size: 't1.micro'
     security_groups:
     - 'default'
-    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   ssh:
     user_name: 'ubuntu'
     private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
@@ -46,13 +42,11 @@ development:
 #test includes special variables for running
 #tests, found under `minitest`
 test:
-  resque:
-    queue: mobilize
   object:
     send_total_retries: 3
     send_sleep_time: 5
   job:
-    cache: <%=ENV['MOB_JOB_CACHE']%>
+    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
@@ -65,7 +59,6 @@ test:
     size: 't1.micro'
     security_groups:
     - 'default'
-    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   ssh:
     user_name: 'ubuntu'
     private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
@@ -101,13 +94,11 @@ test:
         owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
         repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
-  resque:
-    queue: mobilize
   object:
     send_total_retries: 3
     send_sleep_time: 5
   job:
-    cache: <%=ENV['MOB_JOB_CACHE']%>
+    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
@@ -120,7 +111,6 @@ staging:
     size: 't1.micro'
     security_groups:
     - 'default'
-    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   ssh:
     user_name: 'ubuntu'
     private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
@@ -138,13 +128,11 @@ staging:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
-  resque:
-    queue: mobilize
   object:
     send_total_retries: 3
     send_sleep_time: 5
   job:
-    cache: <%=ENV['MOB_JOB_CACHE']%>
+    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
@@ -157,7 +145,6 @@ production:
     size: 't1.micro'
     security_groups:
     - 'default'
-    owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
   ssh:
     user_name: 'ubuntu'
     private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
