@@ -14,17 +14,23 @@ class String
   def to_md5
     Digest::MD5.hexdigest(self)
   end
-  def popen4(except=true,log=false)
-    str = self
+  #fires system command with full visibility into stdout and stderr
+  #default returns stdout only
+  #with option to return all streams in hash
+  def popen4(except=true,all_streams=false)
+    in_str = self
     out_str,err_str = []
-    puts str if log
-    status = Open4.popen4(str) do |pid,stdin,stdout,stderr|
+    status = Open4.popen4(in_str) do |pid,stdin,stdout,stderr|
       out_str = stdout.read
       err_str = stderr.read
     end
     exit_status = status.exitstatus
     raise err_str if (exit_status !=0 and except==true)
-    return out_str
+    if all_streams == false
+      return out_str
+    else
+      return {stdin: in_str, stdout: out_str, stderr: err_str}
+    end
   end
   def escape_regex
     str = self

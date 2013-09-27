@@ -130,11 +130,11 @@ env:
 #mob_server_cache
   - "MOB_SERVER_CACHE=/tmp/mobilize"
 #mob_google_owner_login
-  - "MOB_GOOGLE_OWNER_LOGIN=mobilize.server@gmail.com"
+  - "MOB_GOOGLE_OWNER_EMAIL=mobilize.server@gmail.com"
 #mob_github_owner_login
   - "MOB_GITHUB_OWNER_LOGIN=mobilize"
 #mob_minitest_google_login
-  - "MOB_MINITEST_GOOGLE_LOGIN=mobilize.server@gmail.com"
+  - "MOB_MINITEST_GOOGLE_EMAIL=mobilize.server@gmail.com"
 #mob_minitest_github_login
   - "MOB_MINITEST_GITHUB_LOGIN=mobilize"
 #mob_minitest_github_private_domain

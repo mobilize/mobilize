@@ -25,17 +25,10 @@ Default `<env>` is development.
 
 ## Testing
 
+1. clone the repo
+2. install the m gem
+3. test each test under "test" individually
+
 ### Private Git Repo Access
 
-In order to test private git repo access, you will need to:
-1) create a private repo in github
-2) create an ssh keypair and add the public one as a deploy key to the
-project;
-3) define environment variables:
-```
-  export MOB_TEST_PRIVATE_GIT_PATH_OWNER=<private repo owner>
-  export MOB_TEST_PRIVATE_GIT_PATH_REPO=<private repo name>
-  export MOB_TEST_PRIVATE_GIT_PATH_BRANCH=<private repo branch>
-  export MOB_TEST_PRIVATE_GIT_PATH_FILE=<private repo file>
-  export MOB_TEST_PRIVATE_SSH_KEY_PATH=<path to ssh private key for public deploy key>
-```
+

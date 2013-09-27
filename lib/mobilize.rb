@@ -9,16 +9,6 @@ end
 
 require "mobilize/logger"
 
-require 'fileutils'
-require 'optparse'
-cli_dir = "mobilize/cli"
-require "#{cli_dir}/cli"
-
-mob_yml_path = File.expand_path("~/.mob.yml")
-unless File.exists?(mob_yml_path)
-  Mobilize::Cli.configure(args=[])
-end
-
 require "settingslogic"
 require "mobilize/config"
 
@@ -40,10 +30,11 @@ module Mobilize
   end
 end
 
+require 'optparse'
+cli_dir = "mobilize/cli"
+require "#{cli_dir}/cli"
+
 require 'pry'
-require "popen4"
-require 'net/ssh'
-require 'net/scp'
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
@@ -62,13 +53,21 @@ require "#{extensions_dir}/class"
 models_dir = "mobilize/models"
 user_dir = "#{models_dir}/user"
 require "#{user_dir}/user"
-require "#{user_dir}/schedule"
-require "#{user_dir}/transfer"
+require "#{user_dir}/cron"
+require "#{user_dir}/job"
+require "#{user_dir}/task"
 
 path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
 require 'github_api'
 require "#{path_dir}/github"
+require "resque"
+require "#{path_dir}/resque"
+
+require "popen4"
+require "net/ssh"
+require "net/scp"
+require "#{path_dir}/ssh"
 
 require "aws"
 amazon_dir = "#{path_dir}/amazon"
@@ -87,3 +86,5 @@ require "#{google_dir}/gfile"
 require "#{gbook_dir}/gbook"
 require "#{gbook_dir}/gtab"
 require "#{gbook_dir}/grange"
+#patched from google-drive-ruby
+require "#{google_dir}/extensions/client_login_fetcher"
