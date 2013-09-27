@@ -41,7 +41,7 @@ module Mobilize
       FileUtils.mkdir_p(@path.cache(@task))
       #remove the actual directory so it can be written as file
       FileUtils.rm_r(@path.cache(@task),force: true)
-      Logger.info("Created cache for #{@task}")
+      Logger.info("Created cache for #{@task.id}")
     end
   end
 end
