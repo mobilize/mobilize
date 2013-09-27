@@ -48,7 +48,9 @@ require 'pry'
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
-Mongoid.load!(mongoid_config_path, Mobilize.env)
+if File.exists?(mongoid_config_path)
+  Mongoid.load!(mongoid_config_path, Mobilize.env)
+end
 
 test_dir = "#{Mobilize.root}/test"
 require "#{test_dir}/travis"

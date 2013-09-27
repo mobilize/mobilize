@@ -18,8 +18,11 @@ module Mobilize
         FileUtils.cp(source_path,target_path)
         FileUtils.ln_s(target_path,config_path, force: true)
         Mobilize::Logger.info("Wrote default to #{target_path}, " + 
-                              "and added symlink in #{config_path}, " +
                               "please add environment variables accordingly")
+      end
+      if !File.exists?(config_path)
+        FileUtils.ln_s(target_path,config_path, force: true)
+        Mobilize::Logger.info("added symlink to #{target_path} in #{config_path}")
       end
     end
   end
