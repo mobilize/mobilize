@@ -40,5 +40,42 @@ module Mobilize
       opt_parser.parse!(args)
       Mobilize::Config.write_sample(options[:name],options[:force])
     end
+    #create log and pid folders, 
+    #copy over configs
+    #install and start god
+    def Cli.resque(args)
+      options={}
+      opt_parser = OptionParser.new do |opts|
+        opts.banner = "Usage: mob resque <env> [-s --stop] "
+
+        opts.on("-s", "--stop", "stop god, stop resque-pool") do |s|
+          options[:stop] = true
+        end
+      end
+      opt_parser.parse!(args)
+ 
+      god_file = "resque-#{Mobilize.env}.rb"
+      pool_file = "resque-pool.yml"
+      [god_file,pool_file].each do |file_name|
+        Mobilize::Config.write_sample(file_name,force:true)
+      end
+      if "which god".popen4(false).empty?
+        "gem install god".popen4
+      end
+      ["god",
+      "god load #{Mobilize.root}/config/#{god_file}"
+      ].each do |cmd|
+        Logger.info(cmd.popen4)
+      end
+      if options[:stop]
+        ["god stop resque-pool",
+         "kill -2 `cat #{Mobilize.config.resque.pid_dir}/resque-pool.pid`"
+        ].each do |cmd|
+          Logger.info(cmd.popen4)
+        end
+      else
+        Logger.info("god start resque-pool".popen4)
+      end
+    end
   end
 end

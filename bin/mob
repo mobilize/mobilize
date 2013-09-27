@@ -21,7 +21,7 @@ elsif cmd == 'configure'
 elsif cmd == 'resque'
   set_env
   require 'mobilize'
-  Mobilize::Cli.resque
+  Mobilize::Cli.resque(ARGV)
 elsif cmd =='root'
   require 'mobilize'
   puts Mobilize.root

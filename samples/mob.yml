@@ -1,5 +1,10 @@
 #sample config yml for mobilize
 development:
+  log:
+    dir: ~/.mobilize/log
+    level: debug
+  resque:
+    pid_dir: ~/.mobilize/pids
   object: #used for ssh
     send_total_retries: 3
     send_sleep_time: 5
@@ -42,6 +47,11 @@ development:
 #test includes special variables for running
 #tests, found under `minitest`
 test:
+  log:
+    dir: ~/.mobilize/log
+    level: debug
+  resque:
+    pid_dir: ~/.mobilize/pids
   object:
     send_total_retries: 3
     send_sleep_time: 5
@@ -94,6 +104,11 @@ test:
         owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
         repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
+  log:
+    dir: ~/.mobilize/log
+    level: debug
+  resque:
+    pid_dir: ~/.mobilize/pids
   object:
     send_total_retries: 3
     send_sleep_time: 5
@@ -128,6 +143,11 @@ staging:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
+  log:
+    dir: ~/.mobilize/log
+    level: warn
+  resque:
+    pid_dir: ~/.mobilize/pids
   object:
     send_total_retries: 3
     send_sleep_time: 5

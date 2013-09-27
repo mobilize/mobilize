@@ -22,8 +22,6 @@ module Mobilize
                  end
     if @@config
       model ? @@config.send(model) : @@config
-    else
-      Logger.info("Please configure #{model || "mobilize"} using `mob configure`")
     end
   end
   #force Mobilize context when running `bundle console`

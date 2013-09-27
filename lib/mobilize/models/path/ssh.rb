@@ -38,7 +38,7 @@ module Mobilize
     end
 
     def Ssh.session
-      "session"
+      "session"#placeholder
     end
 
     def pack_cache(task)

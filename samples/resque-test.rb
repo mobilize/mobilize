@@ -1,13 +1,15 @@
+require 'mobilize'
 God.watch do |w|
-  w.name = 'resque'
+  w.name = 'resque-pool'
   w.interval = 30.seconds
-  w.env = { 'MOBILIZE_ENV' => 'test', 'QUEUE' => 'mobilize' }
-  w.uid = 'cpaesleme'
-  w.gid = 'staff'
+  w.env = { 'MOBILIZE_ENV' => 'test',
+            'RESQUE_ENV' => 'test',
+            'TERM_CHILD' => 1,
+            'QUEUE' => 'mobilize-test' }
   w.dir = File.expand_path(File.join(File.dirname(__FILE__),'..'))
-  w.start = "bundle exec rake resque:work"
+  w.start = "resque-pool -d -E test -o /dev/null " +
+            "-e /dev/null -p #{Mobilize.config.resque.pid_dir}/resque-pool.pid"
   w.start_grace = 10.seconds
-  w.log = File.expand_path(File.join(File.dirname(__FILE__), '..','log','resque-worker.log'))
  
   # restart if memory gets too high
   w.transition(:up, :restart) do |on|
