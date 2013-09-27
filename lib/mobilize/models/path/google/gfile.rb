@@ -64,18 +64,7 @@ module Mobilize
       @session = session
       @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner,@gfile.name,@session)
       if @remotes.length>1
-        if @gfile.key
-          @remote = @remotes.select{|r| r.resource_id == @gfile.key}.first
-        end
-        if @remote
-          Logger.info("You have #{@remotes.length} remotes owned by #{@gfile.owner} and named #{@gfile.name};" +
-                      " you should delete all incorrect versions."
-                     )
-        else
-          Logger.error("There are #{@remotes.length} remotes owned by #{@gfile.owner} and named #{@gfile.name}" + 
-                       " and no local key; you should delete all incorrect versions."
-                      )
-        end
+        @remote = @gfile.resolve_remotes(@remotes)     
       elsif @remotes.length == 1
         @remote = @remotes.first
         Logger.info("Remote #{@remote.resource_id} found, assigning to #{@gfile.id}")
@@ -85,11 +74,43 @@ module Mobilize
       return @remote
     end
 
+    def resolve_remotes(remotes)
+      @gfile = self
+      @remotes = remotes
+      if @gfile.key
+        @remote = @remotes.select{|r| r.resource_id == @gfile.key}.first
+      end
+      if @remote
+        Logger.info("You have #{@remotes.length} remotes owned by #{@gfile.owner} and named #{@gfile.name};" +
+                    " you should delete all incorrect versions."
+                   )
+      else
+        Logger.error("There are #{@remotes.length} remotes owned by #{@gfile.owner} and named #{@gfile.name}" + 
+                     " and no local key; you should delete all incorrect versions."
+                    )
+      end
+      return @remote
+    end
+
+
     def sync(session)
       @session = session
       @gfile = self
       @remote = @gfile.remote(@session)
       Logger.error("Could not find remote for #{@gfile.id}") unless @remote
+      roles = @gfile.remote_roles(@remote)
+      @gfile.update_attributes(
+        name: @remote.title,
+        key: @remote.resource_id,
+        owner: roles[:owner].first,
+        readers: roles[:reader],
+        writers: roles[:writer]
+      )
+      return @remote
+    end
+
+    def remote_roles(remote)
+      @remote = remote
       acls = @remote.acl.to_enum.to_a
       roles = {owner: [], reader: [], writer: []}
       acls.each do |a|
@@ -100,14 +121,7 @@ module Mobilize
                 end
         roles[a.role.to_sym] << scope
       end
-      @gfile.update_attributes(
-        name: @remote.title,
-        key: @remote.resource_id,
-        owner: roles[:owner].first,
-        readers: roles[:reader],
-        writers: roles[:writer]
-      )
-      return @remote
+      return roles
     end
 
     #delete remote, cache, and local db object
