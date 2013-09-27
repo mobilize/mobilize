@@ -35,39 +35,63 @@ module GoogleDrive
         end
       end
     end
+
     def resolve_response(identifier,response,current_retries)
+      
       total_retries = Mobilize.config.google.api.total_retries
-      sleep_time = Mobilize.config.google.api.sleep_time
-      response_log_length = Mobilize.config.google.api.response_log_length
       success = false
+      
       if response.nil? or response.code.starts_with?("4")
-        Mobilize::Logger.error(
-          "#{identifier} failed with #{@response.body[0..response_log_length]}(...);" +
+        fatal_response(identifier,response)
+      elsif response.code.starts_with?("5")
+        current_retries = exponential_retry_response(identifier,response,current_retries)
+      else
+        success = success_response(identifier,response,current_retries)
+      end
+      
+      if success==false and current_retries >= total_retries
+        exhausted_response(identifier,response,current_retries)
+      end
+      
+      return [current_retries,success]
+    end
+
+    def fatal_response(identifier,response)
+      response_log_length = Mobilize.config.google.api.response_log_length
+      Mobilize::Logger.error(
+          "#{identifier} failed with #{response.body[0..response_log_length]}(...);" +
           "no retry possible"
         )
-        sleep sleep_time
-        current_retries += 1
-      elsif response.code.starts_with?("5")
-        exponential_sleep_time = sleep_time * (curr_retries*curr_retries)
-        current_retries += 1
-        Mobilize::Logger.info(
-          "#{identifier} failed with #{response.body[0..response_log_length]}(...);" +
-          " retry #{current_retries.to_s} of #{total_retries.to_s} in #{exponential_sleep_time.to_s}"
-        )
-        sleep exponential_sleep_time
-      else
-        Mobilize::Logger.info(
+    end
+
+    def exponential_retry_response(identifier,response,current_retries)
+      sleep_time = Mobilize.config.google.api.sleep_time
+      exponential_sleep_time = sleep_time * (current_retries*current_retries)
+      response_log_length = Mobilize.config.google.api.response_log_length
+      current_retries += 1
+      Mobilize::Logger.info(
+        "#{identifier} failed with #{response.body[0..response_log_length]}(...);" +
+        " retry #{current_retries.to_s} of #{total_retries.to_s} in #{exponential_sleep_time.to_s}"
+      )
+      sleep exponential_sleep_time
+      return current_retries
+    end
+
+    def success_response(identifier,response,current_retries)
+      response_log_length = Mobilize.config.google.api.response_log_length
+      Mobilize::Logger.info(
           "#{identifier} returned #{response.body[0..response_log_length]}(...)" +
           " with #{current_retries.to_s} retries"
         )
-        success = true
-      end
-      if success==false and current_retries >= total_retries
-        Mobilize::Logger.error(
+      return true
+    end
+
+    def exhausted_response(identifier,response,current_retries)
+      response_log_length = Mobilize.config.google.api.response_log_length
+      Mobilize::Logger.error(
           "Unable to #{identifier} with #{response.body[0..response_log_length]}(...) with #{current_retries.to_s}"
         )
-      end
-      return [current_retries,success]
     end
+
   end
 end

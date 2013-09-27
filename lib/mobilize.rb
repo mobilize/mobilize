@@ -53,7 +53,6 @@ require "#{extensions_dir}/class"
 models_dir = "mobilize/models"
 user_dir = "#{models_dir}/user"
 require "#{user_dir}/user"
-require "#{user_dir}/cron"
 require "#{user_dir}/job"
 require "#{user_dir}/task"
 
@@ -62,7 +61,6 @@ require "#{path_dir}/path"
 require 'github_api'
 require "#{path_dir}/github"
 require "resque"
-require "#{path_dir}/resque"
 
 require "popen4"
 require "net/ssh"

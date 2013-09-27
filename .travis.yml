@@ -10,7 +10,7 @@ gemfile:
 script: rake install && 
   mob decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
   mob decode -p 'ec2_ssh_' -l 23 -f ec2_ssh_test.ssh && chmod 0400 ec2_ssh_test.ssh && 
-  export MOB_EC2_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
+  export MOB_SSH_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
   export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && 
   rake test
 notifications:
@@ -126,10 +126,8 @@ env:
 #ec2_ssh_23
   - secure: "juCbLwT06bXCNs+eh4L/3dVBH9ANc0CgDIuBHx3g/wSsfaCcP4MoZLNQLeIDlEHEWBs67aXWyBMNFgDetrelChjYiWl6z7zg+m1Fe630Q2j8SLIZ9t1DvXdkQKBo0u6yT7HXkeSkgFig9MuWpVxB3mKKihewBeFLhjJYOJP+oyk="
 #mob_worker_cache
-  - "MOB_WORKER_CACHE=/tmp/mobilize"
-#mob_server_cache
-  - "MOB_SERVER_CACHE=/tmp/mobilize"
-#mob_google_owner_login
+  - "MOB_JOB_CACHE=/tmp/mobilize/jobs"
+#mob_google_owner_email
   - "MOB_GOOGLE_OWNER_EMAIL=mobilize.server@gmail.com"
 #mob_github_owner_login
   - "MOB_GITHUB_OWNER_LOGIN=mobilize"
@@ -143,4 +141,9 @@ env:
   - "MOB_MINITEST_GITHUB_PRIVATE_OWNER='mobilize'"
 #mob_minitest_ec2_worker_name
   - "MOB_MINITEST_EC2_WORKER_NAME='mobilize-test'"
-#update file to kick off travis hook
+#mob_ssh_user_name
+  - "MOB_SSH_USER_NAME=ubuntu"
+#mob_minitest_ssh_user_name
+  - "MOB_MINITEST_SSH_USER_NAME=ubuntu"
+#mob_minitest_ssh_private_key_path
+  - "MOB_MINITEST_SSH_PRIVATE_KEY_PATH=$MOB_SSH_PRIVATE_KEY_PATH"
