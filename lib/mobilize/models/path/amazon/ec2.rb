@@ -4,55 +4,54 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     field :name, type: String #name tag on the ec2 instance
-    field :ami, type: String, default:->{@@config.ec2.ami}
-    field :size, type: String, default:->{@@config.ec2.size}
-    field :keypair_name, type: String, default:->{@@config.ec2.keypair_name}
-    field :security_groups, type: Array, default:->{@@config.ec2.security_groups}
+    field :ami, type: String, default:->{@@config.ami}
+    field :size, type: String, default:->{@@config.size}
+    field :keypair_name, type: String, default:->{@@config.keypair_name}
+    field :security_groups, type: Array, default:->{@@config.security_groups}
     field :instance_id, type: String
     field :dns, type: String #public dns
     field :ip, type: String #private ip
     field :_id, type: String, default:->{ name }
+    has_many :sshs
+    has_many :users
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
-    after_create :find_or_create_instance
+    @@config = Mobilize.config.ec2
 
-    @@config = Mobilize.config
-
-    def Ec2.login(access_key_id=@@config.aws.access_key_id,
-                      secret_access_key=@@config.aws.secret_access_key,
-                      region=@@config.ec2.region)
+    def Ec2.session(access_key_id=Mobilize.config.aws.access_key_id,
+                      secret_access_key=Mobilize.config.aws.secret_access_key,
+                      region=@@config.region)
       @session = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
-      Logger.info("Logged into ec2 for region #{region}")
+      Logger.info("Got ec2 session for region #{region}")
       return @session
     end
 
-    def Ec2.instances(session=nil, params={aws_state: ['running','pending']})
-      @session = session || Ec2.login
+    def Ec2.instances(session, params={aws_state: ['running','pending']})
+      @session = session
       all_insts = @session.describe_instances.map{|i| i.with_indifferent_access}
-      filtered_insts = Ec2.filter_instances(all_insts,@session, params)
+      filtered_insts = Ec2.filter_instances(all_insts,params)
       Logger.info("got #{filtered_insts.length.to_s} instances for #{@session.params[:region]}, params: #{params.to_s}")
       return filtered_insts
     end
 
-    def Ec2.filter_instances(all_insts,session = nil,params={aws_state: ['running','pending']})
+    def Ec2.filter_instances(all_insts,params={aws_state: ['running','pending']})
       all_insts.select do |i|
         match_array = params.map{|k,v| v.to_a.include?(i[k])}.uniq
         match_array.length == 1 and match_array.first == true
       end
     end
 
-    def Ec2.instances_by_name(name,session=nil,params={aws_state: ['running','pending']})
-      @session = session || Ec2.login
+    def Ec2.instances_by_name(name,session,params={aws_state: ['running','pending']})
+      @session = session
       insts = Ec2.instances(@session).select{|i| i[:tags][:name] == name}
       Logger.info("found #{insts.length.to_s} instances by name #{name}")
       return insts
     end
 
-
-    def find_or_create_instance(session=nil)
+    def find_or_create_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       begin
         #check for an instance_id assigned, so verify and
         #update w any changes
@@ -65,18 +64,18 @@ module Mobilize
     end
 
     #find instance by ID, update DB record with latest from AWS
-    def instance(session=nil)
+    def instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       inst = Ec2.instances(@session,
                {aws_instance_id: @ec2.instance_id,
                 aws_state: ['running','pending']}).first
       inst = @ec2.create_instance(@session) if inst.nil?
-      @ec2.sync_instance(inst)
+      @ec2.sync(inst)
       return inst
     end
 
-    def sync_instance(rem_inst)
+    def sync(rem_inst)
       @ec2 = self
       @ec2.update_attributes(
         ami: rem_inst[:aws_image_id],
@@ -91,36 +90,34 @@ module Mobilize
       return @ec2
     end
 
-    def purge!(session=nil)
+    def purge!(session)
       #terminates the remote instance then
       #deletes the local database instance
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       #terminate instances by name
       insts = Ec2.instances_by_name(@ec2.name,@session)
       insts.each do |i|
         @session.terminate_instances([i[:aws_instance_id]])
         Logger.info("Terminated instance #{i[:aws_instance_id]}")
       end
-      if @ec2.created_at
-         Logger.info("Purged #{@ec2.name} from DB")
-         @ec2.delete
-      end
+      @ec2.delete
+      Logger.info("Purged #{@ec2.id} from DB")
       return true
     end
 
-    def launch(session=nil)
+    def launch(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       inst_params = {key_name: @ec2.keypair_name, group_ids: @ec2.security_groups, instance_type: @ec2.size}
       inst = @session.launch_instances(@ec2.ami, inst_params).first
       @session.create_tag(inst[:aws_instance_id],"name", @ec2.name)
       return inst
     end
 
-    def resolve_instance(session=nil)
+    def resolve_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       insts = Ec2.instances_by_name(@ec2.name,@session)
       if insts.length>1
         Logger.error("You have more than 1 running instance named #{@ec2.name} -- please investigate your configuration")
@@ -133,43 +130,23 @@ module Mobilize
       return inst
     end
 
-    def wait_for_instance(session=nil)
+    def wait_for_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
+      @session = session
       while (state=@ec2.instance(@session)[:aws_state]) != "running"
         Logger.info("Instance #{@ec2.instance_id} still at #{state} -- waiting 10 sec")
         sleep 10
       end
     end
 
-    def create_instance(session=nil)
+    def create_instance(session)
       @ec2 = self
-      @session = session || Ec2.login
-      inst = @ec2.resolve_instance || @ec2.launch
-      @ec2.sync_instance(inst)
+      @session = session
+      inst = @ec2.resolve_instance(@session) || @ec2.launch(@session)
+      @ec2.sync(inst)
       #wait around until the instance is running
-      @ec2.wait_for_instance
-      return @ec2.instance
-    end
-
-    def ssh(command,except=true)
-      @ec2 = self
-      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
-      @result = Net::SSH.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |ssh|
-        ssh.run(command,except)
-      end
-      return @result
-    end
-
-    def scp(loc_path, rem_path)
-      @ec2 = self
-      ssh_args = {keys: @@config.ec2.private_key_path,paranoid: false}
-      @result = Net::SCP.send_w_retries("start",@ec2.dns,@@config.ec2.root_user,ssh_args) do |scp|
-        scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
-          Logger.info("#{name}: #{sent}/#{total}")
-        end
-      end
-      return @result
+      @ec2.wait_for_instance(@session)
+      return @ec2.instance(@session)
     end
   end
 end

@@ -1,12 +1,16 @@
 #sample config yml for mobilize
 #entries w a preceding $ will be loaded from environment vars
 development:
-  object:
+  resque:
+    queue: mobilize
+  object: #used for ssh
     send_total_retries: 3
-  workers:
-    cache: <%=ENV['MOB_WORKER_CACHE']%>
-  servers:
-    cache: <%=ENV['MOB_SERVER_CACHE']%>
+    send_sleep_time: 5
+  job:
+    cache: <%=ENV['MOB_JOB_CACHE']%>
+  task:
+    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
+    total_retries: 5 #how many times to retry task before job failure
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -17,13 +21,24 @@ development:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
-    root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  ssh:
+    user_name: 'ubuntu'
+    private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+    worker:
+      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
+      accounts:
+      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
+        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
@@ -31,12 +46,15 @@ development:
 #test includes special variables for running
 #tests, found under `minitest`
 test:
+  resque:
+    queue: mobilize
   object:
     send_total_retries: 3
-  workers:
-    cache: <%=ENV['MOB_WORKER_CACHE']%>
-  servers:
-    cache: <%=ENV['MOB_SERVER_CACHE']%>
+    send_sleep_time: 5
+  job:
+    cache: <%=ENV['MOB_JOB_CACHE']%>
+  task:
+    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -47,12 +65,18 @@ test:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
-    root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  ssh:
+    user_name: 'ubuntu'
+    private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
@@ -60,9 +84,12 @@ test:
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
   minitest:
     google:
-      login: <%=ENV['MOB_MINITEST_GOOGLE_LOGIN']%>
+      email: <%=ENV['MOB_MINITEST_GOOGLE_EMAIL']%>
     ec2:
       worker_name: <%=ENV['MOB_MINITEST_EC2_WORKER_NAME']%>
+    ssh:
+      user_name: <%=ENV['MOB_MINITEST_SSH_USER_NAME']%>
+      private_key_path: <%=ENV['MOB_MINITEST_SSH_PRIVATE_KEY_PATH']%>
     github:
       login: <%=ENV['MOB_MINITEST_GITHUB_LOGIN']%>
       public:
@@ -74,12 +101,15 @@ test:
         owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
         repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
+  resque:
+    queue: mobilize
   object:
     send_total_retries: 3
-  workers:
-    cache: <%=ENV['MOB_WORKER_CACHE']%>
-  servers:
-    cache: <%=ENV['MOB_SERVER_CACHE']%>
+    send_sleep_time: 5
+  job:
+    cache: <%=ENV['MOB_JOB_CACHE']%>
+  task:
+    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -90,24 +120,33 @@ staging:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
-    root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  ssh:
+    user_name: 'ubuntu'
+    private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
+  resque:
+    queue: mobilize
   object:
     send_total_retries: 3
-  workers:
-    cache: <%=ENV['MOB_WORKER_CACHE']%>
-  servers:
-    cache: <%=ENV['MOB_SERVER_CACHE']%>
+    send_sleep_time: 5
+  job:
+    cache: <%=ENV['MOB_JOB_CACHE']%>
+  task:
+    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -118,12 +157,18 @@ production:
     size: 't1.micro'
     security_groups:
     - 'default'
-    private_key_path: <%=ENV['MOB_EC2_PRIVATE_KEY_PATH']%>
-    root_user: 'ubuntu'
     owner_user: <%=ENV['MOB_EC2_OWNER_USER']%>
+  ssh:
+    user_name: 'ubuntu'
+    private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
   google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
     owner:
-      login: <%=ENV['MOB_GOOGLE_OWNER_LOGIN']%>
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
