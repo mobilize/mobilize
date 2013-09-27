@@ -4,7 +4,7 @@ module Mobilize
     include Mongoid::Timestamps
     field :user_name, type: String #username for box
     field :key_path, type: String #path to private key
-    field :_id, type: String, default:->{"ssh::#{ec2_id}/#{user_name}"}
+    field :_id, type: String, default:->{"ssh://#{ec2_id}/#{user_name}"}
     belongs_to :ec2
     
     def cache(task)
@@ -27,23 +27,10 @@ module Mobilize
       Logger.info("Purged cache for #{@task.id}")
     end
 
-    def read_stdin(task)
+    def input(task)
       @task = self
-      File.open("#{@task.cache}/stdin","w") {|f| f.print(@task.stdin)}
-      Logger.info("Read stdin into cache for #{@task.id}")
-    end
-
-    #gsubs keys in files with the replacement value given
-    def gsub!(task)
-      @ssh = self
-      @task = task
-      @task.gsubs.each do |k,v|
-        @string1 = Regexp.escape(k.to_s) # escape any special characters
-        @string2 = Regexp.escape(v.to_s)
-        replace_cmd = "cd #{@task.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
-        replace_cmd.popen4(true)
-        Logger.info("Replaced #{@string1} with #{@string2} for #{@task.id}")
-      end
+      File.open("#{@task.cache}/stdin","w") {|f| f.print(@task.input)}
+      Logger.info("wrote input into cache stdin for #{@task.id}")
     end
 
     def Ssh.session

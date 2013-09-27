@@ -13,12 +13,25 @@ module Mobilize
       return "#{@@config.cache}/#{self.user.ssh_name}/#{self.name}"
     end
 
+    def clear_cache
+      @job = self
+      @job.purge_cache
+      @job.create_cache
+      Logger.info("Cleared cache for #{@job.id}")
+    end
+
+    def create_cache
+      @job = self
+      FileUtils.mkdir_p(@job.cache)
+      Logger.info("Created cache for #{@job.id}")
+    end
+
     def purge_cache
       #deletes its own cache and all task caches and removes self from db
       @job = self
       @job.tasks.each{|task| task.purge_cache}
       FileUtils.rm_r(@job.cache,:force=>true)
-      Logger.info("Purged cache for #{@job}")
+      Logger.info("Purged cache for #{@job.id}")
     end
 
     def Job.perform(job_id)

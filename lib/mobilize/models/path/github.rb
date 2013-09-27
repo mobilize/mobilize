@@ -6,7 +6,7 @@ module Mobilize
     field :domain, type: String, default:->{"github.com"}
     field :owner_name, type: String
     field :repo_name, type: String
-    field :_id, type: String, default:->{"github::#{domain}/#{owner_name}/#{repo_name}"}
+    field :_id, type: String, default:->{"github://#{domain}/#{owner_name}/#{repo_name}"}
 
     validates :owner_name, :repo_name, presence: true
 
@@ -42,7 +42,7 @@ module Mobilize
     def cache(task)
       @github = self
       @task = task
-      return "#{@task.job.cache}/#{@github.kind}/#{@github.repo_name}"
+      return "#{@task.job.cache}/github/#{@github.repo_name}"
     end
 
     def is_private?(task)
@@ -71,15 +71,11 @@ module Mobilize
       return true
     end
 
-    def kind
-      self.class.to_s.downcase.split("::").last
-    end
-
     def clear_cache(task)
-      @path = self
+      @github = self
       @task = task
-      @path.purge_cache(@task)
-      @path.create_cache(@task)
+      @github.purge_cache(@task)
+      @github.create_cache(@task)
       Logger.info("Cleared cache for #{@task.id}")
     end
 

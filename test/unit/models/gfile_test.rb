@@ -2,17 +2,20 @@ require "test_helper"
 class GfileTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @gfile = TestHelper.gfile
-    @worker_name = Mobilize.config.minitest.ec2.worker_name
-    @ec2 = TestHelper.ec2(@worker_name)
-    @user = TestHelper.user(@ec2)
-    @job = TestHelper.job(@user)
-    @gfile_session = Mobilize::Gfile.login
+    @gfile             = TestHelper.gfile
+    @worker_name       = Mobilize.config.minitest.ec2.worker_name
+    @ec2               = TestHelper.ec2(@worker_name)
+    @user              = TestHelper.user(@ec2)
+    @job               = TestHelper.job(@user)
+    @gfile_session     = Mobilize::Gfile.session
+    @gfile_input_path  = "#{@job.cache}/#{@gfile.name}.in"
+    @gfile_read_task   = TestHelper.task(@job,@gfile,"read",@gfile_session)
+    @gfile_write_task  = TestHelper.task(@job,@gfile,"write",@gfile_session, input: @gfile_input_path)
   end
 
   def test_find_or_create_remote
     #remove all remotes for this file
-    @gfile.purge!(@gfile_session)
+    @gfile.purge!(@gfile_read_task)
     @gfile = TestHelper.gfile
     @remote = @gfile.find_or_create_remote(@gfile_session)
     #delete DB version, start over, should find existing instance
@@ -25,19 +28,16 @@ class GfileTest < MiniTest::Unit::TestCase
   end
 
   def test_write_and_read
-    test_dir = "#{@job.worker_cache}"
     test_input_string = "test_file_string"
-    test_input_path = "#{test_dir}/#{@gfile.name}.in"
-    FileUtils.mkdir_p(test_dir)
-    File.open(test_input_path,'w') {|f| f.print(test_input_string)}
-    @gfile.write(@gfile_session,@user,test_input_path)
-    @gfile.read(@gfile_session,@user,test_dir)
-    test_output_path = "#{test_dir}/gdrive/#{@gfile.name}"
-    test_output_string = File.read(test_output_path)
+    @job.clear_cache
+    File.open(@gfile_input_path,'w') {|f| f.print(test_input_string)}
+    @gfile.write(@gfile_write_task)
+    @gfile.read(@gfile_read_task)
+    test_output_string = File.read(@gfile.cache(@gfile_read_task))
     assert_equal test_input_string, test_output_string
   end
   
   def teardown
-    FileUtils.rm_r(@job.worker_cache, force: true)
+    FileUtils.rm_r(@job.cache, force: true)
   end
 end

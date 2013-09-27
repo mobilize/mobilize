@@ -23,7 +23,7 @@ module Mobilize
       return password
     end
 
-    def Gfile.login(email=@@config.owner.email)
+    def Gfile.session(email=@@config.owner.email)
       password = Gfile.get_password(email)
       @session = ::GoogleDrive.login(email,password)
       Logger.info("Logged into Google Drive.")
@@ -110,43 +110,73 @@ module Mobilize
       return @remote
     end
 
-    def purge!(session)
+    def cache(task)
       @gfile = self
-      @session = session
-      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner,@gfile.name,@session)
+      @task = task
+      return "#{@task.job.cache}/gfile/#{@gfile.name}"
+    end
+
+    def clear_cache(task)
+      @gfile = self
+      @task = task
+      @gfile.purge_cache(@task)
+      @gfile.create_cache(@task)
+      Logger.info("Cleared cache for #{@task.id}")
+    end
+
+    def purge_cache(task)
+      @gfile = self
+      @task = task
+      FileUtils.rm_r(@gfile.cache(@task),force: true)
+      Logger.info("Purged cache for #{@task}")
+    end
+
+    def create_cache(task)
+      @gfile = self
+      @task = task
+      FileUtils.mkdir_p(@gfile.cache(@task))
+      #remove the actual directory so it can be written as file
+      FileUtils.rm_r(@gfile.cache(@task),force: true)
+      Logger.info("Created cache for #{@task}")
+    end
+
+    #delete remote, cache, and local db object
+    def purge!(task)
+      @gfile = self
+      @task = task
+      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner,@gfile.name,@task.session)
       @remotes.each do |remote|
         remote.delete
         Logger.info("Deleted remote #{remote.resource_id} for #{@gfile.id}")
       end
+      @gfile.purge_cache(@task)
       @gfile.delete
-      Logger.info("#{@gfile.id} from DB")
+      Logger.info("Purged #{@gfile.id} from DB")
       return true
     end
 
-    def read(session,user,dir)
+    def read(task)
       @gfile = self
-      @session = session
-      @user = user
-      @remote = @gfile.sync(@session)
+      @task = task
+      @user = @task.user
+      @remote = @gfile.sync(@task.session)
       if @user.id == @gfile.owner or @gfile.readers.include?(@user.id)
-        gdrive_dir = "#{dir}/gdrive"
-        FileUtils.mkdir_p(gdrive_dir)
-        gdrive_file = "#{gdrive_dir}/#{@gfile.name}"
-        @remote.download_to_file(gdrive_file)
-        Logger.info("Downloaded #{gdrive_file} from #{@gfile.id}")
+        @gfile.clear_cache(@task)
+        @remote.download_to_file(@gfile.cache(@task))
+        Logger.info("Downloaded #{@gfile.cache(@task)} from #{@gfile.id}")
       else
         Logger.error("User #{@user.id} does not have read access to #{@gfile.id}")
       end
     end
 
-    def write(session,user,file)
-      @session = session
+    def write(task)
       @gfile = self
-      @user = user
-      @remote = @gfile.find_or_create_remote(@session)
+      @task = task
+      @user = @task.user
+      @remote = @gfile.find_or_create_remote(@task.session)
       if @user.id == @gfile.owner or @gfile.writers.include?(@user.id)
-        @remote.update_from_file(file)
-        Logger.info("Uploaded #{file} from #{@gfile.id}")
+        @remote.update_from_file(@task.input)
+        Logger.info("Uploaded #{@task.input} from #{@gfile.id}")
       else
         Logger.error("User #{@user.id} does not have write access to #{@gfile.id}")
       end

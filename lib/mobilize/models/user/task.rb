@@ -6,9 +6,9 @@ module Mobilize
     include Mongoid::Timestamps
     belongs_to :job
     belongs_to :path
-    field :stdin, type: String
-    field :gsubs, type: Hash
-    field :call, type: String #method to call on path
+    field :input, type: String #used by run and write tasks to specify input
+    field :gsubs, type: Hash #used by run and write tasks to gsub input
+    field :call, type: String #method to call on path; read, run, write
     field :started_at, type: Time
     field :completed_at, type: Time
     field :failed_at, type: Time
@@ -42,6 +42,18 @@ module Mobilize
     def set_status(message)
       #set status in redis first if possible
       #then in DB
+    end
+
+    #gsubs keys in files with the replacement value given
+    def gsub!
+      @task = task
+      @task.gsubs.each do |k,v|
+        @string1 = Regexp.escape(k.to_s) # escape any special characters
+        @string2 = Regexp.escape(v.to_s)
+        replace_cmd = "cd #{@task.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
+        replace_cmd.popen4(true)
+        Logger.info("Replaced #{@string1} with #{@string2} for #{@task.id}")
+      end
     end
 
     def Task.perform(task_id)
