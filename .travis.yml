@@ -127,7 +127,7 @@ env:
   - secure: "juCbLwT06bXCNs+eh4L/3dVBH9ANc0CgDIuBHx3g/wSsfaCcP4MoZLNQLeIDlEHEWBs67aXWyBMNFgDetrelChjYiWl6z7zg+m1Fe630Q2j8SLIZ9t1DvXdkQKBo0u6yT7HXkeSkgFig9MuWpVxB3mKKihewBeFLhjJYOJP+oyk="
 #mob_worker_cache
   - "MOB_JOB_CACHE=/tmp/mobilize/jobs"
-#mob_google_owner_login
+#mob_google_owner_email
   - "MOB_GOOGLE_OWNER_EMAIL=mobilize.server@gmail.com"
 #mob_github_owner_login
   - "MOB_GITHUB_OWNER_LOGIN=mobilize"
