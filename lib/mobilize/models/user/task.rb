@@ -20,7 +20,7 @@ module Mobilize
     field :path_id, type: String #need for id
     field :_id, type: String, default:->{"#{job_id}::#{path_id}##{call}"}
 
-    @@config = Mobilize.config.task
+    @@config = Mobilize.config("task")
 
     attr_accessor :session #used to hold onto session object for task
 
@@ -52,7 +52,7 @@ module Mobilize
       @task.gsubs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
-        replace_cmd = "cd #{@task.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
+        replace_cmd = "cd #{@task.job.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
         Logger.info("Replaced #{@string1} with #{@string2} for #{@task.id}")
       end

@@ -9,7 +9,7 @@ module Mobilize
     field :writers, type: Array
     field :_id, type: String, default:->{"gfile://#{owner}/#{name}"}
 
-    @@config = Mobilize.config.google
+    @@config = Mobilize.config("google")
 
     def Gfile.get_password(email)
       if email == @@config.owner.email

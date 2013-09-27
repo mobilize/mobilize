@@ -3,19 +3,26 @@ require "mobilize/version"
 module Mobilize
   #folder where project is installed
   def Mobilize.root
-    ENV['PWD']
+    File.expand_path("#{File.dirname(File.expand_path(__FILE__))}/..")
   end
 end
-
 require "mobilize/logger"
 
-require "settingslogic"
-require "mobilize/config"
-
+require "#{Mobilize.root}/config/config"
+#write sample config files if not available
+["mob.yml","mongoid.yml","resque-pool.yml"].each do |file_name|
+  Mobilize::Config.write_sample(file_name)
+end
 module Mobilize
-  @@config = Config.new
-  def Mobilize.config
-    @@config
+  def Mobilize.config(model=nil)
+    @@config ||= begin
+                   Config.new
+                 rescue
+                   nil
+                 end
+    if @@config
+      model ? @@config.send(model) : @@config
+    end
   end
   #force Mobilize context when running `bundle console`
   def Mobilize.console
@@ -29,8 +36,8 @@ module Mobilize
     ENV['MOBILIZE_ENV'] || "development"
   end
 end
+Mobilize.config
 
-require 'optparse'
 cli_dir = "mobilize/cli"
 require "#{cli_dir}/cli"
 
@@ -38,10 +45,12 @@ require 'pry'
 
 require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
-Mongoid.load!(mongoid_config_path, Mobilize.env)
+if File.exists?(mongoid_config_path)
+  Mongoid.load!(mongoid_config_path, Mobilize.env)
+end
 
-deploy_dir = "#{Mobilize.root}/config/deploy"
-require "#{deploy_dir}/travis"
+test_dir = "#{Mobilize.root}/test"
+require "#{test_dir}/travis"
 
 extensions_dir = "mobilize/extensions"
 require "#{extensions_dir}/object"
