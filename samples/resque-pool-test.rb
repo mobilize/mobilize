@@ -1,14 +1,13 @@
 require 'mobilize'
 God.watch do |w|
-  w.name = 'resque-pool'
+  w.name = 'resque-pool-test'
   w.interval = 30.seconds
   w.env = { 'MOBILIZE_ENV' => 'test',
-            'RESQUE_ENV' => 'test',
-            'TERM_CHILD' => 1,
-            'QUEUE' => 'mobilize-test' }
+            'RESQUE_ENV' => 'test'
+          }
   w.dir = File.expand_path(File.join(File.dirname(__FILE__),'..'))
   w.start = "resque-pool -d -E test -o /dev/null " +
-            "-e /dev/null -p #{Mobilize.config.resque.pid_dir}/resque-pool.pid"
+            "-e /dev/null -p #{Mobilize.config.resque.pid_dir}/resque-pool-test.pid"
   w.start_grace = 10.seconds
  
   # restart if memory gets too high

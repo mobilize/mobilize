@@ -51,7 +51,7 @@ module Mobilize
       end
       opt_parser.parse!(args)
  
-      god_file = "resque-#{Mobilize.env}.rb"
+      god_file = "resque-pool-#{Mobilize.env}.rb"
       pool_file = "resque-pool.yml"
       [god_file,pool_file].each do |file_name|
         Mobilize::Config.write_sample(file_name,force:true)
@@ -65,8 +65,8 @@ module Mobilize
         Logger.info(cmd.popen4)
       end
       if options[:stop]
-        ["god stop resque-pool",
-         "kill -2 `cat #{Mobilize.config.resque.pid_dir}/resque-pool.pid`"
+        ["god stop resque-pool-#{Mobilize.env}",
+         "kill -2 `cat #{Mobilize.config.resque.pid_dir}/resque-pool-#{Mobilize.env}.pid`"
         ].each do |cmd|
           Logger.info(cmd.popen4)
         end
