@@ -2,8 +2,7 @@ require 'optparse'
 module Mobilize
   module Cli
     #decode base64 encoded strings that have been encrypted in travis
-    def Cli.decode(args)
-      options={}
+    def Cli.decode(args,options={})
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: mob decode -p prefix -l length -f file"
 
@@ -23,8 +22,7 @@ module Mobilize
       Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
     end
     #copy configuration to home folder if it's not already there
-    def Cli.configure(args)
-      options={}
+    def Cli.configure(args,options={})
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: mob configure -n --name [-f --force] "
 
@@ -43,8 +41,7 @@ module Mobilize
     #create log and pid folders, 
     #copy over configs
     #install and start god
-    def Cli.resque(args)
-      options={}
+    def Cli.resque(args,options={})
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: mob resque <env> [-s --stop] "
 

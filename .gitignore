@@ -21,3 +21,4 @@ dump.rdb
 config/mob.yml
 config/mongoid.yml
 config/resque-pool.yml
+config/resque-test.rb

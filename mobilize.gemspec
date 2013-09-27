@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "google_drive","0.3.6"
   spec.add_runtime_dependency "resque","1.25.0"
   spec.add_runtime_dependency "resque-pool"
+  spec.add_runtime_dependency "god"
   spec.add_runtime_dependency "redis-objects"
   spec.add_runtime_dependency "mongoid", "3.1.4"
   spec.add_runtime_dependency "popen4","0.1.2"
