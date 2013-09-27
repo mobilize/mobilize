@@ -40,8 +40,8 @@ require 'mongoid'
 mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
 Mongoid.load!(mongoid_config_path, Mobilize.env)
 
-deploy_dir = "#{Mobilize.root}/config/deploy"
-require "#{deploy_dir}/travis"
+test_dir = "#{Mobilize.root}/test"
+require "#{test_dir}/travis"
 
 extensions_dir = "mobilize/extensions"
 require "#{extensions_dir}/object"

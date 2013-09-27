@@ -29,7 +29,7 @@ module Mobilize
       worker = ::Resque::Worker.new(@@config.resque.queue)
       worker.term_child=1
       Logger.info("Started Resque worker")
-      worker.work(5) #check every 5 seconds
+      worker.work(5)
     end
     #copy configuration to home folder if it's not already there
     def Cli.configure(args)
