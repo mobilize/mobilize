@@ -54,19 +54,6 @@ module Mobilize
       return @response
     end
 
-    def is_private?(task)
-      @github = self
-      @task = task
-      @response = @github.repo_call(@task,"get")
-      if @response.body[:private]
-        Logger.info("repo #{@github._id} is private")
-        return true
-      else
-        Logger.info("repo #{@github._id} is public")
-        return false
-      end
-    end
-
     def collaborators(task)
       @github = self
       @task = task
@@ -81,10 +68,12 @@ module Mobilize
       @github = self
       @task = task
       @github.clear_cache(@task)
-      if @github.is_private?(@task)
-        @github.read_private(@task)
-      else
+      begin
+        Logger.info("attempting public read for #{@github.id}")
         @github.read_public(@task)
+      rescue
+        Logger.info("public read failed, attempting private read for #{@github.id}")
+        @github.read_private(@task)
       end
       #get size of objects and log
       log_cmd = "cd #{@github.cache(@task)} && git count-objects -H"
