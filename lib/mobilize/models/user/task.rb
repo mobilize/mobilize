@@ -98,7 +98,7 @@ module Mobilize
       @task = self
       Logger.error("Not an SSH task") unless @task.path.class == Mobilize::Ssh
       Logger.info("retrieving #{stream.to_s} for #{@task.id}")
-      @task.sh("cat #{@task.path.cache}/#{stream.to_s}")[:stdout]
+      @task.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
     end 
   end
 end

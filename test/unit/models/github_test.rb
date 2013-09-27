@@ -36,6 +36,6 @@ class GithubTest < MiniTest::Unit::TestCase
   end
 
   def teardown
-    FileUtils.rm_r(@job.cache, force: true)
+    @job.purge_cache
   end
 end

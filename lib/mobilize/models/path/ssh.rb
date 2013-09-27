@@ -36,7 +36,7 @@ module Mobilize
     end
 
     def Ssh.session
-
+      "session"
     end
 
     def pack_cache(task)
@@ -59,7 +59,7 @@ module Mobilize
       @task = task
       @ssh.clear_cache(@task)
       Logger.info("Starting deploy for #{@task.id}")
-      @ssh.read_stdin(@task)
+      @ssh.input(@task)
       @ssh.gsub!(@task)
       @ssh.pack_cache(@task)
       @ssh.cp("#{@task.job.cache}.tar.gz","#{@ssh.cache}.tar.gz")
