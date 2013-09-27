@@ -39,22 +39,39 @@ module Mobilize
       return @session
     end
 
-    def is_private?(task)
+    def repo_call(task,action,category=nil)
       @github = self
       @task = task
       begin
-        resp = @task.session.repos.get(user: @github.owner_name, repo: @github.repo_name)
-        Logger.info("Got repo for #{@github._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
+        @connection = @task.session.repos
+        @connection = category ? @connection.send(category) : @connection
+        @response = @connection.send(action,user: @github.owner_name, repo: @github.repo_name)
+        Logger.info("#{[action,category].compact.join(".")} successful for #{@github._id} repo call; " +
+                    "#{@response.headers.ratelimit_remaining} calls left this hour")
       rescue
         Logger.error("Could not access #{@github._id}")
       end
-      if resp.body[:private]
+      return @response
+    end
+
+    def is_private?(task)
+      @github = self
+      @task = task
+      @response = @github.repo_call(@task,"get")
+      if @response.body[:private]
         Logger.info("repo #{@github._id} is private")
         return true
       else
         Logger.info("repo #{@github._id} is public")
         return false
       end
+    end
+
+    def collaborators(task)
+      @github = self
+      @task = task
+      @response = @github.repo_call(@task,"list","collaborators")
+      return @response.body.map{|b| b[:login]}
     end
 
     #clones repo into temp folder with depth of 1
@@ -84,18 +101,6 @@ module Mobilize
       cmd.popen4(true)
       Logger.info("Read public git repo #{@github._id}")
       return true
-    end
-
-    def collaborators(task)
-      @github = self
-      @session = task.session
-      begin
-        resp = @session.repos.collaborators.list(user: @github.owner_name, repo: @github.repo_name)
-        Logger.info("Got collaborators for #{@github._id}; #{resp.headers.ratelimit_remaining} calls left this hour")
-      rescue
-        Logger.error("Could not access #{@github._id}")
-      end
-      return resp.body.map{|b| b[:login]}
     end
 
     def verify_collaborator(task)

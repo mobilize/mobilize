@@ -11,6 +11,7 @@ script: rake install &&
   mob decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
   mob decode -p 'ec2_ssh_' -l 23 -f ec2_ssh_test.ssh && chmod 0400 ec2_ssh_test.ssh && 
   export MOB_SSH_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
+  export MOB_MINITEST_SSH_PRIVATE_KEY_PATH="$MOB_SSH_PRIVATE_KEY_PATH" &&
   export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && 
   rake test
 notifications:
@@ -145,5 +146,3 @@ env:
   - "MOB_SSH_USER_NAME=ubuntu"
 #mob_minitest_ssh_user_name
   - "MOB_MINITEST_SSH_USER_NAME=ubuntu"
-#mob_minitest_ssh_private_key_path
-  - "MOB_MINITEST_SSH_PRIVATE_KEY_PATH=$MOB_SSH_PRIVATE_KEY_PATH"
