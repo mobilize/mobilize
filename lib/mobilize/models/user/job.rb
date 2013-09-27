@@ -12,7 +12,7 @@ module Mobilize
 
     #job overrides cache methods to act on root folder
     def cache
-      return File.expand_path("#{@@config.cache}/#{self.user.ssh_name}/#{self.name}"
+      return File.expand_path("#{@@config.cache}/#{self.user.ssh_name}/#{self.name}")
     end
 
     def clear_cache
