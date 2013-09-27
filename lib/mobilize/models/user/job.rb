@@ -8,11 +8,11 @@ module Mobilize
     belongs_to :user
     has_many :tasks
 
-    @@config = Mobilize.config.job
+    @@config = Mobilize.config("job")
 
     #job overrides cache methods to act on root folder
     def cache
-      return "#{@@config.cache}/#{self.user.ssh_name}/#{self.name}"
+      return File.expand_path("#{@@config.cache}/#{self.user.ssh_name}/#{self.name}")
     end
 
     def clear_cache

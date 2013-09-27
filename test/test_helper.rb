@@ -7,6 +7,15 @@ ENV['MOBILIZE_ENV'] = 'test'
 require 'mobilize'
 #drop test database
 Mongoid.purge!
+#stop and restart resque workers
+Mobilize::Cli.resque([],stop: true)
+Mobilize::Cli.resque([])
+sleep 5
+test_workers = Resque.workers.map do |w|
+  w if w.queues.first=="mobilize-test"
+end.compact
+Logger.error("Could not start resque workers") unless test_workers.length==5
+#define convenience methods for initializing test objects
 module TestHelper
   def TestHelper.ec2(name)
     return Mobilize::Ec2.find_or_create_by(name: name)

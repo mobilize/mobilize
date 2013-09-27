@@ -1,11 +1,8 @@
+require 'optparse'
 module Mobilize
   module Cli
-
-    @@config = Mobilize.config
-
     #decode base64 encoded strings that have been encrypted in travis
-    def Cli.decode(args)
-      options={}
+    def Cli.decode(args,options={})
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: mob decode -p prefix -l length -f file"
 
@@ -24,36 +21,58 @@ module Mobilize
       opt_parser.parse!(args)
       Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
     end
-    #start up resque worker
-    def Cli.resque
-      worker = ::Resque::Worker.new(@@config.resque.queue)
-      worker.term_child=1
-      Logger.info("Started Resque worker")
-      worker.work(5) #check every 5 seconds
-    end
     #copy configuration to home folder if it's not already there
-    def Cli.configure(args)
-      options={}
+    def Cli.configure(args,options={})
       opt_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: mob configure [-f --force]"
+        opts.banner = "Usage: mob configure -n --name [-f --force] "
 
         opts.on("-f", "--force", "Force overwrite of existing .mob.yml") do |f|
           options[:force] = true
         end
+
+        opts.on("-n", "--name [NAME]", "File name; can be mob.yml, mongoid.yml, or resque-pool.yml") do |n|
+          options[:name] = n
+        end
+
       end
       opt_parser.parse!(args)
-      mob_yml_path = File.expand_path("~/.mob.yml")
-      if File.exists?(mob_yml_path) and options[:force] != true
-        Mobilize:: Logger.error("~/.mob.yml found; please run with -f  option to overwrite with default")
-      else
-        if File.exists?(mob_yml_path)
-          Mobilize:: Logger.info("Forcing overwrite of existing ~/.mob.yml")
+      Mobilize::Config.write_sample(options[:name],options[:force])
+    end
+    #create log and pid folders, 
+    #copy over configs
+    #install and start god
+    def Cli.resque(args,options={})
+      opt_parser = OptionParser.new do |opts|
+        opts.banner = "Usage: mob resque <env> [-s --stop] "
+
+        opts.on("-s", "--stop", "stop god, stop resque-pool") do |s|
+          options[:stop] = true
         end
-        require 'fileutils'
-        FileUtils.cp("#{Mobilize.root}/samples/mob.yml",mob_yml_path)
-        Mobilize:: Logger.info("Wrote default configs to ~/.mob.yml")
+      end
+      opt_parser.parse!(args)
+ 
+      god_file = "resque-#{Mobilize.env}.rb"
+      pool_file = "resque-pool.yml"
+      [god_file,pool_file].each do |file_name|
+        Mobilize::Config.write_sample(file_name,force:true)
+      end
+      if "which god".popen4(false).empty?
+        "gem install god".popen4
+      end
+      ["god",
+      "god load #{Mobilize.root}/config/#{god_file}"
+      ].each do |cmd|
+        Logger.info(cmd.popen4)
+      end
+      if options[:stop]
+        ["god stop resque-pool",
+         "kill -2 `cat #{Mobilize.config.resque.pid_dir}/resque-pool.pid`"
+        ].each do |cmd|
+          Logger.info(cmd.popen4)
+        end
+      else
+        Logger.info("god start resque-pool".popen4)
       end
     end
-
   end
 end
