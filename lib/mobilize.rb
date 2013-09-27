@@ -10,7 +10,10 @@ end
 require "mobilize/logger"
 
 require "settingslogic"
+require 'fileutils'
 require "mobilize/config"
+#write mob.yml and resque_pool
+Mobilize::Config.write_files
 
 module Mobilize
   @@config = Config.new

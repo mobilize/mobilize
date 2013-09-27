@@ -35,25 +35,19 @@ module Mobilize
     def Cli.configure(args)
       options={}
       opt_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: mob configure [-f --force]"
+        opts.banner = "Usage: mob configure -n --name [-f --force] "
 
         opts.on("-f", "--force", "Force overwrite of existing .mob.yml") do |f|
           options[:force] = true
         end
+
+        opts.on("-n", "--name [NAME]", "File name; can be mob.yml, mongoid.yml, or resque-pool.yml") do |n|
+          options[:name] = n
+        end
+
       end
       opt_parser.parse!(args)
-      mob_yml_path = File.expand_path("~/.mob.yml")
-      if File.exists?(mob_yml_path) and options[:force] != true
-        Mobilize:: Logger.error("~/.mob.yml found; please run with -f  option to overwrite with default")
-      else
-        if File.exists?(mob_yml_path)
-          Mobilize:: Logger.info("Forcing overwrite of existing ~/.mob.yml")
-        end
-        require 'fileutils'
-        FileUtils.cp("#{Mobilize.root}/samples/mob.yml",mob_yml_path)
-        Mobilize:: Logger.info("Wrote default configs to ~/.mob.yml")
-      end
+      Mobilize::Config.write_sample(options[:name],options[:force])
     end
-
   end
 end

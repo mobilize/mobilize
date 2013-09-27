@@ -1,0 +1,8 @@
+development:
+  mobilize: 5
+test:
+  mobilize: 5
+staging:
+  mobilize: 5
+production:
+  mobilize: 5
