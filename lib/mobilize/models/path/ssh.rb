@@ -12,7 +12,7 @@ module Mobilize
     #ssh overrides all the cache methods to 
     #act on remote 
     def cache(task)
-      return "#{Mobilize.config.job.cache}/#{task.job.user.ssh_name}/#{task.job.name}".gsub("~",self.home_dir)
+      return "#{Mobilize.config.job.cache}/#{task.job.user.id}/#{task.job.name}".gsub("~",self.home_dir)
     end
 
     def create_cache(task)

@@ -144,7 +144,7 @@ module Mobilize
       @task = task
       @user = @task.user
       @remote = @gfile.sync(@task.session)
-      if @user.id == @gfile.owner or @gfile.readers.include?(@user.id)
+      if @user.google_login == @gfile.owner or @gfile.readers.include?(@user.google_login)
         @gfile.clear_cache(@task)
         @remote.download_to_file(@gfile.cache(@task))
         Logger.info("Downloaded #{@gfile.cache(@task)} from #{@gfile.id}")
@@ -158,7 +158,7 @@ module Mobilize
       @task = task
       @user = @task.user
       @remote = @gfile.find_or_create_remote(@task.session)
-      if @user.id == @gfile.owner or @gfile.writers.include?(@user.id)
+      if @user.google_login == @gfile.owner or @gfile.writers.include?(@user.google_login)
         @remote.update_from_file(@task.input)
         Logger.info("Uploaded #{@task.input} from #{@gfile.id}")
       else

@@ -7,8 +7,9 @@ module Mobilize
     belongs_to :job
     belongs_to :path
     field :input, type: String #used by run and write tasks to specify input
-    field :gsubs, type: Hash #used by run and write tasks to gsub input
+    field :subs, type: Hash #used by run and write tasks to gsub input
     field :call, type: String #method to call on path; read, run, write
+    field :order, type: Fixnum #order for determining task dependency
     field :started_at, type: Time
     field :completed_at, type: Time
     field :failed_at, type: Time
