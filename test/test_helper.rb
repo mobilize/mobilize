@@ -14,7 +14,7 @@ sleep 5
 test_workers = Resque.workers.map do |w|
   w if w.queues.first=="mobilize-test"
 end.compact
-Logger.error("Could not start resque workers") unless test_workers.length==5
+Mobilize::Logger.error("Could not start resque workers") unless test_workers.length==5
 #define convenience methods for initializing test objects
 module TestHelper
   def TestHelper.ec2(name)

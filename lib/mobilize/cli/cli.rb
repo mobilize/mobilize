@@ -62,16 +62,16 @@ module Mobilize
       ["god",
       "god load #{Mobilize.root}/config/#{god_file}"
       ].each do |cmd|
-        Logger.info(cmd.popen4)
+        Mobilize::Logger.info(cmd.popen4)
       end
       if options[:stop]
-        ["god stop resque-pool-#{Mobilize.env}",
-         "kill -2 `cat #{Mobilize.config.resque.pid_dir}/resque-pool-#{Mobilize.env}.pid`"
-        ].each do |cmd|
-          Logger.info(cmd.popen4)
+        Mobilize::Logger.info("god stop resque-pool-#{Mobilize.env}".popen4)
+        pid_path = "#{Mobilize.config.resque.pid_dir}/resque-pool-#{Mobilize.env}.pid"
+        if File.exists?(pid_path)
+         Mobilize::Logger.info("kill -2 #{File.read(pid_path).strip}".popen4)
         end
       else
-        Logger.info("god start resque-pool".popen4)
+        Mobilize::Logger.info("god start resque-pool-#{Mobilize.env}".popen4)
       end
     end
   end
