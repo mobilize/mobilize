@@ -63,7 +63,7 @@ module TestHelper
     end
   end
   def TestHelper.job(user)
-    user.jobs.create(user_id: user.id)
+    user.jobs.create(user_id: user.id, name: "test_job")
   end
   def TestHelper.task(job,path,call,session,args={})
     @task = job.tasks.find_or_create_by(
