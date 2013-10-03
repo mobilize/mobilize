@@ -16,11 +16,16 @@ module Mobilize
       return @task.worker.abs_dir.sub("~",@ssh.home_dir)
     end
 
+    def parent_dir
+      @cache = self
+      return File.dirname(@cache.dir)
+    end
+
     def create
       @cache = self
       @task  = @cache.task
       @ssh   = @task.user.ec2.ssh
-      #clear out and regenerate server folder
+      #clear out and regenerate cache dir
       @ssh.sh("mkdir -p #{@cache.dir}")
       Logger.info("Created cache dir #{@cache.dir}")
       return true
@@ -30,7 +35,8 @@ module Mobilize
       @cache = self
       @task  = @cache.task
       @ssh   = @task.user.ec2.ssh
-      @ssh.sh("sudo rm -rf #{@cache.dir}")
+      #also purge any tarballs
+      @ssh.sh("sudo rm -rf #{@cache.dir}*")
       Logger.info("Purged cache dir #{@cache.dir}")
     end
 
@@ -39,6 +45,14 @@ module Mobilize
       @cache.purge
       @cache.create
       Logger.info("Refreshed cache dir #{@cache.dir}")
+    end
+
+    def unpack
+      @cache = self
+      @task = task
+      @ssh = @task.user.ec2.ssh
+      @ssh.sh("cd #{@cache.parent_dir} && rm -rf #{@cache.dir} && tar -zxvf #{File.basename(@cache.dir)}.tar.gz")
+      Logger.info("Unpacked cache for #{@task.id}")
     end
   end
 end

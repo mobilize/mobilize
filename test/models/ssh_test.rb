@@ -12,17 +12,17 @@ class SshTest < MiniTest::Unit::TestCase
     @ssh_session          = Mobilize::Ssh.session
     @github_session       = Mobilize::Github.session
     @job                  = TestHelper.job(@user)
-    @github_public_task   = TestHelper.task(@job,@github_public,"read",@github_session)
+    @github_public_task   = TestHelper.task(@job,@github_public,"read",@github_session, order: 0)
     @ssh_task             = TestHelper.task(@job,@ssh,"run",@ssh_session,
                                             input: "ls path1",
                                             gsubs: {
-                                                    path1: "github/#{@github_public.repo_name}",
-                                                   }
+                                                    path1: @github_public_task.id,
+                                                   },
+                                            order: 1
                                             )
   end
 
   def test_run
-    @job.clear_cache
     @github_public.read(@github_public_task)
     @ssh.run(@ssh_task)
     assert_in_delta @ssh_task.stdout.length, 1, 1000

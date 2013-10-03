@@ -73,6 +73,7 @@ module Mobilize
         #in this case, directory is file name
         @remote.download_to_file(@task.worker.dir)
         Logger.info("Downloaded #{@gfile.id} to #{@task.worker.dir}")
+        @task.deploy
       else
         Logger.error("User #{@user.id} does not have read access to #{@gfile.id}")
       end

@@ -5,6 +5,8 @@ class GfileTest < MiniTest::Unit::TestCase
     @gfile             = TestHelper.gfile
     @worker_name       = Mobilize.config.minitest.ec2.worker_name
     @ec2               = TestHelper.ec2(@worker_name)
+    @ec2.find_or_create_instance(Mobilize::Ec2.session)
+    @ssh               = TestHelper.ssh(@ec2)
     @user              = TestHelper.user(@ec2)
     @job               = TestHelper.job(@user)
     @gfile_session     = Mobilize::Gfile.session
@@ -33,5 +35,7 @@ class GfileTest < MiniTest::Unit::TestCase
     @gfile.read(@gfile_read_task)
     test_output_string = File.read(@gfile_read_task.worker.dir)
     assert_equal test_input_string, test_output_string
+    test_cache_output_string = @ssh.sh("cat #{@gfile_read_task.cache.dir}")[:stdout]
+    assert_equal test_input_string, test_cache_output_string
   end
 end

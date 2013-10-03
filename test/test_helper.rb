@@ -13,7 +13,7 @@ module TestHelper
     return Mobilize::Ec2.find_or_create_by(name: name)
   end
   def TestHelper.ssh(ec2)
-    ec2.sshs.find_or_create_by(
+    ec2.create_ssh(
       ec2_id: ec2.id,
       user_name: Mobilize.config.minitest.ssh.user_name,
       private_key_path: Mobilize.config.minitest.ssh.private_key_path

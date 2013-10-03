@@ -54,7 +54,8 @@ module Mobilize
     #gsubs keys in files with the replacement value given
     def gsub!
       @task = self
-      @task.gsubs.each do |k,v|
+      return nil unless @task.subs
+      @task.subs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
         replace_cmd = "cd #{@task.job.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
@@ -97,6 +98,24 @@ module Mobilize
       Resque.enqueue(Task,@task.job.id,@task.path.id,@task.method,@task.status)
     end
 
+    #take a task worker
+    #and send it over to cache
+    #to ensure not too many connections are opened
+    def deploy
+      @task = self
+      @cache = @task.cache
+      @worker = @task.worker
+      @cache.refresh
+      Logger.info("Starting deploy for #{@task.id}")
+      @task.gsub!
+      @ssh = @task.user.ec2.ssh
+      @worker.pack
+      @ssh.cp("#{@worker.dir}.tar.gz","#{@cache.dir}.tar.gz")
+      Logger.info("Deployed #{@task.id} to cache")
+      @cache.unpack
+      return true
+    end
+
     #for SSH tasks only
     #defines 3 methods for retrieving each of the streams
     #as recorded in their files
@@ -106,6 +125,6 @@ module Mobilize
       Logger.error("Not an SSH task") unless @task.path.class == Mobilize::Ssh
       Logger.info("retrieving #{stream.to_s} for #{@task.id}")
       @task.path.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
-    end 
+    end
   end
 end

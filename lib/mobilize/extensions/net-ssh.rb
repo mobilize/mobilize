@@ -19,10 +19,12 @@ module Net
               end
               channel.on_data do |ch_d,data|
                 stdout_data+=data
+                Mobilize::Logger.info("[stdout]: #{data}") if Mobilize.config.log.level=="debug"
               end
 
               channel.on_extended_data do |ch_ed,type,data|
                 stderr_data+=data
+                Mobilize::Logger.info("[stderr]: #{data}") if Mobilize.config.log.level=="debug"
               end
 
               channel.on_request("exit-status") do |ch_exst,data|

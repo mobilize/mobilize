@@ -47,5 +47,12 @@ module Mobilize
       FileUtils.mkdir_p(@worker.dir) unless File.exists?(@worker.dir)
       Logger.info("Created work dir #{@worker.dir}")
     end
+
+    def pack
+      @worker = self
+      @task   = task
+      "cd #{@worker.parent_dir} && tar -zcvf #{@worker.dir}.tar.gz #{File.basename(@worker.dir)}".popen4(true)
+      Logger.info("Packed worker for #{@task.id} in #{@worker.dir}.tar.gz")
+    end
   end
 end

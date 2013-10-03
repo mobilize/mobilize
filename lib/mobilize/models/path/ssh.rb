@@ -19,39 +19,11 @@ module Mobilize
       "session"#placeholder
     end
 
-    def pack_cache(task)
-      @ssh = self
-      @task = task
-      "cd #{@task.job.cache}/.. && tar -zcvf #{@task.job.name}.tar.gz #{@task.job.name}".popen4(true)
-      Logger.info("Packed cache for #{@task.id}")
-    end
-
-    def unpack_cache(task)
-      @ssh = self
-      @task = task
-      @ssh.sh("cd #{@ssh.cache_parent(@task)} && tar -zxvf #{@task.job.name}.tar.gz")
-      Logger.info("Unpacked cache for #{@task.id}")
-    end
-
-    def deploy(task)
-      @ssh = self
-      @task = task
-      @ssh.clear_cache(@task)
-      Logger.info("Starting deploy for #{@task.id}")
-      @ssh.input(@task)
-      @task.gsub!
-      @ssh.pack_cache(@task)
-      @ssh.cp("#{@task.job.cache}.tar.gz","#{@ssh.cache(@task)}.tar.gz")
-      Logger.info("Deployed #{@task.id} to cache")
-      @ssh.unpack_cache(@task)
-      return true
-    end
-
     def run(task)
       @ssh = self
       @task = task
       #job worker directory to server
-      @ssh.deploy(@task)
+      @ssh.input(@task)
       exec_cmd = "(cd #{@ssh.cache(@task)} && sh stdin) > " +
                  "#{@ssh.cache(@task)}/stdout 2> " +
                  "#{@ssh.cache(@task)}/stderr"

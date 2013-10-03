@@ -41,9 +41,10 @@ module Mobilize
       return @response.body.map{|b| b[:login]}
     end
 
-    #clones repo into temp folder with depth of 1
+    #clones repo into worker with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
+    #deploys to ssh cache on completion
     def read(task)
       @github = self
       @task = task
@@ -59,6 +60,8 @@ module Mobilize
       log_cmd = "cd #{@task.worker.dir} && git count-objects -H"
       size = log_cmd.popen4
       Logger.info("Read #{@github.id} into #{@task.worker.dir}: #{size}")
+      #deploy github repo
+      @task.deploy
       return true
     end
 
