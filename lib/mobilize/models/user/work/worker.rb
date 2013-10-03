@@ -21,31 +21,31 @@ module Mobilize
     def rel_dir
       @worker = self
       @task = @worker.task
-      return "#{@task.job.name}/#{@task.name}/#{@path.id}"
+      return @task.id.split("#").first
     end
 
     def parent_dir
-      @cache = self
-      return File.dirname(@cache.dir)
+      @worker = self
+      return File.dirname(@worker.dir)
     end
 
-    def clear
-      @cache = self
-      @cache.purge
-      @cache.create
-      Logger.info("Cleared cache for #{@cache.dir}")
+    def refresh
+      @worker = self
+      @worker.purge
+      @worker.create
+      Logger.info("Refreshed work dir #{@worker.dir}")
     end
 
     def purge
-      @cache = self
-      FileUtils.rm_r(@cache.dir,force: true)
-      Logger.info("Purged cache for #{@cache.dir}")
+      @worker = self
+      FileUtils.rm_r(@worker.dir,force: true)
+      Logger.info("Purged work dir #{@worker.dir}")
     end
 
     def create
-      @cache = self
-      FileUtils.mkdir_p(@cache.dir)
-      Logger.info("Created cache for #{@cache.dir}")
+      @worker = self
+      FileUtils.mkdir_p(@worker.dir)
+      Logger.info("Created work dir #{@worker.dir}")
     end
   end
 end

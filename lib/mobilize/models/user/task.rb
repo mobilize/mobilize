@@ -17,7 +17,7 @@ module Mobilize
     field :retries, type: String
     field :job_id, type: String #need for id
     field :path_id, type: String #need for id
-    field :_id, type: String, default:->{"#{job_id}::#{path_id}##{call}"}
+    field :_id, type: String, default:->{"#{job_id}/#{path_id}##{call}"}
     belongs_to :job
     belongs_to :path
     has_one :cache
@@ -26,6 +26,16 @@ module Mobilize
     @@config = Mobilize.config("task")
 
     attr_accessor :session #used to hold onto session object for task
+
+    #assign a cache and worker to task on creation
+    after_create :find_or_create_worker_and_cache
+    def find_or_create_worker_and_cache
+      @task = self
+      @task.create_worker(task_id: @task.id)
+      Logger.info("Created worker for #{@task.id}")
+      @task.create_cache(task_id: @task.id)
+      Logger.info("Created cache for #{@task.id}")
+    end
 
     def user
       self.job.user

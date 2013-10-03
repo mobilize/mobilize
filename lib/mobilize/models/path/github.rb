@@ -6,8 +6,8 @@ module Mobilize
     field :domain, type: String, default:->{"github.com"}
     field :owner_name, type: String
     field :repo_name, type: String
-    field :name, type: String, default:->{repo_name}
-    field :_id, type: String, default:->{"github/#{domain}/#{owner_name}/#{repo_name}"}
+    field :name, type: String, default:->{"#{domain}/#{owner_name}/#{repo_name}"}
+    field :_id, type: String, default:->{"github/#{name}"}
 
     validates :owner_name, :repo_name, presence: true
 
@@ -47,7 +47,7 @@ module Mobilize
     def read(task)
       @github = self
       @task = task
-      @task.cache.clear
+      @task.worker.refresh
       begin
         Logger.info("attempting public read for #{@github.id}")
         @github.read_public(@task)
@@ -58,17 +58,17 @@ module Mobilize
       #get size of objects and log
       log_cmd = "cd #{@task.worker.dir} && git count-objects -H"
       size = log_cmd.popen4
-      Logger.info("Read #{@github.id} into #{@github.cache(@task)}: #{size}")
+      Logger.info("Read #{@github.id} into #{@task.worker.dir}: #{size}")
       return true
     end
 
     def read_public(task)
       @github = self
       @task = task
-      cmd = "cd #{@github.cache_parent(@task)} && " +
-            "git clone -q https://u:p@#{@github.domain}/#{@github.owner_name}/#{@github.repo_name}.git --depth=1"
+      cmd = "cd #{@task.worker.parent_dir} && " +
+            "git clone -q https://u:p@#{@github.name}.git --depth=1"
       cmd.popen4(true)
-      Logger.info("Read public git repo #{@github._id}")
+      Logger.info("Read complete: #{@github._id}")
       return true
     end
 
@@ -93,8 +93,8 @@ module Mobilize
       @github.add_git_file(@task)
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{@github.git_ssh_file_path(@task)} && " +
-            "cd #{@github.cache_parent(@task)} && " +
-            "git clone -q git@#{@github.domain}:#{@github.owner_name}/#{@github.repo_name}.git --depth=1"
+            "cd #{@task.worker.parent_dir} && " +
+            "git clone -q git@#{@github.name.sub("/",":")}.git --depth=1"
       cmd.popen4(true)
       @github.remove_git_files(@task)
       Logger.info("Read private git repo #{@github._id}")
@@ -102,7 +102,7 @@ module Mobilize
     end
 
     def git_ssh_file_path(task)
-      "#{self.cache_parent(task)}/git.ssh"
+      "#{task.worker.parent_dir}/git.ssh"
     end
 
     def add_git_file(task)

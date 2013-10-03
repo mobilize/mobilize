@@ -64,6 +64,9 @@ user_dir = "#{models_dir}/user"
 require "#{user_dir}/user"
 require "#{user_dir}/job"
 require "#{user_dir}/task"
+require "#{user_dir}/work/cache"
+require "#{user_dir}/work/worker"
+
 
 path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
