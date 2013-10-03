@@ -10,7 +10,7 @@ module Mobilize
       rescue
         #leave header as was; config not loaded yet
       end
-      return "[#{Time.now.utc}]: #{header}}"
+      return "[#{Time.now.utc}]: #{header}"
     end
     def Logger.info(message,object=nil)
       c = caller(1)
