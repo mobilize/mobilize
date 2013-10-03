@@ -7,12 +7,12 @@ module Mobilize
     field :owner, type: Array
     field :readers, type: Array
     field :writers, type: Array
-    field :_id, type: String, default:->{"gfile/#{owner}/#{name}"}
+    field :_id, type: String, default:->{"gfile/#{owner.gsub(/[\.@]/,"_")}/#{name}"}
 
     @@config = Mobilize.config("google")
 
     def Gfile.get_password(email)
-      if email == @@config.owner.email
+      if email  == @@config.owner.email
         password = @@config.owner.password
         Logger.info("Got password for google owner email #{email}")
       else
@@ -28,6 +28,67 @@ module Mobilize
       @session = ::GoogleDrive.login(email,password)
       Logger.info("Logged into Google Drive.")
       return @session
+    end
+
+    def sync(session)
+      @session = session
+      @gfile   = self
+      @remote  = @gfile.remote(@session)
+      Logger.error("Could not find remote for #{@gfile.id}") unless @remote
+      roles    = @gfile.remote_roles(@remote)
+      @gfile.update_attributes(
+        name: @remote.title,
+        key: @remote.resource_id,
+        owner: roles[:owner].first,
+        readers: roles[:reader],
+        writers: roles[:writer]
+      )
+      return @remote
+    end
+
+    #delete remote, worker, and local db object
+    def purge!(task)
+      @gfile   = self
+      @task    = task
+      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner,@gfile.name,@task.session)
+      @remotes.each do |remote|
+        remote.delete
+        Logger.info("Deleted remote #{remote.resource_id} for #{@gfile.id}")
+      end
+      @task.worker.purge
+      @gfile.delete
+      Logger.info("Purged #{@gfile.id} from DB")
+      return true
+    end
+
+    def read(task)
+      @gfile  = self
+      @task   = task
+      @user   = @task.user
+      @remote = @gfile.sync(@task.session)
+      if @user.google_login == @gfile.owner or
+         @gfile.readers.include?(@user.google_login)
+        #make sure path exists but dir does not
+        @task.worker.purge
+        #in this case, directory is file name
+        @remote.download_to_file(@task.worker.dir)
+        Logger.info("Downloaded #{@gfile.id} to #{@task.worker.dir}")
+      else
+        Logger.error("User #{@user.id} does not have read access to #{@gfile.id}")
+      end
+    end
+
+    def write(task)
+      @gfile = self
+      @task = task
+      @user = @task.user
+      @remote = @gfile.find_or_create_remote(@task.session)
+      if @user.google_login == @gfile.owner or @gfile.writers.include?(@user.google_login)
+        @remote.update_from_file(@task.input)
+        Logger.info("Uploaded #{@task.input} from #{@gfile.id}")
+      else
+        Logger.error("User #{@user.id} does not have write access to #{@gfile.id}")
+      end
     end
 
     def Gfile.remotes_by_name(name,session)
@@ -92,23 +153,6 @@ module Mobilize
       return @remote
     end
 
-
-    def sync(session)
-      @session = session
-      @gfile = self
-      @remote = @gfile.remote(@session)
-      Logger.error("Could not find remote for #{@gfile.id}") unless @remote
-      roles = @gfile.remote_roles(@remote)
-      @gfile.update_attributes(
-        name: @remote.title,
-        key: @remote.resource_id,
-        owner: roles[:owner].first,
-        readers: roles[:reader],
-        writers: roles[:writer]
-      )
-      return @remote
-    end
-
     def remote_roles(remote)
       @remote = remote
       acls = @remote.acl.to_enum.to_a
@@ -122,48 +166,6 @@ module Mobilize
         roles[a.role.to_sym] << scope
       end
       return roles
-    end
-
-    #delete remote, cache, and local db object
-    def purge!(task)
-      @gfile = self
-      @task = task
-      @remotes = Gfile.remotes_by_owner_and_name(@gfile.owner,@gfile.name,@task.session)
-      @remotes.each do |remote|
-        remote.delete
-        Logger.info("Deleted remote #{remote.resource_id} for #{@gfile.id}")
-      end
-      @gfile.purge_cache(@task)
-      @gfile.delete
-      Logger.info("Purged #{@gfile.id} from DB")
-      return true
-    end
-
-    def read(task)
-      @gfile = self
-      @task = task
-      @user = @task.user
-      @remote = @gfile.sync(@task.session)
-      if @user.google_login == @gfile.owner or @gfile.readers.include?(@user.google_login)
-        @gfile.clear_cache(@task)
-        @remote.download_to_file(@gfile.cache(@task))
-        Logger.info("Downloaded #{@gfile.cache(@task)} from #{@gfile.id}")
-      else
-        Logger.error("User #{@user.id} does not have read access to #{@gfile.id}")
-      end
-    end
-
-    def write(task)
-      @gfile = self
-      @task = task
-      @user = @task.user
-      @remote = @gfile.find_or_create_remote(@task.session)
-      if @user.google_login == @gfile.owner or @gfile.writers.include?(@user.google_login)
-        @remote.update_from_file(@task.input)
-        Logger.info("Uploaded #{@task.input} from #{@gfile.id}")
-      else
-        Logger.error("User #{@user.id} does not have write access to #{@gfile.id}")
-      end
     end
   end
 end

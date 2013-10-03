@@ -44,7 +44,7 @@ module Mobilize
 
     def create
       @worker = self
-      FileUtils.mkdir_p(@worker.dir)
+      FileUtils.mkdir_p(@worker.dir) unless File.exists?(@worker.dir)
       Logger.info("Created work dir #{@worker.dir}")
     end
   end
