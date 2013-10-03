@@ -13,26 +13,6 @@ module Mobilize
 
     @@config = Mobilize.config("github")
 
-    def http_url
-      @github = self
-      "https://#{@github.domain}/#{@github.owner_name}/#{@github.repo_name}"
-    end
-
-    def git_http_url
-      @github = self
-      "https://#{@github.domain}/#{@github.owner_name}/#{@github.repo_name}.git"
-    end
-
-    def git_ssh_url
-      @github = self
-      "git@#{@github.domain}:#{@github.owner_name}/#{@github.repo_name}.git"
-    end
-
-    def url
-      @github = self
-      @github.http_url
-    end
-
     def Github.session
       @session = ::Github.new(login: @@config.owner_login, password: @@config.owner_password)
       Logger.info("Logged into Github.")
@@ -67,7 +47,7 @@ module Mobilize
     def read(task)
       @github = self
       @task = task
-      @github.clear_cache(@task)
+      @task.cache.clear
       begin
         Logger.info("attempting public read for #{@github.id}")
         @github.read_public(@task)
@@ -76,7 +56,7 @@ module Mobilize
         @github.read_private(@task)
       end
       #get size of objects and log
-      log_cmd = "cd #{@github.cache(@task)} && git count-objects -H"
+      log_cmd = "cd #{@task.worker.dir} && git count-objects -H"
       size = log_cmd.popen4
       Logger.info("Read #{@github.id} into #{@github.cache(@task)}: #{size}")
       return true
@@ -86,7 +66,7 @@ module Mobilize
       @github = self
       @task = task
       cmd = "cd #{@github.cache_parent(@task)} && " +
-            "git clone -q #{@github.git_http_url.sub("https://","https://nobody:nobody@")} --depth=1"
+            "git clone -q https://u:p@#{@github.domain}/#{@github.owner_name}/#{@github.repo_name}.git --depth=1"
       cmd.popen4(true)
       Logger.info("Read public git repo #{@github._id}")
       return true
@@ -114,7 +94,7 @@ module Mobilize
       #add keys, clone repo, go to specific revision, execute command
       cmd = "export GIT_SSH=#{@github.git_ssh_file_path(@task)} && " +
             "cd #{@github.cache_parent(@task)} && " +
-            "git clone -q #{@github.git_ssh_url} --depth=1"
+            "git clone -q git@#{@github.domain}:#{@github.owner_name}/#{@github.repo_name}.git --depth=1"
       cmd.popen4(true)
       @github.remove_git_files(@task)
       Logger.info("Read private git repo #{@github._id}")

@@ -8,28 +8,6 @@ module Mobilize
     field :home_dir, type: String, default:->{"/home/#{user_name}"}
     field :_id, type: String, default:->{"ssh://#{ec2_id}/#{user_name}"}
     belongs_to :ec2
-   
-    #ssh overrides all the cache methods to 
-    #act on remote 
-    def cache(task)
-      return "#{Mobilize.config.job.cache}/#{task.job.user.id}/#{task.job.name}".gsub("~",self.home_dir)
-    end
-
-    def create_cache(task)
-      @ssh = self
-      @task = task
-      #clear out and regenerate server folder
-      @ssh.sh("mkdir -p #{@ssh.cache(@task)}")
-      Logger.info("Created cache for #{@task.id}")
-      return true
-    end
-
-    def purge_cache(task)
-      @ssh = self
-      @task = task
-      @ssh.sh("sudo rm -rf #{@ssh.cache(@task)}*")
-      Logger.info("Purged cache for #{@task.id}")
-    end
 
     def input(task)
       @task = task

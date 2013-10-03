@@ -4,8 +4,6 @@ module Mobilize
   class Task
     include Mongoid::Document
     include Mongoid::Timestamps
-    belongs_to :job
-    belongs_to :path
     field :input, type: String #used by run and write tasks to specify input
     field :subs, type: Hash #used by run and write tasks to gsub input
     field :call, type: String #method to call on path; read, run, write
@@ -20,6 +18,10 @@ module Mobilize
     field :job_id, type: String #need for id
     field :path_id, type: String #need for id
     field :_id, type: String, default:->{"#{job_id}::#{path_id}##{call}"}
+    belongs_to :job
+    belongs_to :path
+    has_one :cache
+    has_one :worker
 
     @@config = Mobilize.config("task")
 

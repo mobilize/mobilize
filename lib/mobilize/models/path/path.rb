@@ -8,7 +8,7 @@ module Mobilize
     def kind
       self.class.to_s.downcase.split("::").last
     end
-    
+
     def cache(task)
       @path = self
       @task = task
