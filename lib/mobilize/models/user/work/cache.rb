@@ -51,7 +51,8 @@ module Mobilize
       @cache = self
       @task = task
       @ssh = @task.user.ec2.ssh
-      @ssh.sh("cd #{@cache.parent_dir} && rm -rf #{@cache.dir} && tar -zxvf #{File.basename(@cache.dir)}.tar.gz")
+      cache_file = "#{File.basename(@cache.dir)}.tar.gz"
+      @ssh.sh("cd #{@cache.parent_dir} && rm -rf #{@cache.dir} && tar -zxvf #{cache_file} && rm #{cache_file}")
       Logger.info("Unpacked cache for #{@task.id}")
     end
   end
