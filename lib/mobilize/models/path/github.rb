@@ -7,7 +7,7 @@ module Mobilize
     field :owner_name, type: String
     field :repo_name, type: String
     field :name, type: String, default:->{repo_name}
-    field :_id, type: String, default:->{"github://#{domain}/#{owner_name}/#{repo_name}"}
+    field :_id, type: String, default:->{"github/#{domain}/#{owner_name}/#{repo_name}"}
 
     validates :owner_name, :repo_name, presence: true
 

@@ -6,7 +6,7 @@ module Mobilize
     field :private_key_path, type: String
     field :ec2_id, type: String #needed for id
     field :home_dir, type: String, default:->{"/home/#{user_name}"}
-    field :_id, type: String, default:->{"ssh://#{ec2_id}/#{user_name}"}
+    field :_id, type: String, default:->{"ssh/#{ec2_id}/#{user_name}"}
     belongs_to :ec2
 
     def input(task)
@@ -56,9 +56,9 @@ module Mobilize
                  "#{@ssh.cache(@task)}/stdout 2> " +
                  "#{@ssh.cache(@task)}/stderr"
       @ssh.sh(exec_cmd)
-      return true    
+      return true
     end
-   
+
     def sh(command,except=true)
       @ssh = self
       ssh_args = {keys: [@ssh.private_key_path],paranoid: false}

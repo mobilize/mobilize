@@ -1,16 +1,27 @@
 module Mobilize
-  # a is a resque location that holds data
-  # relevant to a given task
+  # a worker links a task to a resque job
+  # and a local directory that stores data before it is cached
   class Worker
     include Mongoid::Document
     include Mongoid::Timestamps
     field :task_id, type: String
+    field :_id, type: String, default:->{"#{task_id}.worker"}
     belongs_to :task
 
     def dir
       @worker = self
+      return File.expand_path(@worker.abs_dir)
+    end
+
+    def abs_dir
+      @worker = self
+      return "#{Mobilize::Config.home_dir}/jobs/#{@worker.rel_dir}"
+    end
+
+    def rel_dir
+      @worker = self
       @task = @worker.task
-      return "#{@task.job.name}/#{@task.name}/#{@task.path.kind}/#{@path.name}"
+      return "#{@task.job.name}/#{@task.name}/#{@path.id}"
     end
 
     def parent_dir

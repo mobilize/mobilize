@@ -30,14 +30,6 @@ module Mobilize
     def user
       self.job.user
     end
-    
-    def cache
-      self.path.cache(self)
-    end
-
-    def purge_cache
-      self.path.purge_cache(self)
-    end
 
     def get_status
       #try to get status from redis first

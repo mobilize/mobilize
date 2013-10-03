@@ -1,7 +1,16 @@
 module Mobilize
   module Logger
     def Logger.trace_header(stack_trace)
-      return "[#{Time.now.utc}]: #{stack_trace.first.split(Mobilize.root).last}"
+      header = stack_trace.first.split(Mobilize.root).last
+      begin
+        if Mobilize.config.log.level == "info"
+          #cut off the extra stuff at the beginning
+          header = header.split("/").last
+        end
+      rescue
+        #leave header as was; config not loaded yet
+      end
+      return "[#{Time.now.utc}]: #{header}}"
     end
     def Logger.info(message,object=nil)
       c = caller(1)

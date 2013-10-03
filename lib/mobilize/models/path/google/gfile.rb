@@ -7,7 +7,7 @@ module Mobilize
     field :owner, type: Array
     field :readers, type: Array
     field :writers, type: Array
-    field :_id, type: String, default:->{"gfile://#{owner}/#{name}"}
+    field :_id, type: String, default:->{"gfile/#{owner}/#{name}"}
 
     @@config = Mobilize.config("google")
 
