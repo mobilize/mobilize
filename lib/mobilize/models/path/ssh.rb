@@ -28,21 +28,22 @@ module Mobilize
       #deploy ssh command to cache
       @task.deploy
       #cd to job dir and execute file from there
-      exec_cmd = "(cd #{@task.cache.dir}/ && sh in) > " +
-                 "#{@task.cache.dir}/out 2> " +
-                 "#{@task.cache.dir}/err; echo $? > sig"
+      exec_cmd = "(cd #{@task.cache.parent_dir}/ && sh in) > " +
+                 "#{@task.cache.parent_dir}/out 2> " +
+                 "#{@task.cache.parent_dir}/err; " +
+                 "echo $? > #{@task.cache.parent_dir}/sig"
       @ssh.sh(exec_cmd)
       return true
     end
 
-    def result(task)
+    def streams(task)
       @ssh          = self
       @task         = task
       delim         = "MOBILIZE_SSH_RESULT_DELIMITER"
-      result_cmd    = "'cd #{@task.cache.dir} && array=(in out err sig) " +
-                      "&& (for each in $array;do;:;cat $each;echo \"#{delim}\";done)'"
+      result_cmd    = "cd #{@task.cache.parent_dir} && array=(in out err sig) " +
+                      "&& (for each in \"${array[@]}\"; do :; cat $each; echo #{delim}; done)"
       result_string = @ssh.sh(result_cmd)[:stdout]
-      stdin, out,err,sig = result_string.split(delim)
+      stdin, out,err,sig = result_string.split(delim).map{|stream| stream.strip}
       return {in: stdin, out: out, err: err, sig: sig}
     end
 

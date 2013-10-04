@@ -117,17 +117,5 @@ module Mobilize
       @cache.unpack
       return true
     end
-
-    #for SSH tasks only
-    #defines 4 methods for retrieving each of the streams
-    #as recorded in their files
-    #def_each is included in extensions
-    def_each :in, :out, :err, :sig do |stream|
-      @task = self
-      @ssh = @task.path
-      Logger.error("Not an SSH task") unless @ssh.class == Mobilize::Ssh
-      Logger.info("retrieving #{stream.to_s} for #{@task.id}")
-      @ssh.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
-    end
   end
 end
