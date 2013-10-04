@@ -11,8 +11,10 @@ module Mobilize
 
     def input(task)
       @task = task
-      File.open("#{@task.job.cache}/stdin","w") {|f| f.print(@task.input)}
-      Logger.info("wrote input into job cache stdin for #{@task.id}")
+      @task.worker.refresh
+      @task.worker.purge
+      File.open("#{@task.worker.dir}","w") {|f| f.print(@task.input)}
+      Logger.info("wrote input into worker at #{@task.worker.dir}")
     end
 
     def Ssh.session
@@ -20,15 +22,28 @@ module Mobilize
     end
 
     def run(task)
-      @ssh = self
-      @task = task
-      #job worker directory to server
+      @ssh     = self
+      @task    = task
       @ssh.input(@task)
-      exec_cmd = "(cd #{@ssh.cache(@task)} && sh stdin) > " +
-                 "#{@ssh.cache(@task)}/stdout 2> " +
-                 "#{@ssh.cache(@task)}/stderr"
+      #deploy ssh command to cache
+      @task.deploy
+      #cd to job dir and execute file from there
+      exec_cmd = "(cd #{@task.cache.dir}/ && sh in) > " +
+                 "#{@task.cache.dir}/out 2> " +
+                 "#{@task.cache.dir}/err; echo $? > sig"
       @ssh.sh(exec_cmd)
       return true
+    end
+
+    def result(task)
+      @ssh          = self
+      @task         = task
+      delim         = "MOBILIZE_SSH_RESULT_DELIMITER"
+      result_cmd    = "'cd #{@task.cache.dir} && array=(in out err sig) " +
+                      "&& (for each in $array;do;:;cat $each;echo \"#{delim}\";done)'"
+      result_string = @ssh.sh(result_cmd)[:stdout]
+      stdin, out,err,sig = result_string.split(delim)
+      return {in: stdin, out: out, err: err, sig: sig}
     end
 
     def sh(command,except=true)

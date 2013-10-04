@@ -58,9 +58,9 @@ module Mobilize
       @task.subs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
-        replace_cmd = "cd #{@task.job.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
+        replace_cmd = "cd #{@task.worker.parent_dir} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
-        Logger.info("Replaced #{@string1} with #{@string2} for #{@task.id}")
+        Logger.info("Replaced #{@string1} with #{@string2} in #{@task.worker.parent_dir}")
       end
     end
 
@@ -106,25 +106,28 @@ module Mobilize
       @cache = @task.cache
       @worker = @task.worker
       @cache.refresh
+      "rm #{@worker.dir}.tar.gz".popen4(false)
       Logger.info("Starting deploy for #{@task.id}")
       @task.gsub!
       @ssh = @task.user.ec2.ssh
       @worker.pack
       @ssh.cp("#{@worker.dir}.tar.gz","#{@cache.dir}.tar.gz")
+      "rm #{@worker.dir}.tar.gz".popen4(true)
       Logger.info("Deployed #{@task.id} to cache")
       @cache.unpack
       return true
     end
 
     #for SSH tasks only
-    #defines 3 methods for retrieving each of the streams
+    #defines 4 methods for retrieving each of the streams
     #as recorded in their files
     #def_each is included in extensions
-    def_each :stdin, :stdout, :stderr do |stream|
+    def_each :in, :out, :err, :sig do |stream|
       @task = self
-      Logger.error("Not an SSH task") unless @task.path.class == Mobilize::Ssh
+      @ssh = @task.path
+      Logger.error("Not an SSH task") unless @ssh.class == Mobilize::Ssh
       Logger.info("retrieving #{stream.to_s} for #{@task.id}")
-      @task.path.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
+      @ssh.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
     end
   end
 end

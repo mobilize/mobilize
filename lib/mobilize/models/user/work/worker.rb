@@ -10,7 +10,18 @@ module Mobilize
 
     def dir
       @worker = self
-      return File.expand_path(@worker.abs_dir)
+      @task   = @worker.task
+      if @task.path.class == Mobilize::Ssh
+        return File.expand_path("#{@worker.job_dir}/ssh/in")
+      else
+        return File.expand_path(@worker.abs_dir)
+      end
+    end
+
+    def job_dir
+      @worker = self
+      @task = @worker.task
+      return "#{Mobilize::Config.home_dir}/jobs/#{@task.user.id}/#{@task.job.name}"
     end
 
     def abs_dir

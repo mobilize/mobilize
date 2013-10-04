@@ -12,13 +12,12 @@ class SshTest < MiniTest::Unit::TestCase
     @ssh_session          = Mobilize::Ssh.session
     @github_session       = Mobilize::Github.session
     @job                  = TestHelper.job(@user)
-    @github_public_task   = TestHelper.task(@job,@github_public,"read",@github_session, order: 0)
+    @github_public_task   = TestHelper.task(@job,@github_public,"read",@github_session)
     @ssh_task             = TestHelper.task(@job,@ssh,"run",@ssh_session,
                                             input: "ls path1",
-                                            gsubs: {
-                                                    path1: @github_public_task.id,
-                                                   },
-                                            order: 1
+                                            subs: {
+                                                    path1: @github_public_task.cache.dir
+                                                   }
                                             )
   end
 

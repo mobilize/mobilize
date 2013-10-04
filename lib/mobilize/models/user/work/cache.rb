@@ -9,16 +9,29 @@ module Mobilize
     belongs_to :task
 
     #same as worker dir but with ssh home dir
+    #except for the ssh path cache
+    #which is <job_dir>/ssh/in
     def dir
       @cache = self
       @task  = @cache.task
-      @ssh = @task.user.ec2.ssh
-      return @task.worker.abs_dir.sub("~",@ssh.home_dir)
+      if @task.path.class == Mobilize::Ssh
+        return "#{@cache.job_dir}/ssh/in"
+      else
+        @ssh = @task.user.ec2.ssh
+        return @task.worker.abs_dir.sub("~",@ssh.home_dir)
+      end
     end
 
     def parent_dir
       @cache = self
       return File.dirname(@cache.dir)
+    end
+
+    def job_dir
+      @cache = self
+      @task = @cache.task
+      @ssh = @task.user.ec2.ssh
+      return "#{Mobilize::Config.home_dir.sub("~",@ssh.home_dir)}/jobs/#{@task.user.id}/#{@task.job.name}"
     end
 
     def create
@@ -53,7 +66,7 @@ module Mobilize
       @ssh = @task.user.ec2.ssh
       cache_file = "#{File.basename(@cache.dir)}.tar.gz"
       @ssh.sh("cd #{@cache.parent_dir} && rm -rf #{@cache.dir} && tar -zxvf #{cache_file} && rm #{cache_file}")
-      Logger.info("Unpacked cache for #{@task.id}")
+      Logger.info("Unpacked cache into #{@cache.dir}")
     end
   end
 end

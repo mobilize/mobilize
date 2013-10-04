@@ -49,6 +49,7 @@ module Mobilize
       @github = self
       @task = task
       @task.worker.refresh
+      @task.worker.purge
       begin
         Logger.info("attempting public read for #{@github.id}")
         @github.read_public(@task)
