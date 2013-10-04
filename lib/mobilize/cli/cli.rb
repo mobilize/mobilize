@@ -18,7 +18,8 @@ module Mobilize
           options[:file_path] = f
         end
       end
-      opt_parser.parse!(args)
+      opt_parser .parse!(args)
+
       Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
     end
     #copy configuration to home folder if it's not already there
@@ -50,28 +51,31 @@ module Mobilize
         end
       end
       opt_parser.parse!(args)
- 
-      god_file = "resque-pool-#{Mobilize.env}.rb"
+
+      god_file  = "resque-pool-#{Mobilize.env}.rb"
       pool_file = "resque-pool.yml"
       [god_file,pool_file].each do |file_name|
-        Mobilize::Config.write_sample(file_name,force:true)
+        Mobilize::Config .write_sample(file_name,force:true)
       end
+
       if "which god".popen4(false).empty?
         "gem install god".popen4
       end
+
       ["god",
       "god load #{Mobilize.root}/config/#{god_file}"
       ].each do |cmd|
-        Mobilize::Logger.info(cmd.popen4)
+        Mobilize::Logger.info cmd.popen4
       end
+
       if options[:stop]
-        Mobilize::Logger.info("god stop resque-pool-#{Mobilize.env}".popen4)
-        pid_path = "#{Mobilize::Config.home_dir}/pids/resque-pool-#{Mobilize.env}.pid"
+        Mobilize::Logger.info   "god stop resque-pool-#{Mobilize.env}".popen4
+        pid_path              = "#{Mobilize::Config.home_dir}/pids/resque-pool-#{Mobilize.env}.pid"
         if File.exists?(pid_path)
-         Mobilize::Logger.info("kill -2 #{File.read(pid_path).strip}".popen4)
+         Mobilize::Logger.info "kill -2 #{File.read(pid_path).strip}".popen4
         end
       else
-        Mobilize::Logger.info("god start resque-pool-#{Mobilize.env}".popen4)
+        Mobilize::Logger.info  "god start resque-pool-#{Mobilize.env}".popen4
       end
     end
   end

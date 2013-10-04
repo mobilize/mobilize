@@ -4,20 +4,12 @@ module Mobilize
   class Task
     include Mongoid::Document
     include Mongoid::Timestamps
-    field :input, type: String #used by run and write tasks to specify input
-    field :subs, type: Hash #used by run and write tasks to gsub input
-    field :call, type: String #method to call on path; read, run, write
-    field :order, type: Fixnum #order for determining task dependency
-    field :started_at, type: Time
-    field :completed_at, type: Time
-    field :failed_at, type: Time
-    field :retried_at, type: Time
-    field :status_at, type: Time
-    field :status, type: String
-    field :retries, type: String
-    field :job_id, type: String #need for id
-    field :path_id, type: String #need for id
-    field :_id, type: String, default:->{"#{job_id}/#{path_id}##{call}"}
+    include Mobilize::Status
+    field :input,    type: String #used by run and write tasks to specify input
+    field :subs,     type: Hash   #used by run and write tasks to gsub input
+    field :stage_id, type: String #need for id
+    field :path_id,  type: String #need for id
+    field :_id,      type: String, default:->{"#{stage_id}#{path_id}"}
     belongs_to :job
     belongs_to :path
     has_one :cache
@@ -118,9 +110,10 @@ module Mobilize
       return true
     end
 
+    #returns in, out, err, sig, log
     def streams
       @ssh = self.path
-      @ssh.streams(self)
+      @ssh .streams(self)
     end
 
   end
