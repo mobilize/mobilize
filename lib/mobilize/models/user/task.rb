@@ -117,5 +117,11 @@ module Mobilize
       @cache.unpack
       return true
     end
+
+    def streams
+      @ssh = self.path
+      @ssh.streams(self)
+    end
+
   end
 end
