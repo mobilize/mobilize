@@ -10,7 +10,7 @@ require "mobilize/logger"
 
 require "#{Mobilize.root}/config/config"
 #write sample config files if not available
-["mob.yml","mongoid.yml","resque-pool.yml"].each do |file_name|
+["mob.yml","mongoid.yml","resque-pool.yml","resque-pool-#{Mobilize.env}"].each do |file_name|
   Mobilize::Config.write_sample(file_name)
 end
 module Mobilize
