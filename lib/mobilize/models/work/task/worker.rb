@@ -12,7 +12,7 @@ module Mobilize
       @worker                   = self
       @task                     = @worker.task
       if @task.path.class      == Mobilize::Ssh
-        return File.expand_path "#{@worker.job_dir}/ssh/in"
+        return File.expand_path "#{@worker.job_dir}/ssh/stdin"
       else
         return File.expand_path @worker.abs_dir
       end
