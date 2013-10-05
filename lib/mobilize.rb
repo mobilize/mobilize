@@ -5,6 +5,10 @@ module Mobilize
   def Mobilize.root
     File.expand_path("#{File.dirname(File.expand_path(__FILE__))}/..")
   end
+  def Mobilize.env
+    #use MOBILIZE_ENV to manually set your environment when you start your app
+    ENV['MOBILIZE_ENV'] || "development"
+  end
 end
 require "mobilize/logger"
 
@@ -30,10 +34,6 @@ module Mobilize
   end
   def Mobilize.db
     Mongoid.session(:default)[:database].database
-  end
-  def Mobilize.env
-    #use MOBILIZE_ENV to manually set your environment when you start your app
-    ENV['MOBILIZE_ENV'] || "development"
   end
 end
 Mobilize.config
