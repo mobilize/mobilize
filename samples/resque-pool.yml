@@ -1,8 +1,8 @@
 development:
-  mobilize-dev: 5
+  mobilize-development: 5
 test:
   mobilize-test: 5
 staging:
-  mobilize-stg: 5
+  mobilize-staging: 5
 production:
-  mobilize-prod: 5
+  mobilize-production: 5

@@ -7,10 +7,10 @@ module Net
       class Session
         #except=true means exception will be raised on exit_code != 0
         def run(command, except=true)
-          @ssh = self
+          @ssh        = self
           stdout_data = ""
           stderr_data = ""
-          exit_code = nil
+          exit_code   = nil
           exit_signal = nil
           @ssh.open_channel do |channel|
             channel.exec(command) do |ch, success|
@@ -19,10 +19,12 @@ module Net
               end
               channel.on_data do |ch_d,data|
                 stdout_data+=data
+                Mobilize::Logger.info("[stdout]: #{data}") if Mobilize.config.log.level=="debug"
               end
 
               channel.on_extended_data do |ch_ed,type,data|
                 stderr_data+=data
+                Mobilize::Logger.info("[stderr]: #{data}") if Mobilize.config.log.level=="debug"
               end
 
               channel.on_request("exit-status") do |ch_exst,data|
@@ -35,11 +37,17 @@ module Net
             end
           end
           @ssh.loop
-          result={stdout: stdout_data, stderr: stderr_data, exit_code: exit_code, exit_signal: exit_signal}
+          result            = {
+                               stdout: stdout_data,
+                               stderr: stderr_data,
+                               exit_code: exit_code,
+                               exit_signal: exit_signal
+                              }
           if except and exit_code!=0
-            raise stderr_data
+            Mobilize::Logger.error stderr_data
+          else
+            return result
           end
-          return result
         end
       end
     end

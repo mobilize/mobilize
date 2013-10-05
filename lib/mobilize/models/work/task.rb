@@ -4,36 +4,33 @@ module Mobilize
   class Task
     include Mongoid::Document
     include Mongoid::Timestamps
+    include Mobilize::Status
+    field :input,    type: String #used by run and write tasks to specify input
+    field :subs,     type: Hash   #used by run and write tasks to gsub input
+    field :stage_id, type: String #need for id
+    field :path_id,  type: String #need for id
+    field :_id,      type: String, default:->{"#{stage_id}#{path_id}"}
     belongs_to :job
     belongs_to :path
-    field :input, type: String #used by run and write tasks to specify input
-    field :gsubs, type: Hash #used by run and write tasks to gsub input
-    field :call, type: String #method to call on path; read, run, write
-    field :started_at, type: Time
-    field :completed_at, type: Time
-    field :failed_at, type: Time
-    field :retried_at, type: Time
-    field :status_at, type: Time
-    field :status, type: String
-    field :retries, type: String
-    field :job_id, type: String #need for id
-    field :path_id, type: String #need for id
-    field :_id, type: String, default:->{"#{job_id}::#{path_id}##{call}"}
+    has_one :cache
+    has_one :worker
 
     @@config = Mobilize.config("task")
 
     attr_accessor :session #used to hold onto session object for task
 
-    def user
-      self.job.user
-    end
-    
-    def cache
-      self.path.cache(self)
+    #assign a cache and worker to task on creation
+    after_create :find_or_create_worker_and_cache
+    def find_or_create_worker_and_cache
+      @task       = self
+      @task       .create_worker(task_id: @task.id)
+      Logger.info "Created worker for #{@task.id}"
+      @task       .create_cache(task_id: @task.id)
+      Logger.info "Created cache for #{@task.id}"
     end
 
-    def purge_cache
-      self.path.purge_cache(self)
+    def user
+      self.job.user
     end
 
     def get_status
@@ -49,12 +46,13 @@ module Mobilize
     #gsubs keys in files with the replacement value given
     def gsub!
       @task = self
-      @task.gsubs.each do |k,v|
+      return nil unless @task.subs
+      @task.subs.each do |k,v|
         @string1 = Regexp.escape(k.to_s) # escape any special characters
         @string2 = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
-        replace_cmd = "cd #{@task.job.cache} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
+        replace_cmd = "cd #{@task.worker.parent_dir} && (find . -type f \\( ! -path '*/.*' \\) | xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         replace_cmd.popen4(true)
-        Logger.info("Replaced #{@string1} with #{@string2} for #{@task.id}")
+        Logger.info("Replaced #{@string1} with #{@string2} in #{@task.worker.parent_dir}")
       end
     end
 
@@ -92,15 +90,31 @@ module Mobilize
       Resque.enqueue(Task,@task.job.id,@task.path.id,@task.method,@task.status)
     end
 
-    #for SSH tasks only
-    #defines 3 methods for retrieving each of the streams
-    #as recorded in their files
-    #def_each is included in extensions
-    def_each :stdin, :stdout, :stderr do |stream|
+    #take a task worker
+    #and send it over to cache
+    #to ensure not too many connections are opened
+    def deploy
       @task = self
-      Logger.error("Not an SSH task") unless @task.path.class == Mobilize::Ssh
-      Logger.info("retrieving #{stream.to_s} for #{@task.id}")
-      @task.path.sh("cat #{@task.cache}/#{stream.to_s}")[:stdout]
-    end 
+      @cache = @task.cache
+      @worker = @task.worker
+      @cache.refresh
+      "rm #{@worker.dir}.tar.gz".popen4(false)
+      Logger.info("Starting deploy for #{@task.id}")
+      @task.gsub!
+      @ssh = @task.user.ec2.ssh
+      @worker.pack
+      @ssh.cp("#{@worker.dir}.tar.gz","#{@cache.dir}.tar.gz")
+      "rm #{@worker.dir}.tar.gz".popen4(true)
+      Logger.info("Deployed #{@task.id} to cache")
+      @cache.unpack
+      return true
+    end
+
+    #returns in, out, err, sig, log
+    def streams
+      @ssh = self.path
+      @ssh .streams(self)
+    end
+
   end
 end

@@ -7,21 +7,13 @@ ENV['MOBILIZE_ENV'] = 'test'
 require 'mobilize'
 #drop test database
 Mongoid.purge!
-#stop and restart resque workers
-Mobilize::Cli.resque([],stop: true)
-Mobilize::Cli.resque([])
-sleep 5
-test_workers = Resque.workers.map do |w|
-  w if w.queues.first=="mobilize-test"
-end.compact
-Logger.error("Could not start resque workers") unless test_workers.length==5
 #define convenience methods for initializing test objects
 module TestHelper
   def TestHelper.ec2(name)
     return Mobilize::Ec2.find_or_create_by(name: name)
   end
   def TestHelper.ssh(ec2)
-    ec2.sshs.find_or_create_by(
+    ec2.create_ssh(
       ec2_id: ec2.id,
       user_name: Mobilize.config.minitest.ssh.user_name,
       private_key_path: Mobilize.config.minitest.ssh.private_key_path
@@ -63,7 +55,7 @@ module TestHelper
     end
   end
   def TestHelper.job(user)
-    user.jobs.create(user_id: user.id)
+    user.jobs.create(user_id: user.id, name: "test_job")
   end
   def TestHelper.task(job,path,call,session,args={})
     @task = job.tasks.find_or_create_by(
@@ -72,5 +64,15 @@ module TestHelper
     @task.session = session
     @task.update_attributes(args)
     @task
+  end
+  def TestHelper.resque
+    #stop and restart resque workers
+    Mobilize::Cli.resque([],stop: true)
+    Mobilize::Cli.resque([])
+    sleep 5
+    test_workers = Resque.workers.map do |w|
+      w if w.queues.first=="mobilize-test"
+    end.compact
+    Mobilize::Logger.error("Could not start resque workers") unless test_workers.length==5
   end
 end
