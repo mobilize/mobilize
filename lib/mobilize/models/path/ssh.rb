@@ -29,24 +29,34 @@ module Mobilize
       #deploy ssh command to cache
       @task      .deploy
       #cd to job dir and execute file from there
-      exec_cmd   = "(cd #{@task.cache.parent_dir}/ && sh in) > " +
-                   "#{@task.cache.parent_dir}/out 2> " +
-                   "#{@task.cache.parent_dir}/err; " +
+      exec_cmd   = "(cd #{@task.cache.parent_dir}/ && sh stdin) > " +
+                   "#{@task.cache.parent_dir}/stdout 2> " +
+                   "#{@task.cache.parent_dir}/stderr; " +
                    "touch #{@task.cache.parent_dir}/log; " +
-                   "echo $? > #{@task.cache.parent_dir}/sig"
+                   "echo $? > #{@task.cache.parent_dir}/exit_signal"
       @ssh       .sh(exec_cmd)
       return     true
     end
 
     def streams(task)
-      @ssh               = self
-      @task              = task
-      delim              = "MOBILIZE_SSH_RESULT_DELIMITER"
-      result_cmd         = "cd #{@task.cache.parent_dir} && array=(in out err sig log) " +
-                           "&& (for each in \"${array[@]}\"; do :; cat $each; echo #{delim}; done)"
-      result_string      = @ssh.sh(result_cmd)[:stdout]
-      stdin, out,err,sig = result_string.split(delim).map{|stream| stream.strip}
-      return {in: stdin, out: out, err: err, sig: sig}
+      @ssh                 = self
+      @task                = task
+      delim                = "MOBILIZE_SSH_RESULT_DELIMITER"
+      stream_array         = ["stdin","stdout","stderr","exit_signal","log"]
+
+      result_cmd           = "cd #{@task.cache.parent_dir} && " +
+                             "array=(#{stream_array.join(" ")}) " +
+                             "&& (for each in \"${array[@]}\"; do :; " +
+                             "cat $each; echo #{delim}; done)"
+
+      result_string        = @ssh.sh(result_cmd)[:stdout]
+      result_array         = result_string.split(delim).map{|stream| stream.strip}
+
+      return               {stdin:       result_array[0],
+                            stdout:      result_array[1],
+                            stderr:      result_array[2],
+                            exit_signal: result_array[3],
+                            log:         result_array[4]}
     end
 
     def sh(command,except=true)

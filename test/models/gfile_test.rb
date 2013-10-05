@@ -16,28 +16,39 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def test_find_or_create_remote
     #remove all remotes for this file
-    @gfile.purge!(@gfile_read_task)
-    @gfile  = TestHelper.gfile
-    @remote = @gfile.find_or_create_remote(@gfile_session)
+    @gfile       .purge!(@gfile_read_task)
+    @gfile       = TestHelper.gfile
+    @remote      = @gfile.find_or_create_remote(@gfile_session)
     #delete DB version, start over, should find existing instance
     #with same key
-    key     = @gfile.key
-    @gfile.delete
-    @gfile  = TestHelper.gfile
-    @gfile.find_or_create_remote(@gfile_session)
-    assert_equal @gfile.key, key
+    key          = @gfile.key
+    @gfile       .delete
+    @gfile       = TestHelper.gfile
+    @gfile       .find_or_create_remote(@gfile_session)
+    assert_equal @gfile.key,
+                 key
   end
 
   def test_write_and_read
-    test_input_string  = "test_file_string"
-    @gfile_write_task.worker.refresh
-    @gfile_write_task.worker.purge
-    File.open(@gfile_write_task.worker.dir,'w') {|f| f.print(test_input_string)}
-    @gfile.write(@gfile_write_task)
-    @gfile.read(@gfile_read_task)
-    test_output_string = File.read(@gfile_read_task.worker.dir)
-    assert_equal test_input_string, test_output_string
+    test_input_string        = "test_file_string"
+    @write_worker            = @gfile_write_task.worker
+    @write_worker            .refresh
+    @write_worker            .purge
+
+    File.open(@write_worker.dir,'w') do |f|
+      f.print(test_input_string)
+    end
+
+    @gfile.write             @gfile_write_task
+    @gfile.read              @gfile_read_task
+    test_output_string       = File.read(@gfile_read_task.worker.dir)
+
+    assert_equal test_input_string,
+                 test_output_string
+
     test_cache_output_string = @ssh.sh("cat #{@gfile_read_task.cache.dir}")[:stdout]
-    assert_equal test_input_string, test_cache_output_string
+
+    assert_equal test_input_string,
+                 test_cache_output_string
   end
 end

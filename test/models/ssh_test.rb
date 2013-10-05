@@ -24,6 +24,6 @@ class SshTest < MiniTest::Unit::TestCase
   def test_run
     @github_public.read(@github_public_task)
     @ssh.run(@ssh_task)
-    assert_in_delta @ssh_task.streams[:out].length, 1, 1000
+    assert_in_delta @ssh_task.streams[:stdout].length, 1, 1000
   end
 end

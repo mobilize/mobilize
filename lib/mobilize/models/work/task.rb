@@ -22,11 +22,11 @@ module Mobilize
     #assign a cache and worker to task on creation
     after_create :find_or_create_worker_and_cache
     def find_or_create_worker_and_cache
-      @task = self
-      @task.create_worker(task_id: @task.id)
-      Logger.info("Created worker for #{@task.id}")
-      @task.create_cache(task_id: @task.id)
-      Logger.info("Created cache for #{@task.id}")
+      @task       = self
+      @task       .create_worker(task_id: @task.id)
+      Logger.info "Created worker for #{@task.id}"
+      @task       .create_cache(task_id: @task.id)
+      Logger.info "Created cache for #{@task.id}"
     end
 
     def user

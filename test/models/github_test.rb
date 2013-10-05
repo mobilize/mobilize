@@ -17,13 +17,20 @@ class GithubTest < MiniTest::Unit::TestCase
   end
 
   def test_read
-    @github_public.read(@github_public_task)
-    assert_in_delta "cd #{@github_public_task.worker.dir} && git status".popen4.length, 1, 1000
-    assert_in_delta @ssh.sh("cd #{@github_public_task.cache.dir} && sudo apt-get install -y git; git status")[:stdout].length, 1, 2000
+    @github_public.read    @github_public_task
+    worker_status_cmd      = "cd #{@github_public_task.worker.dir} && git status"
+    assert_in_delta        worker_status_cmd.popen4.length, 1, 1000
+
+    cache_status_cmd       = "cd #{@github_public_task.cache.dir} && sudo apt-get install -y git; git status"
+    assert_in_delta        @ssh.sh(cache_status_cmd)[:stdout].length, 1, 2000
+
     if @github_private
-      @github_private.read(@github_private_task)
-      assert_in_delta "cd #{@github_private_task.worker.dir} && git status".popen4.length, 1, 1000
-      assert_in_delta @ssh.sh("cd #{@github_private_task.cache.dir} && sudo apt-get install -y git; git status")[:stdout].length, 1, 2000
+      @github_private.read @github_private_task
+      worker_status_cmd    = "cd #{@github_private_task.worker.dir} && git status"
+      assert_in_delta      worker_status_cmd.popen4.length, 1, 1000
+
+      cache_status_cmd     = "cd #{@github_private_task.cache.dir} && sudo apt-get install -y git; git status"
+      assert_in_delta @ssh.sh(cache_status_cmd)[:stdout].length, 1, 2000
     end
   end
 end
