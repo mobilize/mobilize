@@ -18,7 +18,7 @@ class String
   #default returns stdout only
   #with option to return all streams in hash
   def popen4(except=nil,all_streams=nil)
-    except            ||= true
+    except              = true unless except == false
     all_streams       ||= false
     in_str              = self
     out_str,err_str     = []

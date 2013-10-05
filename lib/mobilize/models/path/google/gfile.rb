@@ -129,15 +129,15 @@ module Mobilize
       @session = session
       @remotes = Gfile.remotes_by(@session, owner: @gfile.owner,title: @gfile.name)
 
-      @remote = if    @remotes.length>1
-                      @gfile  .resolve_remotes(@remotes)
-                elsif @remotes.length == 1
-                      Logger.info "Remote #{@remote.resource_id} found, assigning to #{@gfile.id}"
-                      @remotes.first
-                elsif @remotes.empty?
-                      nil
-                end
-      return    @remote
+      @remote  = if    @remotes.length>1
+                       @gfile  .resolve_remotes(@remotes)
+                 elsif @remotes.length == 1
+                       Logger.info "Remote #{@remotes.first.resource_id} found, assigning to #{@gfile.id}"
+                       @remotes.first
+                 elsif @remotes.empty?
+                       nil
+                 end
+      return     @remote
     end
 
     def resolve_remotes(remotes)

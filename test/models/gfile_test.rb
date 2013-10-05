@@ -30,6 +30,8 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def test_write_and_read
     test_input_string  = "test_file_string"
+    @gfile_write_task.worker.refresh
+    @gfile_write_task.worker.purge
     File.open(@gfile_write_task.worker.dir,'w') {|f| f.print(test_input_string)}
     @gfile.write(@gfile_write_task)
     @gfile.read(@gfile_read_task)
