@@ -1,15 +1,10 @@
 #sample config yml for mobilize
 development:
   log:
-    dir: ~/.mobilize/log
     level: debug
-  resque:
-    pid_dir: ~/.mobilize/pids
   object: #used for ssh
     send_total_retries: 3
     send_sleep_time: 5
-  job:
-    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
     total_retries: 5 #how many times to retry task before job failure
@@ -48,15 +43,10 @@ development:
 #tests, found under `minitest`
 test:
   log:
-    dir: ~/.mobilize/log
-    level: debug
-  resque:
-    pid_dir: ~/.mobilize/pids
+    level: info
   object:
     send_total_retries: 3
     send_sleep_time: 5
-  job:
-    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
@@ -105,15 +95,10 @@ test:
         repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
   log:
-    dir: ~/.mobilize/log
     level: debug
-  resque:
-    pid_dir: ~/.mobilize/pids
   object:
     send_total_retries: 3
     send_sleep_time: 5
-  job:
-    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
@@ -147,12 +132,10 @@ production:
     dir: ~/.mobilize/log
     level: warn
   resque:
-    pid_dir: ~/.mobilize/pids
+    pid_dir: ~/.mobilize/pid
   object:
     send_total_retries: 3
     send_sleep_time: 5
-  job:
-    cache: ~/.mobilize/jobs
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
