@@ -1,1 +1,0 @@
-/Users/cpaesleme/.mobilize/resque-pool-test.rb
