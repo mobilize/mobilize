@@ -17,38 +17,61 @@ class String
   #fires system command with full visibility into stdout and stderr
   #default returns stdout only
   #with option to return all streams in hash
-  def popen4(except=true,all_streams=false)
-    in_str = self
-    out_str,err_str = []
-    status = Open4.popen4(in_str) do |pid,stdin,stdout,stderr|
-      out_str = stdout.read
-      err_str = stderr.read
-    end
-    exit_status = status.exitstatus
-    raise err_str if (exit_status !=0 and except==true)
-    if all_streams == false
+  def popen4(except=nil,all_streams=nil)
+    except              = true unless except == false
+    all_streams       ||= false
+    in_str              = self
+    out_str,err_str     = []
+
+    status              = Open4.popen4(in_str) do |pid,stdin,stdout,stderr|
+                         out_str = stdout.read
+                         err_str = stderr.read
+                       end
+
+    exit_status         = status.exitstatus
+
+    if exit_status != 0 and
+       except      == true
+
+       Mobilize::Logger.error err_str
+
+    elsif all_streams == false
+
       return out_str
+
     else
-      return {stdin: in_str, stdout: out_str, stderr: err_str}
+
+      return {in: in_str,
+              out: out_str,
+              err: err_str}
+
     end
   end
   def escape_regex
-    str = self
-    new_str = str.clone
+    str         = self
+    new_str     = str.clone
     char_string = "[\/^$. |?*+()"
-    char_string.chars.to_a.each{|c|
-    new_str.gsub!(c,"\\#{c}")}
+    char_array  = char_string.chars.to_a
+    char_array  .each do |c|
+    new_str     .gsub!(c,"\\#{c}")
+    end
     new_str
   end
   #makes everything alphanumeric
   #except spaces, slashes, and underscores
   #which are made into underscores
   def alphanunderscore
-    str = self
-    str.gsub(/[^A-Za-z0-9_ \/]/,"").gsub(/[ \/]/,"_")
+    str          = self
+    alphanum_str = str.gsub(/[^A-Za-z0-9_ \/]/,"")
+    under_str    = alphanum_str.gsub(/[ \/]/,"_")
+    return under_str
   end
   def norm_num
-    return self.gsub(",","").gsub("$","").gsub("%","").gsub(" ","")
+    no_commas = self.gsub(",","")
+    no_dollar = no_commas.gsub("$","")
+    no_pct    = no_dollar.gsub("%","")
+    no_spaces = no_pct.gsub(" ","")
+    return no_spaces
   end
   def is_float?
     return self.norm_num.to_f.to_s == self.norm_num.to_s
@@ -65,21 +88,35 @@ class String
     end
   end
   def tsv_to_hash_array
-    rows = self.split("\n")
-    return [] if rows.first.nil?
-    return [{rows.first=>nil}] if (rows.length==2 and rows.second==nil)
+    rows    = self.split("\n")
+    return  [] if rows.first.nil?
+
+    if rows.length == 2 and rows.second == nil
+      #single key from first row
+      #with nil value since there is no second
+      single_key = rows.first
+      return  [
+               {single_key => nil}
+              ]
+    end
+
+    #get headers from first row
     headers = rows.first.split("\t")
+
     if rows.length==1
-      #return single member hash with all nil values
+      #return single row hash array with all nil values
       return [headers.map{|k| {k=>nil}}.inject{|k,h| k.merge(h)}]
     end
+
+    #otherwise apply header keys to each row of values
     row_hash_arr =[]
     rows[1..-1].each do |row|
-      cols = row.split("\t")
-      row_hash = {}
-      headers.each_with_index{|h,h_i| row_hash[h] = cols[h_i]}
+      cols          = row.split("\t")
+      row_hash      = {}
+      headers       .each_with_index{|h,h_i| row_hash[h] = cols[h_i]}
       row_hash_arr << row_hash
     end
+
     return row_hash_arr
   end
   def tsv_header_array(delim="\t")
