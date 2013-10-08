@@ -7,7 +7,7 @@ module Mobilize
              repo_name: Mobilize.config.minitest.github.public.repo_name,
            )
       end
-      def Github.public
+      def Github.private
         domain = Mobilize.config.minitest.github.private.domain
         owner_name = Mobilize.config.minitest.github.private.owner_name
         repo_name = Mobilize.config.minitest.github.private.repo_name
