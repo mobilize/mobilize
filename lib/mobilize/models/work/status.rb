@@ -3,6 +3,7 @@ module Mobilize
   module Status
     extend ActiveSupport::Concern
     included do
+      field :touched_at,   type: Time
       field :started_at,   type: Time
       field :completed_at, type: Time
       field :failed_at,    type: Time

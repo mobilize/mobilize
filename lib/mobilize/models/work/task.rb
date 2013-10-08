@@ -87,7 +87,7 @@ module Mobilize
         Time.now.utc > (@task.status_time + @@config.log_frequency)
         Logger.info(@task.status_message)
       end
-      Resque.enqueue(Task,@task.job.id,@task.path.id,@task.method,@task.status)
+      Resque.enqueue(:mobilize,Task,@task.id)
     end
 
     #take a task worker

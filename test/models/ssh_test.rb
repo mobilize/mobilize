@@ -14,7 +14,7 @@ class SshTest < MiniTest::Unit::TestCase
     @job                  = TestHelper.job(@user)
     @github_public_task   = TestHelper.task(@job,@github_public,"read",@github_session)
     @ssh_task             = TestHelper.task(@job,@ssh,"run",@ssh_session,
-                                            input: "ls path1",
+                                            input: "(echo 'log this to the log' > log) && ls path1",
                                             subs: {
                                                     path1: @github_public_task.cache.dir
                                                    }
@@ -26,6 +26,11 @@ class SshTest < MiniTest::Unit::TestCase
     @ssh_task.cache.refresh
     @ssh_task.cache.purge
     @ssh.run(@ssh_task)
-    assert_in_delta @ssh_task.streams[:stdout].length, 1, 1000
+    result = @ssh_task.streams
+    assert_in_delta result[:stdin].length, 1, 1000
+    assert_in_delta result[:stdout].length, 1, 1000
+    assert_equal result[:stderr], ""
+    assert_equal result[:exit_signal], "0"
+    assert_equal result[:log], "log this to the log"
   end
 end
