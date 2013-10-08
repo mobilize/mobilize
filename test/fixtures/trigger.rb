@@ -7,7 +7,7 @@ module Mobilize
                               job_id:       @job.id,
                               once:         true
                               )
-        return                @trigger
+        return                true
       end
 
       #trigger methods return the expected results for @trigger.tripped?
