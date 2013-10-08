@@ -2,73 +2,193 @@ module Mobilize
   module Fixture
     module Trigger
       def Trigger._once(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+        @job                = job
+        @trigger            = @job.create_trigger(
+                              job_id:       @job.id,
+                              once:         true
+                              )
+        return                @trigger
       end
+
+      #trigger methods return the expected results for @trigger.tripped?
 
       def Trigger._1h_completed_never(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+        @job                 = job
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       1,
+                               unit:         "hour"
+                               )
+        @job.update_attributes completed_at: nil
+        return                 true
       end
 
-      def Trigger._1h_completed_half_h_ago(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+      def Trigger._1h_completed_30m_ago(job)
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       1,
+                               unit:         "hour"
+                               )
+        @job.update_attributes completed_at: @current_time - 30.minutes
+        return                 false
       end
 
-      def Trigger._1h_completed_1_and_half_h_ago(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+      def Trigger._1h_completed_90m_ago(job)
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       1,
+                               unit:         "hour"
+                               )
+        @job.update_attributes completed_at: @current_time - 90.minutes
+        return                 true
       end
 
-      def Trigger._1h_after_45_completed_1_45_mark_ago(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+      def Trigger._1h_after_15_completed_1_15_mark_ago(job)
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       1,
+                               unit:         "hour",
+                               hour_mark:    nil,
+                               minute_mark:  (@current_time - 15.minutes).minute
+                               )
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 1.hour
+        return                 false
       end
 
       def Trigger._1d_after_0135_completed_2_0135_marks_ago(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       1,
+                               unit:         "day",
+                               hour_mark:    (@current_time - 1.hour).hour,
+                               minute_mark:  (@current_time - 35.minute).minute
+                               )
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 1.day - 1.minute
+        return                 true
       end
 
       def Trigger._1d_after_0135_completed_1_0135_mark_ago(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       1,
+                               unit:         "day",
+                               hour_mark:    (@current_time - 1.hour).hour,
+                               minute_mark:  (@current_time - 35.minute).minute
+                               )
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time)
+        return                 false
       end
 
       def Trigger._5d_after_0135_completed_5_0135_marks_ago(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       5,
+                               unit:         "day",
+                               hour_mark:    (@current_time - 1.hour).hour,
+                               minute_mark:  (@current_time - 35.minute).minute
+                               )
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 5.day
+        return                 false
       end
 
       def Trigger._5d_after_0135_completed_6_0135_marks_ago(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       5,
+                               unit:         "day",
+                               hour_mark:    (@current_time - 1.hour).hour,
+                               minute_mark:  (@current_time - 35.minute).minute
+                               )
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 6.day
+        return                 true
       end
 
-      def Trigger._parent_completed_child_failed(job)
-        job.create_trigger(
-          job_id:   job.id,
-          once:     true
-        )
+      def Trigger._parent_completed_child_failed(job,parent_job)
+        @job                        = job
+        @parent_job                 = parent_job
+        @current_time               = Time.now.utc
+        @trigger                    = @job.create_trigger(
+                                      job_id:        @job.id,
+                                      parent_job_id: @parent_job.id
+                                      )
+        @parent_job.update_attributes completed_at: @current_time - 1.minute
+        @job.update_attributes        failed_at:    @current_time - 30.seconds
+        return                        true
+      end
+
+      def Trigger._parent_completed_child_completed(job,parent_job)
+        @job                        = job
+        @parent_job                 = parent_job
+        @current_time               = Time.now.utc
+        @trigger                    = @job.create_trigger(
+                                      job_id:        @job.id,
+                                      parent_job_id: @parent_job.id
+                                      )
+        @parent_job.update_attributes completed_at: @current_time - 1.minute
+        @job.update_attributes        completed_at: @current_time - 30.seconds
+        return                        false
+      end
+
+      def Trigger._day_of_month_triggered_date(job)
+        @job                = job
+        @current_time       = Time.now.utc
+        @trigger            = @job.create_trigger(
+                              job_id:       @job.id,
+                              number:       @current_time.day,
+                              unit:         "day_of_month"
+                              )
+        return                true
+      end
+
+      def Trigger._day_of_month_not_triggered_date(job)
+        @job                = job
+        @current_time       = Time.now.utc
+        @trigger            = @job.create_trigger(
+                              job_id:       @job.id,
+                              number:       (@current_time - 1.day).day, #yesterday day
+                              unit:         "day_of_month"
+                              )
+        return                false
+      end
+
+      def Trigger._day_of_month_after_0100_completed_1_month_ago(job)
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       @current_time.day,
+                               unit:         "day_of_month",
+                               hour_mark:    (@current_time - 1.hour).hour
+                               )
+        @job.update_attributes completed_at: @current_time - 1.month
+        return                 true
+      end
+
+      def Trigger._day_of_month_after_0100_completed_0115(job)
+        @job                 = job
+        @current_time        = Time.now.utc
+        @trigger             = @job.create_trigger(
+                               job_id:       @job.id,
+                               number:       @current_time.day,
+                               unit:         "day_of_month",
+                               hour_mark:    (@current_time - 1.hour).hour
+                               )
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time) + 15.minute
+        return                 false
       end
     end
   end
