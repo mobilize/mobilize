@@ -12,8 +12,9 @@ module Mobilize
       rescue
         #leave header as was; config not loaded yet
       end
-      #pad the response according to config
-      @ljusted_response     = "#{@header}:".ljust(Mobilize.config.log.ljust," ")
+      #pad the response according to config or 0 if not loaded yet
+      @ljust_length         = begin;Mobilize.config.log.ljust;rescue;0;end
+      @ljusted_response     = "#{@header}:".ljust(@ljust_length," ")
       return                  @ljusted_response
     end
     def Logger.info(message,object=nil)
