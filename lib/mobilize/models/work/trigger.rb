@@ -121,13 +121,33 @@ module Mobilize
       return true
     end
 
+    def due_field_format(field)
+      @trigger                = self
+      @job                    = @trigger.job
+      @unit                   = @trigger.unit
+      if                        field == "day"
+        return                  @unit == "day_of_month" ? @trigger.number.to_s.rjust(2,'0') : nil
+      else
+        @field_number         = if @trigger.send "#{field}_due"
+                                   @trigger.send "#{field}_due"
+                                elsif @job.completed_at and @unit != "day_of_month"
+                                   @job.completed_at.min
+                                else
+                                   0
+                                end
+        return                  @field_number.to_s.rjust(2,'0')
+      end
+    end
+
     def due_time_format
       @trigger                 = self
+      @job                     = @trigger.job
+      #use base completed at of 00:00 for due comparison later
       @unit                    = @trigger.unit
       @number                  = @trigger.number
-      @day_due                 = @unit=="day_of_month" ? @number.to_s.rjust(2,'0') : nil
-      @minute_due              = @trigger.minute_due ? @trigger.minute_due.to_s.rjust(2,'0') : "00"
-      @hour_due                = @trigger.hour_due   ? @trigger.hour_due.to_s.rjust(2,'0')   : "00"
+      @day_due                 = @trigger.due_field_format("day")
+      @minute_due              = @trigger.due_field_format("minute")
+      @hour_due                = @trigger.due_field_format("hour")
       @hour_minute_due         = "#{@hour_due}:#{@minute_due}"
       @due_time_format         = case @unit
                                  when "day_of_month"
@@ -137,7 +157,7 @@ module Mobilize
                                  when "hour"
                                    "%Y-%m-%d %H:#{@minute_due} UTC"
                                  end
-      return @due_time_format
+      return                     @due_time_format
     end
 
     def due_at
