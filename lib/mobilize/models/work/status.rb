@@ -10,7 +10,9 @@ module Mobilize
       field :retried_at,   type: Time
       field :status_at,    type: Time
       field :status,       type: String
-      field :retries,      type: String
+      field :retries,      type: Fixnum, default:->{0}
+      field :max_retries,  type: Fixnum, default:->{Mobilize.config.job.max_retries}
+      field :retry_delay,  type: Fixnum, default:->{Mobilize.config.job.retry_delay}
     end
   end
 end

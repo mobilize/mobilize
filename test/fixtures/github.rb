@@ -8,9 +8,9 @@ module Mobilize
            )
       end
       def Github.private
-        domain = Mobilize.config.minitest.github.private.domain
+        domain     = Mobilize.config.minitest.github.private.domain
         owner_name = Mobilize.config.minitest.github.private.owner_name
-        repo_name = Mobilize.config.minitest.github.private.repo_name
+        repo_name  = Mobilize.config.minitest.github.private.repo_name
         if domain and owner_name and repo_name
           return Mobilize::Github.find_or_create_by(
             domain: domain,

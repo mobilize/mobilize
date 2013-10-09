@@ -8,14 +8,14 @@ require 'mobilize'
 #drop test database
 Mongoid.purge!
 #get fixtures
-require "fixtures/ec2"
-require "fixtures/github"
-require "fixtures/gfile"
-require "fixtures/ssh"
-require "fixtures/job"
-require "fixtures/user"
-require "fixtures/task"
-require "fixtures/trigger"
+require "./test/fixtures/ec2"
+require "./test/fixtures/github"
+require "./test/fixtures/gfile"
+require "./test/fixtures/ssh"
+require "./test/fixtures/job"
+require "./test/fixtures/user"
+require "./test/fixtures/task"
+require "./test/fixtures/trigger"
 
 module Mobilize
   module Simulator

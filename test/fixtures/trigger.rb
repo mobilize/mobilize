@@ -47,7 +47,7 @@ module Mobilize
         return                 true
       end
 
-      def Trigger._1h_after_15_completed_1_15_mark_ago(job)
+      def Trigger._1h_after_15_completed_this_15_mark(job)
         @job                 = job
         @current_time        = Time.now.utc
         @trigger             = @job.create_trigger(
@@ -55,9 +55,9 @@ module Mobilize
                                number:       1,
                                unit:         "hour",
                                hour_mark:    nil,
-                               minute_mark:  (@current_time - 15.minutes).minute
+                               minute_mark:  (@current_time - 15.minutes).min
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 1.hour
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time)
         return                 false
       end
 
@@ -69,7 +69,7 @@ module Mobilize
                                number:       1,
                                unit:         "day",
                                hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minute).minute
+                               minute_mark:  (@current_time - 35.minutes).min
                                )
         @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 1.day - 1.minute
         return                 true
@@ -83,13 +83,13 @@ module Mobilize
                                number:       1,
                                unit:         "day",
                                hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minute).minute
+                               minute_mark:  (@current_time - 35.minutes).min
                                )
         @job.update_attributes completed_at: @trigger.mark_time(@current_time)
         return                 false
       end
 
-      def Trigger._5d_after_0135_completed_5_0135_marks_ago(job)
+      def Trigger._5d_after_0135_completed_4_0135_marks_ago(job)
         @job                 = job
         @current_time        = Time.now.utc
         @trigger             = @job.create_trigger(
@@ -97,9 +97,9 @@ module Mobilize
                                number:       5,
                                unit:         "day",
                                hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minute).minute
+                               minute_mark:  (@current_time - 35.minutes).min
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 5.day
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 4.day
         return                 false
       end
 
@@ -111,7 +111,7 @@ module Mobilize
                                number:       5,
                                unit:         "day",
                                hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minute).minute
+                               minute_mark:  (@current_time - 35.minutes).min
                                )
         @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 6.day
         return                 true
@@ -126,7 +126,7 @@ module Mobilize
                                       parent_job_id: @parent_job.id
                                       )
         @parent_job.update_attributes completed_at: @current_time - 1.minute
-        @job.update_attributes        failed_at:    @current_time - 30.seconds
+        @job.update_attributes        failed_at:    @current_time - Mobilize.config.job.retry_delay - 30.seconds
         return                        true
       end
 
@@ -187,7 +187,7 @@ module Mobilize
                                unit:         "day_of_month",
                                hour_mark:    (@current_time - 1.hour).hour
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time) + 15.minute
+        @job.update_attributes completed_at: @trigger.mark_time(@current_time) + 15.minutes
         return                 false
       end
     end

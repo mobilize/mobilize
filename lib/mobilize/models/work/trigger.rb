@@ -17,24 +17,40 @@ module Mobilize
     belongs_to :job
 
     def tripped_by_parent?
-      @trigger           = self
-      @job               = @trigger.job
-      @parent            = @job.parent
+      @trigger            = self
+      @job                = @trigger.job
+      @parent             = @job.parent
       if @parent
         #child can't be tripped if parent is working or never completed
-        return false     if @parent.is_working? or @parent.completed_at.nil?
+        return false     if @parent.working? or @parent.completed_at.nil?
         #child is triggered if it's never completed and parent has
-        if @job.completed_at.nil?
-          Logger.info    "#{@job.id} triggered by completed parent, never completed child"
+        if                  @job.completed_at.nil?
+          Logger.info       "#{@job.id} triggered by completed parent, never completed child"
           return true
         end
         #child is triggered if parent completed more recently
-        if @parent.completed_at > @job.completed_at
-          Logger.info    "#{@job.id} triggered by more recently completed parent"
+        if                  @parent.completed_at > @job.completed_at
+          Logger.info       "#{@job.id} triggered by more recently completed parent"
           return true
         end
       end
       return false
+    end
+
+    def tripped_once?
+      @trigger = self
+      @job            = @trigger.job
+      if                @job.completed_at.nil?
+        Logger.info     "#{@job.id} triggered by once, " +
+                        "job never completed"
+        return true
+      elsif             @job.completed_at < @job.touched_at
+        Logger.info     "#{@job.id} triggered by once, " +
+                        "touched since last completion"
+        return true
+      else
+        return false
+      end
     end
 
     def tripped?
@@ -46,10 +62,12 @@ module Mobilize
       return false  if     @job.working?
       #"once" jobs are triggered by user touched_at more recent than completed_at
       if                   @trigger.once
-        return             @job.completed_at < @job.touched_at ? true : false
+        return             @trigger.tripped_once?
       end
-      #return false if failed more recently than retry tolerance
-      return false  if     @job.failed_at > Time.now.utc - @job.retry_delay
+      #return false if failed more recently or more frequently than tolerance
+      return false  if     @job.failed_at and
+                           (@job.failed_at > Time.now.utc - @job.retry_delay or
+                            @job.retries >= @job.max_retries)
       #parent trigger
       if                   @trigger.parent_job_id
         return             @trigger.tripped_by_parent?
@@ -82,14 +100,14 @@ module Mobilize
       @current_time            = Time.now.utc
       #never triggered unless it's the correct day
       return false unless        @current_time.day == @number.to_i
-      @mark_time               = @job.mark_time(@current_time)
+      @mark_time               = @trigger.mark_time(@current_time)
       if                         @mark_time
         if                       @current_time > @mark_time
           if                     @job.completed_at.nil?
             Logger.info          "#{@job.id} triggered by day_of_month, " +
                                  "mark time before current time, job never completed"
             return true
-          elsif                  @job.completed_at.to_date < @current_time.to_date
+          elsif                  @job.completed_at.utc.to_date < @current_time.to_date
             Logger.info          "#{@job.id} triggered by day_of_month, " +
                                  "mark time before current time, job not yet completed today"
             return true
@@ -99,7 +117,10 @@ module Mobilize
         else
           return false
         end
-      elsif                      @job.completed_at.to_date < @current_time.to_date
+      elsif                      @job.completed_at.nil?
+        Logger.info              "#{@job.id} triggered by day_of_month, job never completed"
+        return true
+      elsif                      @job.completed_at.utc.to_date < @current_time.to_date
         Logger.info              "#{@job.id} triggered by day_of_month, job not yet completed today"
         return true
       else
@@ -119,10 +140,16 @@ module Mobilize
         Logger.info            "#{@job.id} triggered by hour/day unit, never completed"
         return true
       end
-      @marked_at             = @job.marked_at
-      if                       @marked_at
-        if                     @job.completed_at < @marked_at
-          Logger.info          "#{@job.id} triggered by marked at: #{@marked_at} " +
+      @mark_time             = @trigger.mark_time(@current_time)
+      if                       @mark_time
+        @time_ago            = if @current_time > @mark_time
+                                 (@number-1).send(@unit) #mark has already happened; use day,hour-1 ago
+                               else
+                                  @number.send(@unit)    #mark has not happened yet; use day,hour ago
+                               end
+        @trip_time           = @mark_time - @time_ago
+        if                     @job.completed_at < @trip_time
+          Logger.info          "#{@job.id} triggered by trip time: #{@trip_time} " +
                                "more recent than completed at: #{@job.completed_at}"
           return true
         else
@@ -130,8 +157,8 @@ module Mobilize
         end
       else
         @time_ago            = @number.to_i.send(@unit)
-        if                   @job.completed_at < (@current_time - @time_ago)
-          Logger.info        "#{@job.id} triggered by job completed longer than specified hour/day ago"
+        if                     @job.completed_at < (@current_time - @time_ago)
+          Logger.info          "#{@job.id} triggered by job completed longer than specified hour/day ago"
           return true
         else
           #not triggered
@@ -140,17 +167,16 @@ module Mobilize
       end
     end
 
-    private
-
     #if mark is 00:45, current mark time is YYYY-MM-DD 00:45
     def mark_time(current_time)
       @trigger                 = self
+      return nil               unless @trigger.minute_mark or @trigger.hour_mark
       @job                     = @trigger.job
       @current_time            = current_time
       @unit                    = @trigger.unit
       #get mark time
-      @mark_hour               = @trigger.hour_mark.to_s.rjust(2,'0')
       @mark_minute             = @trigger.minute_mark ? @trigger.minute_mark.to_s.rjust(2,'0') : "00"
+      @mark_hour               = @trigger.hour_mark ? @trigger.hour_mark.to_s.rjust(2,'0') : "00"
       @mark_time               = "#{@mark_hour}:#{@mark_minute}"
       #figure out current mark time for hour or day by inserting mark time into time string
       @time_string             = case @unit
@@ -165,21 +191,15 @@ module Mobilize
     def marked_at
       @trigger                 = self
       @job                     = @trigger.job
-      return nil               unless @trigger.hour_mark
+      return nil               unless (@trigger.unit=="day"  and @trigger.hour_mark) or
+                                      (@trigger.unit=="hour" and @trigger.minute_mark)
       @number                  = @trigger.number
       @unit                    = @trigger.unit
 
       @current_time            = Time.now.utc
-      @mark_time               = @job.mark_time(@current_time)
+      @mark_time               = @trigger.mark_time(@current_time)
 
-      @time_ago                = if @current_time > @mark_time
-                                   (@number-1).send(@unit) #mark has already happened; use (day,month)-1 ago
-                                 else
-                                    @number.send(@unit) #mark has not happened yet; use (day,month) ago
-                                 end
-
-      @marked_at               = @mark_time - @time_ago
-      return                     @marked_at
+     return                     @marked_at
     end
   end
 end
