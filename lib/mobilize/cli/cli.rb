@@ -31,7 +31,7 @@ module Mobilize
           options[:force] = true
         end
 
-        opts.on("-n", "--name [NAME]", "File name; can be mob.yml, mongoid.yml, or resque-pool.yml") do |n|
+        opts.on("-n", "--name [NAME]", "File name from samples directory") do |n|
           options[:name] = n
         end
 

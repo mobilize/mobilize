@@ -1,5 +1,8 @@
 #sample config yml for mobilize
 development:
+  job:
+    retry_delay: 600 #number of seconds to wait between job failures before retry
+    max_retries: 5
   log:
     level: debug
   object: #used for ssh
@@ -42,6 +45,9 @@ development:
 #test includes special variables for running
 #tests, found under `minitest`
 test:
+  job:
+    retry_delay: 600 #number of seconds to wait between job failures before retry
+    max_retries: 5
   log:
     level: info
   object:
@@ -94,6 +100,9 @@ test:
         owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
         repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
+  job:
+    retry_delay: 600 #number of seconds to wait between job failures before retry
+    max_retries: 5
   log:
     level: debug
   object:
@@ -128,6 +137,8 @@ staging:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
+  job:
+    retry_delay: 600 #number of seconds to wait between job failures before retry
   log:
     dir: ~/.mobilize/log
     level: warn
