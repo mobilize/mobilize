@@ -4,7 +4,7 @@ module Mobilize
   class Task
     include Mongoid::Document
     include Mongoid::Timestamps
-    include Mobilize::Status
+    include Mobilize::Work
     field :input,    type: String #used by run and write tasks to specify input
     field :subs,     type: Hash   #used by run and write tasks to gsub input
     field :stage_id, type: String #need for id
