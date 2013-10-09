@@ -63,7 +63,7 @@ models_dir = "mobilize/models"
 require "#{models_dir}/user"
 
 work_dir = "#{models_dir}/work"
-require "#{work_dir}/status"
+require "#{work_dir}/work"
 require "#{work_dir}/job"
 require "#{work_dir}/trigger"
 require "#{work_dir}/stage"

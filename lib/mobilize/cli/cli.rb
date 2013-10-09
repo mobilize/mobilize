@@ -3,80 +3,82 @@ module Mobilize
   module Cli
     #decode base64 encoded strings that have been encrypted in travis
     def Cli.decode(args,options={})
-      opt_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: mob decode -p prefix -l length -f file"
+      @args, @options                 = args, options
 
-        opts.on("-p", "--prefix PREFIX", "Prefix for environment variable to decode") do |p|
-          options[:prefix] = p
-        end
+      @opt_parser                     = OptionParser.new do |opts|
+        @opts                         = opts
+        @opts.banner                  = "Usage: mob decode -p prefix -l length -f file"
 
-        opts.on("-l", "--length L", "Length of environment variable array to decode") do |l|
-          options[:length] = l.to_i
-        end
+        prefix_args                   = ["-p", "--prefix PREFIX", "Prefix for environment variable to decode"]
+        @opts.on(*prefix_args)        { |prefix| @options[:prefix]    = prefix }
 
-        opts.on("-f", "--file F", "File path to write decoded output to") do |f|
-          options[:file_path] = f
-        end
+        length_args                   = ["-l", "--length L", "Length of environment variable array to decode"]
+        @opts.on(*length_args)        { |length| @options[:length]    = length.to_i }
+
+        file_args                     = ["-f", "--file F", "File path to write decoded output to"]
+        @opts.on(*file_args)          { |file|   @options[:file_path] =  file }
       end
-      opt_parser .parse!(args)
+      @opt_parser.parse!                @args
 
-      Mobilize::Travis.base64_decode(options[:prefix],options[:length],options[:file_path])
+      Mobilize::Travis.base64_decode    @options[:prefix],
+                                        @options[:length],
+                                        @options[:file_path]
     end
     #copy configuration to home folder if it's not already there
     def Cli.configure(args,options={})
-      opt_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: mob configure -n --name [-f --force] "
+      @args, @options                 = args, options
+      @opt_parser                     = OptionParser.new do |opts|
+        @opts                         = opts
+        @opts.banner                  = "Usage: mob configure -n --name [-f --force] "
 
-        opts.on("-f", "--force", "Force overwrite of existing .mob.yml") do |f|
-          options[:force] = true
-        end
+        force_args                    = ["-f", "--force", "Force overwrite of existing .mob.yml"]
+        @opts.on(*force_args)         { |force| @options[:force] = true }
 
-        opts.on("-n", "--name [NAME]", "File name from samples directory") do |n|
-          options[:name] = n
-        end
+        name_args                     = ["-n", "--name [NAME]", "File name from samples directory"]
+        @opts.on(*name_args)          { |name| @options[:name] = name }
 
       end
-      opt_parser.parse!(args)
-      Mobilize::Config.write_sample(options[:name],options[:force])
+      @opt_parser.parse!                @args
+      Mobilize::Config.write_sample     @options[:name],
+                                        @options[:force]
     end
     #create log and pid folders, 
     #copy over configs
     #install and start god
     def Cli.resque(args,options={})
-      opt_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: mob resque <env> [-s --stop] "
+      @args, @options                 = args, options
+      @opt_parser                     = OptionParser.new do |opts|
+        @opts                         = opts
+        @opts.banner                  = "Usage: mob resque <env> [-s --stop] "
 
-        opts.on("-s", "--stop", "stop god, stop resque-pool") do |s|
-          options[:stop] = true
-        end
+        stop_args                     = ["-s", "--stop", "stop god, stop resque-pool"]
+        @opts.on(*stop_args)          { |stop| @options[:stop] = true }
       end
-      opt_parser.parse!(args)
+      @opt_parser.parse!                @args
 
-      god_file  = "resque-pool-#{Mobilize.env}.rb"
-      pool_file = "resque-pool.yml"
-      [god_file,pool_file].each do |file_name|
-        Mobilize::Config .write_sample(file_name,force:true)
-      end
+      Mobilize::Cli.god
 
-      if "which god".popen4(false).empty?
-        "gem install god".popen4
-      end
-
-      ["god",
-      "god load #{Mobilize.root}/config/#{god_file}"
-      ].each do |cmd|
-        Mobilize::Logger.info cmd.popen4
-      end
-
-      if options[:stop]
-        Mobilize::Logger.info   "god stop resque-pool-#{Mobilize.env}".popen4
-        pid_path              = "#{Mobilize::Config.home_dir}/pids/resque-pool-#{Mobilize.env}.pid"
-        if File.exists?(pid_path)
-         Mobilize::Logger.info "kill -2 #{File.read(pid_path).strip}".popen4
+      if                                @options[:stop]
+        Mobilize::Logger.info           "god stop resque-pool-#{Mobilize.env}".popen4
+        @pid_path                     = "#{Mobilize::Config.home_dir}/pids/resque-pool-#{Mobilize.env}.pid"
+        if File.exists?                 @pid_path
+          Mobilize::Logger.info         "kill -2 #{File.read(pid_path).strip}".popen4
         end
       else
-        Mobilize::Logger.info  "god start resque-pool-#{Mobilize.env}".popen4
+        Mobilize::Logger.info           "god start resque-pool-#{Mobilize.env}".popen4
       end
+    end
+
+    def Cli.god
+      @god_file                       = "resque-pool-#{Mobilize.env}.rb"
+      @pool_file                      = "resque-pool.yml"
+      Mobilize::Config.write_sample     @god_file,  force:true
+      Mobilize::Config.write_sample     @pool_file, force:true
+
+      "gem install god".popen4       if "which god".popen4(false).empty?
+
+      Mobilize::Logger.info             "god".popen4
+      Mobilize::Logger.info             "god load #{Mobilize.root}/config/#{god_file}".popen4
     end
   end
 end
