@@ -57,14 +57,14 @@ module Mobilize
     end
 
     def Task.perform(task_id)
-      @task    = Task.find(task_id)
-      @session = @task.path_model.session
-      if @session
-        @task.set_status("started")
+      @task                   = Task.find(task_id)
+      @session                = @task.path_model.session
+      if                        @session
+        @task.update_status    :started
         begin
-          @path.send(@task.name,@task)
-        rescue => @exc
-          @task.set_status("failed")
+          @path.send            @task.name, @task
+        rescue               => @exc
+          @task.update_status  :failed
           message = "Failed task #{@task.id} with #{@exc.to_s}"
           if @task.retries < @@config.total_retries
             Logger.info(message)
