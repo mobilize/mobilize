@@ -72,9 +72,13 @@ module GoogleDrive
       @log_length                       = Mobilize.config.google.api.response_log_length
       @ellipsis                         = @log_length < @response.body.length ? "(...)" : ""
       @message                          = "#{@identifier} #{@status} with " +
-                                          "#{@response.body[0..@log_length]}#{@ellipsis}; " +
-                                          "retry #{@current_retries.to_s} of #{@total_retries.to_s} " +
-                                          "in #{@time.to_s}"
+                                          "#{@response.body[0..@log_length]}#{@ellipsis};"
+      @message                         += if @current_retries > 0
+                                            " retry #{@current_retries.to_s} of #{@total_retries.to_s}" +
+                                            " in #{@time.to_s}"
+                                          else
+                                            ""
+                                          end
       if                                  @status == "fatal"
         Mobilize::Logger.error            @message
       else
