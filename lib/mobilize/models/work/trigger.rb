@@ -38,7 +38,7 @@ module Mobilize
     end
 
     def tripped_once?
-      @trigger = self
+      @trigger        = self
       @job            = @trigger.job
       if                @job.completed_at.nil?
         Logger.info     "#{@job.id} triggered by once, " +
