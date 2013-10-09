@@ -8,10 +8,8 @@ module GoogleDrive
       @response                   = nil
       @current_retries            = 0
       @log_length                 = Mobilize.config.google.api.response_log_length
-      @identifier                 = "Google API #{method.to_s} " +
-                                    "#{extra_header.to_s}"
+      @identifier                 = "Google API #{method.to_s} #{extra_header.to_s}"
       @success                    = false
-      @method                     = method
       while                         @success == false
         #instantiate http object, set params
         @http                     = @proxy.new @uri.host, @uri.port
@@ -20,7 +18,7 @@ module GoogleDrive
         #set 600  to allow for large downloads
         @http.read_timeout        = @timeout
         Mobilize::Logger.info       @identifier
-        @response                 = @clf.http_call @http, @method, @uri, data, extra_header, auth
+        @response                 = @clf.http_call @http, method, @uri, data, extra_header, auth
         @current_retries,@success = @clf.resolve_response @identifier, @response, @current_retries
       end
       return                        @response
@@ -46,12 +44,11 @@ module GoogleDrive
     end
 
     def resolve_response(identifier,response,current_retries)
+      @identifier, @response,
+      @current_retries            = identifier, response, current_retries
       @clf                        = self
       @total_retries              = Mobilize.config.google.api.total_retries
       @success                    = false
-      @response                   = response
-      @identifier                 = identifier
-      @current_retries            = current_retries
       if                            @response.nil? or @response.code.starts_with?("4")
         @clf.mobilize_log           @identifier, @response, "fatal", @current_retries, 0
       elsif                         @response.code.starts_with?("5")
@@ -69,28 +66,25 @@ module GoogleDrive
     end
 
     def mobilize_log(identifier, response, status, current_retries, time)
-      @identifier                 = identifier
-      @response                   = response
-      @total_retries              = Mobilize.config.google.api.total_retries
-      @time                       = time
-      @log_length                 = Mobilize.config.google.api.response_log_length
-      @ellipsis                   = @log_length < @response.body.length ? "(...)" : ""
-      @status                     = status
-      @message                    = "#{@identifier} #{@status} with " +
-                                    "#{@response.body[0..@log_length]}#{@ellipsis}; " +
-                                    "retry #{@current_retries.to_s} of #{@total_retries.to_s} " +
-                                    "in #{@time.to_s}"
-      if                            @status == "fatal"
-        Mobilize::Logger.error      @message
+      @identifier, @response, @status,
+      @current_retries, @time           = identifier, response, status, current_retries, time
+      @total_retries                    = Mobilize.config.google.api.total_retries
+      @log_length                       = Mobilize.config.google.api.response_log_length
+      @ellipsis                         = @log_length < @response.body.length ? "(...)" : ""
+      @message                          = "#{@identifier} #{@status} with " +
+                                          "#{@response.body[0..@log_length]}#{@ellipsis}; " +
+                                          "retry #{@current_retries.to_s} of #{@total_retries.to_s} " +
+                                          "in #{@time.to_s}"
+      if                                  @status == "fatal"
+        Mobilize::Logger.error            @message
       else
-        Mobilize::Logger.info       @message
+        Mobilize::Logger.info             @message
       end
     end
 
     def exponential_retry(identifier,response,current_retries)
-      @identifier                 = identifier
-      @response                   = response
-      @current_retries            = current_retries
+      @identifier, @response,
+      @current_retries            = identifier, response, current_retries
       @sleep_time                 = Mobilize.config.google.api.sleep_time
       @exponential_sleep_time     = @sleep_time * (@current_retries*@current_retries)
       @current_retries           += 1
