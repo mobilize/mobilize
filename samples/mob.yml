@@ -5,6 +5,7 @@ development:
     max_retries: 5
   log:
     level: debug
+    ljust:   75
   object: #used for ssh
     send_total_retries: 3
     send_sleep_time: 5
@@ -50,6 +51,7 @@ test:
     max_retries: 5
   log:
     level: info
+    ljust:   75
   object:
     send_total_retries: 3
     send_sleep_time: 5

@@ -11,8 +11,8 @@ module Mobilize
     #e.g. every 12 hour after 23:45
     field :number,               type: Fixnum #12
     field :unit,                 type: String #hour, day, day_of_month
-    field :hour_mark,            type: Fixnum #23
-    field :minute_mark,          type: Fixnum #45
+    field :hour_due,             type: Fixnum #23
+    field :minute_due,           type: Fixnum #45
     field :_id,                  type: String, default:->{"#{job_id}.trigger"}
     belongs_to :job
 
@@ -53,21 +53,31 @@ module Mobilize
       end
     end
 
+    def disallowed?
+      @trigger            = self
+      @unit               = @trigger.unit
+      @number             = @trigger.number
+      @job                = @trigger.job
+      #inactive jobs can't be triggered
+      return true    unless @job.active
+      #working jobs can't be triggered
+      return true    if     @job.working?
+      #day_of_month jobs can't be triggered unless it's today
+      return true    if     @unit == "day_of_month" and Time.now.utc.day != @number
+      #return false if failed more recently or more frequently than tolerance
+      return true    if     @job.failed_at and
+                           (@job.failed_at > Time.now.utc - @job.retry_delay or
+                            @job.retries >= @job.max_retries)
+
+    end
+
     def tripped?
       @trigger           = self
-      @job               = @trigger.job
-      #inactive jobs can't be triggered
-      return false  unless @job.active
-      #working jobs can't be triggered
-      return false  if     @job.working?
+      return false if      @trigger.disallowed?
       #"once" jobs are triggered by user touched_at more recent than completed_at
       if                   @trigger.once
         return             @trigger.tripped_once?
       end
-      #return false if failed more recently or more frequently than tolerance
-      return false  if     @job.failed_at and
-                           (@job.failed_at > Time.now.utc - @job.retry_delay or
-                            @job.retries >= @job.max_retries)
       #parent trigger
       if                   @trigger.parent_job_id
         return             @trigger.tripped_by_parent?
@@ -81,125 +91,89 @@ module Mobilize
     end
 
     def tripped_by_time?
-      @trigger                 = self
-      @job                     = @trigger.job
-      @unit                    = @trigger.unit
-      if                         @unit == "hour" or @unit == "day"
-        return                   @trigger.tripped_by_hour_or_day?
-      elsif                      @unit == "day_of_month"
-        return                   @trigger.tripped_by_day_of_month?
-      end
-      #if nothing happens, return false
-      return false
-    end
-
-    def tripped_by_day_of_month?
-      @trigger                 = self
-      @job                     = @trigger.job
-      @number                  = @trigger.number
-      @current_time            = Time.now.utc
-      #never triggered unless it's the correct day
-      return false unless        @current_time.day == @number.to_i
-      @mark_time               = @trigger.mark_time(@current_time)
-      if                         @mark_time
-        if                       @current_time > @mark_time
-          if                     @job.completed_at.nil?
-            Logger.info          "#{@job.id} triggered by day_of_month, " +
-                                 "mark time before current time, job never completed"
-            return true
-          elsif                  @job.completed_at.utc.to_date < @current_time.to_date
-            Logger.info          "#{@job.id} triggered by day_of_month, " +
-                                 "mark time before current time, job not yet completed today"
-            return true
-          else
-            return false
-          end
-        else
-          return false
-        end
-      elsif                      @job.completed_at.nil?
-        Logger.info              "#{@job.id} triggered by day_of_month, job never completed"
-        return true
-      elsif                      @job.completed_at.utc.to_date < @current_time.to_date
-        Logger.info              "#{@job.id} triggered by day_of_month, job not yet completed today"
-        return true
-      else
-        return false
-      end
-    end
-
-
-    def tripped_by_hour_or_day?
       @trigger               = self
       @job                   = @trigger.job
       @number                = @trigger.number
       @unit                  = @trigger.unit
-      @current_time          = Time.now.utc
       #triggered if unit is day/hour and never completed
-      if                       @job.completed_at.nil?
-        Logger.info            "#{@job.id} triggered by hour/day unit, never completed"
-        return true
-      end
-      @mark_time             = @trigger.mark_time(@current_time)
-      if                       @mark_time
-        @time_ago            = if @current_time > @mark_time
-                                 (@number-1).send(@unit) #mark has already happened; use day,hour-1 ago
-                               else
-                                  @number.send(@unit)    #mark has not happened yet; use day,hour ago
-                               end
-        @trip_time           = @mark_time - @time_ago
-        if                     @job.completed_at < @trip_time
-          Logger.info          "#{@job.id} triggered by trip time: #{@trip_time} " +
-                               "more recent than completed at: #{@job.completed_at}"
-          return true
-        else
-          return false
-        end
+      @due_at                = @trigger.due_at
+
+      if                       @job.completed_at.nil? or
+                               @job.completed_at < @due_at
+        return                 @trigger.time_trip
       else
-        @time_ago            = @number.to_i.send(@unit)
-        if                     @job.completed_at < (@current_time - @time_ago)
-          Logger.info          "#{@job.id} triggered by job completed longer than specified hour/day ago"
-          return true
-        else
-          #not triggered
-          return false
-        end
+        return                 false
       end
     end
 
-    #if mark is 00:45, current mark time is YYYY-MM-DD 00:45
-    def mark_time(current_time)
-      @trigger                 = self
-      return nil               unless @trigger.minute_mark or @trigger.hour_mark
-      @job                     = @trigger.job
-      @current_time            = current_time
-      @unit                    = @trigger.unit
-      #get mark time
-      @mark_minute             = @trigger.minute_mark ? @trigger.minute_mark.to_s.rjust(2,'0') : "00"
-      @mark_hour               = @trigger.hour_mark ? @trigger.hour_mark.to_s.rjust(2,'0') : "00"
-      @mark_time               = "#{@mark_hour}:#{@mark_minute}"
-      #figure out current mark time for hour or day by inserting mark time into time string
-      @time_string             = case @unit
-                                 when "day","day_of_month"
-                                   "%Y-%m-%d #{@mark_time} UTC"
-                                 when "hour"
-                                   "%Y-%m-%d %H:#{@mark_minute} UTC"
-                                 end
-      return                     Time.parse(@current_time.strftime(@time_string))
+    def time_trip
+      @trigger                = self
+      @job                    = @trigger.job
+      @call_method            = caller(1).first.split(" ").last[1..-2]
+      @current_time           = Time.now.utc
+      @due_time_msg           = "due at #{@trigger.due_at}"
+      @job_msg                = if @job.completed_at
+                                  "job last completed #{@job.completed_at.utc}"
+                                else
+                                  "job never completed"
+                                end
+      Logger.info               "#{@trigger.id} from #{@call_method} #{@due_time_msg}; #{@job_msg}"
+      return true
     end
 
-    def marked_at
+    def due_field_format(field)
+      @trigger                = self
+      @job                    = @trigger.job
+      @unit                   = @trigger.unit
+      if                        field == "day"
+        return                  @unit == "day_of_month" ? @trigger.number.to_s.rjust(2,'0') : nil
+      else
+        @field_number         = if @trigger.send "#{field}_due"
+                                   @trigger.send "#{field}_due"
+                                elsif @job.completed_at and @unit != "day_of_month"
+                                   @job.completed_at.min
+                                else
+                                   0
+                                end
+        return                  @field_number.to_s.rjust(2,'0')
+      end
+    end
+
+    def due_time_format
       @trigger                 = self
       @job                     = @trigger.job
-      return nil               unless (@trigger.unit=="day"  and @trigger.hour_mark) or
-                                      (@trigger.unit=="hour" and @trigger.minute_mark)
-      @number                  = @trigger.number
+      #use base completed at of 00:00 for due comparison later
       @unit                    = @trigger.unit
+      @number                  = @trigger.number
+      @day_due                 = @trigger.due_field_format("day")
+      @minute_due              = @trigger.due_field_format("minute")
+      @hour_due                = @trigger.due_field_format("hour")
+      @hour_minute_due         = "#{@hour_due}:#{@minute_due}"
+      @due_time_format         = case @unit
+                                 when "day_of_month"
+                                   "%Y-%m-#{@day_due} #{@hour_minute_due} UTC"
+                                 when "day"
+                                   "%Y-%m-%d #{@hour_minute_due} UTC"
+                                 when "hour"
+                                   "%Y-%m-%d %H:#{@minute_due} UTC"
+                                 end
+      return                     @due_time_format
+    end
 
+    def due_at
+      @trigger                 = self
       @current_time            = Time.now.utc
-      @mark_time               = @trigger.mark_time(@current_time)
-
-     return                     @marked_at
+      @due_time_format         = @trigger.due_time_format
+      @base_due_at             = Time.parse(@current_time.strftime(@due_time_format))
+      @time_ago                = if unit == "day_of_month"
+                                   0
+                                 elsif @current_time > @base_due_at
+                                 (@number-1).send(@unit) #due time has already happened today; use -1 unit ago
+                                 else
+                                  @number.send(@unit)    #due time has not happened yet today; use day,hour ago
+                                 end
+      @due_at                  = @base_due_at - @time_ago
+      return                     @due_at
     end
   end
 end

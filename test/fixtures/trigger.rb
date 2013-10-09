@@ -54,10 +54,10 @@ module Mobilize
                                job_id:       @job.id,
                                number:       1,
                                unit:         "hour",
-                               hour_mark:    nil,
-                               minute_mark:  (@current_time - 15.minutes).min
+                               hour_due:     nil,
+                               minute_due:   (@current_time - 15.minutes).min
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time)
+        @job.update_attributes completed_at: @trigger.due_at
         return                 false
       end
 
@@ -68,10 +68,10 @@ module Mobilize
                                job_id:       @job.id,
                                number:       1,
                                unit:         "day",
-                               hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minutes).min
+                               hour_due:     (@current_time - 1.hour).hour,
+                               minute_due:   (@current_time - 35.minutes).min
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 1.day - 1.minute
+        @job.update_attributes completed_at: @trigger.due_at - 1.day - 1.minute
         return                 true
       end
 
@@ -82,10 +82,10 @@ module Mobilize
                                job_id:       @job.id,
                                number:       1,
                                unit:         "day",
-                               hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minutes).min
+                               hour_due:     (@current_time - 1.hour).hour,
+                               minute_due:   (@current_time - 35.minutes).min
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time)
+        @job.update_attributes completed_at: @trigger.due_at
         return                 false
       end
 
@@ -96,10 +96,10 @@ module Mobilize
                                job_id:       @job.id,
                                number:       5,
                                unit:         "day",
-                               hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minutes).min
+                               hour_due:     (@current_time - 1.hour).hour,
+                               minute_due:   (@current_time - 35.minutes).min
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 4.day
+        @job.update_attributes completed_at: @trigger.due_at + 1.day
         return                 false
       end
 
@@ -110,10 +110,10 @@ module Mobilize
                                job_id:       @job.id,
                                number:       5,
                                unit:         "day",
-                               hour_mark:    (@current_time - 1.hour).hour,
-                               minute_mark:  (@current_time - 35.minutes).min
+                               hour_due:     (@current_time - 1.hour).hour,
+                               minute_due:   (@current_time - 35.minutes).min
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time) - 6.day
+        @job.update_attributes completed_at: @trigger.due_at - 1.day
         return                 true
       end
 
@@ -172,7 +172,7 @@ module Mobilize
                                job_id:       @job.id,
                                number:       @current_time.day,
                                unit:         "day_of_month",
-                               hour_mark:    (@current_time - 1.hour).hour
+                               hour_due:     (@current_time - 1.hour).hour
                                )
         @job.update_attributes completed_at: @current_time - 1.month
         return                 true
@@ -185,9 +185,9 @@ module Mobilize
                                job_id:       @job.id,
                                number:       @current_time.day,
                                unit:         "day_of_month",
-                               hour_mark:    (@current_time - 1.hour).hour
+                               hour_due:     (@current_time - 1.hour).hour
                                )
-        @job.update_attributes completed_at: @trigger.mark_time(@current_time) + 15.minutes
+        @job.update_attributes completed_at: @trigger.due_at + 15.minutes
         return                 false
       end
     end
