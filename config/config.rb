@@ -28,7 +28,7 @@ module Mobilize
       FileUtils.mkdir_p         @abs_home_dir
 
       @force_write            = (File.exists?(@target_path) and force == true)
-      if                        @force_write or !File.exists?(target_path)
+      if                        @force_write or !File.exists?(@target_path)
         FileUtils.cp            @source_path, @target_path
         FileUtils.ln_s          @target_path, @config_path, force: true
         Mobilize::Logger.info   "Wrote default to #{@target_path}, " +
