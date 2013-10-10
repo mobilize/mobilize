@@ -52,12 +52,12 @@ module Mobilize
       @stream_array         = ["stdin","stdout","stderr","exit_signal","log"]
 
       @result_cmd           = "cd #{@task.cache.parent_dir} && " +
-                              "array=(#{stream_array.join(" ")}) " +
+                              "array=(#{@stream_array.join(" ")}) " +
                               "&& (for each in \"${array[@]}\"; do :; " +
-                              "cat $each; echo #{delim}; done)"
+                              "cat $each; echo #{@delim}; done)"
 
-      @result_string        = @ssh.sh(result_cmd)[:stdout]
-      @result_array         = @result_string.split(delim).map{|stream| stream.strip}
+      @result_string        = @ssh.sh(@result_cmd)[:stdout]
+      @result_array         = @result_string.split(@delim).map{|stream| stream.strip}
 
       return                 {stdin:       @result_array[0],
                               stdout:      @result_array[1],
