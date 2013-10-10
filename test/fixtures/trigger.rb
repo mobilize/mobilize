@@ -126,7 +126,7 @@ module Mobilize
                                       parent_job_id: @parent_job.id
                                       )
         @parent_job.update_attributes completed_at: @current_time - 1.minute
-        @job.update_attributes        failed_at:    @current_time - Mobilize.config.job.retry_delay - 30.seconds
+        @job.update_attributes        failed_at:    @current_time - Mobilize.config.work.retry_delay - 30.seconds
         return                        true
       end
 

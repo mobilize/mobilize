@@ -20,12 +20,17 @@ module Mobilize
     def Logger.info(message,object=nil)
       @caller               = caller(1)
       @log                  = Logger.trace_header(@caller) + message
-      puts                    @log
+      puts                    "(I)#{@log}"
     end
     def Logger.error(message,object=nil)
       @c                    = caller(1)
       @log                  = Logger.trace_header(@caller) + message
-      raise                   @log
+      raise                   "(E)#{@log}"
+    end
+    def Logger.stat(message,object=nil)
+      @c                    = caller(1)
+      @log                  = Logger.trace_header(@caller) + message
+      puts                    "(S):#{@log}"
     end
   end
 end

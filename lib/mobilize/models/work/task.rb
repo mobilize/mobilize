@@ -51,7 +51,7 @@ module Mobilize
         @string1                = Regexp.escape(k.to_s) # escape any special characters
         @string2                = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
         @replace_cmd            = "cd #{@task.worker.parent_dir} && " +
-                                  "(find . -type f \\( ! -path '*/.*' \\) | " +
+                                  "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         @replace_cmd.popen4(true)
         Logger.info               "Replaced #{@string1} with #{@string2} in #{@task.worker.parent_dir}"
@@ -59,35 +59,42 @@ module Mobilize
     end
 
     def Task.perform(task_id)
+      sleep                     300
       @task                   = Task.find(task_id)
       @session                = @task.path_model.session
       if                        @session
+        @task.start
         begin
           @path.send            @task.name, @task
           @task.complete
         rescue               => @exc
-          @task.fail
           if                    @task.retries < @@config.max_retries
-            Logger.info         message
             @task.retry
           else
-            Logger.error        message
+            @task.fail
           end
         end
       else
-        @task.requeue           "No session available"
+        Logger.info           "No session available for #{@task.id}"
       end
     end
 
-    def requeue(message)
-      @task              = self
-      #update status if the message has changed or if 
-      #it has been longer than the log frequency
-      if                   message != @task.status_message or
-        Time.now.utc > (@task.status_time + @@config.log_frequency)
-        Logger.info        @task.status_message
-      end
-      Resque.enqueue       :mobilize,Task,@task.id
+    def retry
+      @task                  = self
+      @task.update_attributes  retries: @task.retries + 1
+      Resque.enqueue_by        :mobilize, Task, @task.id
+    end
+
+    def complete
+      @task                   = self
+      @task.update_status       :completed
+    end
+
+    def fail
+      @task                   = self
+      @task.update_status     = :failed
+      @stage                  = @task.stage
+      @stage.fail
     end
 
     #take a task worker
@@ -116,6 +123,5 @@ module Mobilize
       @ssh = self.path
       @ssh.streams(self)
     end
-
   end
 end
