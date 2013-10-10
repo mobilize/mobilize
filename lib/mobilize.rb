@@ -9,14 +9,26 @@ module Mobilize
     #use MOBILIZE_ENV to manually set your environment when you start your app
     ENV['MOBILIZE_ENV'] || "development"
   end
+  def Mobilize.home_dir
+    "~/.mobilize"
+  end
+  def Mobilize.log_dir
+    "#{Mobilize.home_dir}/log"
+  end
 end
+
+#create log folder if not exists
+@abs_log_dir                  = File.expand_path Mobilize.log_dir
+FileUtils.mkdir_p               @abs_log_dir unless File.exists? @abs_log_dir
 require "mobilize/logger"
 
-require "#{Mobilize.root}/config/config"
+
+
 #write sample config files if not available
-["mob.yml","mongoid.yml","resque-pool.yml","resque-pool-#{Mobilize.env}.rb"].each do |file_name|
-  Mobilize::Config.write_sample(file_name)
-end
+require "#{Mobilize.root}/config/config"
+@config_files = ["mob.yml","mongoid.yml","resque-pool.yml","resque-pool-#{Mobilize.env}.rb"]
+@config_files.each{|file_name| Mobilize::Config.write_sample file_name }
+
 module Mobilize
   def Mobilize.config(model=nil)
     @@config ||= begin

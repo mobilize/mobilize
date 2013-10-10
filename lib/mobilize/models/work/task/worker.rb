@@ -24,7 +24,7 @@ module Mobilize
     def job_dir
       @worker                   = self
       @task                     = @worker.task
-      @job_dir                  = "#{Mobilize::Config.home_dir}/jobs/" +
+      @job_dir                  = "#{Mobilize.home_dir}/jobs/" +
                                   "#{@task.user.id}/#{@task.job.name}"
       return                      @job_dir
     end

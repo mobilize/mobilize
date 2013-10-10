@@ -33,7 +33,7 @@ module Mobilize
       @cache            = self
       @task             = @cache.task
       @ssh              = @task.user.ec2.ssh
-      @home_dir         = Mobilize::Config.home_dir.sub("~",@ssh.home_dir)
+      @home_dir         = Mobilize.home_dir.sub("~",@ssh.home_dir)
       return              @home_dir
     end
 

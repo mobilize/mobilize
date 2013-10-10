@@ -3,11 +3,6 @@ require 'fileutils'
 module Mobilize
   class Config < Settingslogic
     @@dir                     = File.dirname File.expand_path(__FILE__)
-    @@home_dir                = "~/.mobilize"
-
-    def self.home_dir
-      @@home_dir
-    end
 
     @@path                    = "#{@@dir}/mob.yml"
 
@@ -20,7 +15,7 @@ module Mobilize
     #creates symlink in config/
     def Config.write_sample(file_name, force = nil)
       @file_name              = file_name
-      @abs_home_dir           = File.expand_path @@home_dir
+      @abs_home_dir           = File.expand_path Mobilize.home_dir
       @source_path            = "#{@@dir}/../samples/#{@file_name}"
       @config_path            = "#{@@dir}/#{@file_name}"
       @target_path            = "#{@abs_home_dir}/#{@file_name}"
