@@ -78,7 +78,7 @@ module Mobilize
       "gem install god".popen4       if "which god".popen4(false).empty?
 
       Mobilize::Logger.info             "god".popen4
-      Mobilize::Logger.info             "god load #{Mobilize.root}/config/#{god_file}".popen4
+      Mobilize::Logger.info             "god load #{Mobilize.root}/config/#{@god_file}".popen4
     end
   end
 end
