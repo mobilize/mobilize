@@ -4,7 +4,7 @@ class WorkTest < MiniTest::Unit::TestCase
     Mongoid.purge!
     @Fixture                      = Mobilize::Fixture
     @github_public                = @Fixture::Github.public
-    @worker_name                  = @Fixture::Ec2.worker_name
+    @worker_name                  = Mobilize.config.fixture.worker_name
     @ec2                          = @Fixture::Ec2.default    @worker_name
     @ec2_session                  = Mobilize::Ec2.session
     @ec2.find_or_create_instance    @ec2_session

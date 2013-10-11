@@ -2,7 +2,7 @@ module Mobilize
   module Fixture
     module Github
 
-      @@config = Mobilize.config.minitest.github
+      @@config = Mobilize.config.fixture.github
 
       def Github.public
         return Mobilize::Github.find_or_create_by    owner_name:  @@config.public.owner_name,

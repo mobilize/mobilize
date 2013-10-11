@@ -44,7 +44,7 @@ development:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 #test includes special variables for running
-#tests, found under `minitest`
+#tests, found under `fixture`
 test:
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
@@ -83,24 +83,24 @@ test:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
-  minitest:
+  fixture:
     google:
-      email: <%=ENV['MOB_MINITEST_GOOGLE_EMAIL']%>
+      email: <%=ENV['MOB_FIXTURE_GOOGLE_EMAIL']%>
     ec2:
-      worker_name: <%=ENV['MOB_MINITEST_EC2_WORKER_NAME']%>
+      worker_name: <%=ENV['MOB_FIXTURE_EC2_WORKER_NAME']%>
     ssh:
-      user_name: <%=ENV['MOB_MINITEST_SSH_USER_NAME']%>
-      private_key_path: <%=ENV['MOB_MINITEST_SSH_PRIVATE_KEY_PATH']%>
+      user_name: <%=ENV['MOB_FIXTURE_SSH_USER_NAME']%>
+      private_key_path: <%=ENV['MOB_FIXTURE_SSH_PRIVATE_KEY_PATH']%>
     github:
-      login: <%=ENV['MOB_MINITEST_GITHUB_LOGIN']%>
+      login: <%=ENV['MOB_FIXTURE_GITHUB_LOGIN']%>
       public:
         domain: github.com
         owner_name: mobilize
         repo_name: mobilize
       private:
         domain: github.com
-        owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
-        repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
+        owner_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_OWNER']%>
+        repo_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
 staging:
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
