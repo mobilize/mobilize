@@ -59,29 +59,31 @@ module Mobilize
     end
 
     def Task.perform(task_id)
-      @task                   = Task.find(task_id)
-      @session                = @task.path.class.session
-      if                        @session
+      @task                      = Task.find(task_id)
+      @path                      = @task.path
+      @session                   = @path.class.session
+      if                           @session
         @task.start
         begin
-          @path.send            @task.name, @task
+          @stage                 = @task.stage
+          @path.send               @stage.call, @task
           @task.complete
-        rescue               => @exc
-          if                    @task.retries < @@config.max_retries
+        rescue                  => @exc
+          if                       @task.retries < @@config.max_retries
             @task.retry
           else
             @task.fail
           end
         end
       else
-        Logger.info           "No session available for #{@task.id}"
+        Logger.info                "No session available for #{@task.id}"
       end
     end
 
     def working?
       @task                  = self
       @workers               = Resque.workers
-      @workers.index          {|worker|
+      @workers.index         {|worker|
         @payload             = worker.job['payload']
         if @payload
           @work_id           = @payload['args'].first
@@ -95,7 +97,7 @@ module Mobilize
     def queued?
       @task                  = self
       @queued_jobs           = ::Resque.peek(Mobilize.queue,0,0).to_a
-      @queued_jobs.index      {|job|
+      @queued_jobs.index     {|job|
         @work_id             = job['args'].first
         @queued              = true if @work_id == @task.id
                               }
