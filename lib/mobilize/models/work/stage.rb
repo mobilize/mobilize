@@ -21,13 +21,14 @@ module Mobilize
     end
 
     def Stage.perform(stage_id)
-      sleep                     300
       @stage                     = Stage.find stage_id
       @stage.update_status        :started
       @tasks                     = @stage.tasks
       @tasks.each              do |task|
-        unless task.working? or task.complete?
-          Resque.enqueue_by       :mobilize, Task, task.id
+        unless                     task.working?  or
+                                   task.queued?   or
+                                   task.complete?
+          Resque.enqueue_by       "mobilize-#{Mobilize.env}", Task, task.id
         end
       end
     end

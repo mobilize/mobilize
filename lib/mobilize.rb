@@ -15,11 +15,15 @@ module Mobilize
   def Mobilize.log_dir
     "#{Mobilize.home_dir}/log"
   end
+  def Mobilize.queue
+    "mobilize-#{Mobilize.env}"
+  end
 end
 
 #create log folder if not exists
 @abs_log_dir                  = File.expand_path Mobilize.log_dir
 FileUtils.mkdir_p               @abs_log_dir unless File.exists? @abs_log_dir
+require "logger"
 require "mobilize/logger"
 
 

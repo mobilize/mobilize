@@ -22,11 +22,11 @@ module Mobilize
     #assign a cache and worker to task on creation
     after_create :find_or_create_worker_and_cache
     def find_or_create_worker_and_cache
-      @task             = self
-      @task.create_worker task_id: @task.id
-      Logger.info         "Created worker for #{@task.id}"
-      @task.create_cache  task_id: @task.id
-      Logger.info         "Created cache for #{@task.id}"
+      @task                   = self
+      @task.create_worker       task_id: @task.id
+      Logger.info               "Created worker for #{@task.id}"
+      @task.create_cache        task_id: @task.id
+      Logger.info               "Created cache for #{@task.id}"
     end
 
     def user
@@ -53,15 +53,14 @@ module Mobilize
         @replace_cmd            = "cd #{@task.worker.parent_dir} && " +
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{@string1}/#{@string2}/g')"
-        @replace_cmd.popen4(true)
+        @replace_cmd.popen4
         Logger.info               "Replaced #{@string1} with #{@string2} in #{@task.worker.parent_dir}"
       end
     end
 
     def Task.perform(task_id)
-      sleep                     300
       @task                   = Task.find(task_id)
-      @session                = @task.path_model.session
+      @session                = @task.path.class.session
       if                        @session
         @task.start
         begin
@@ -79,10 +78,39 @@ module Mobilize
       end
     end
 
+    def working?
+      @task                  = self
+      @workers               = Resque.workers
+      @workers.index          {|worker|
+        @payload             = worker.job['payload']
+        if @payload
+          @work_id           = @payload['args'].first
+          @working           = true if @work_id == @task.id
+        end
+        @working
+                             }
+      @working
+    end
+
+    def queued?
+      @task                  = self
+      @queued_jobs           = ::Resque.peek(Mobilize.queue,0,0).to_a
+      @queued_jobs.index      {|job|
+        @work_id             = job['args'].first
+        @queued              = true if @work_id == @task.id
+                              }
+      @queued
+    end
+
     def retry
       @task                  = self
       @task.update_attributes  retries: @task.retries + 1
-      Resque.enqueue_by        :mobilize, Task, @task.id
+      Resque.enqueue_to        Mobilize.queue, Task, @task.id
+    end
+
+    def start
+      @task                   = self
+      @task.update_status       :started
     end
 
     def complete

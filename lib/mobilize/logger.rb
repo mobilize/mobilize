@@ -36,7 +36,8 @@ module Mobilize
       puts                    @log
     end
     def Logger.write(log)
-      @logger = ::Logger.new("#{Mobilize.log_dir}/#{Mobilize.env}.log","daily")
+      @file_path            = File.expand_path "#{Mobilize.log_dir}/#{Mobilize.env}.log"
+      @logger               = ::Logger.new @file_path, "daily"
       @logger.info(log)
     end
   end

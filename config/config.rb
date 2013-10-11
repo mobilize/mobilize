@@ -32,7 +32,6 @@ module Mobilize
 
       if                        !File.exists?(@config_path)
         FileUtils.ln_s          @target_path, @config_path, force: true
-        Mobilize::Logger.info   "added symlink to #{@target_path} in #{@config_path}"
       end
     end
   end

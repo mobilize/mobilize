@@ -60,9 +60,10 @@ module Mobilize
 
       if                                @options[:stop]
         Mobilize::Logger.info           "god stop resque-pool-#{Mobilize.env}".popen4
-        @pid_path                     = "#{Mobilize.home_dir}/pids/resque-pool-#{Mobilize.env}.pid"
+        @pid_path                     = File.expand_path "#{Mobilize.home_dir}/pid/resque-pool-#{Mobilize.env}.pid"
         if File.exists?                 @pid_path
-          Mobilize::Logger.info         "kill -2 #{File.read(pid_path).strip}".popen4
+          Mobilize::Logger.info         "kill -2 #{File.read(@pid_path).strip}".popen4
+          Mobilize::Logger.info         "Stopped resque workers on mobilize-#{Mobilize.env}"
         end
       else
         Mobilize::Logger.info           "god start resque-pool-#{Mobilize.env}".popen4

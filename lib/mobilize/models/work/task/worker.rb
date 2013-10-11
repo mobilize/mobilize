@@ -31,7 +31,7 @@ module Mobilize
 
     def abs_dir
       @worker                   = self
-      @abs_dir                  = "#{Mobilize::Config.home_dir}/jobs/#{@worker.rel_dir}"
+      @abs_dir                  = "#{Mobilize.home_dir}/jobs/#{@worker.rel_dir}"
       return                      @abs_dir
     end
 
