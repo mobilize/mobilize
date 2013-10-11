@@ -9,8 +9,8 @@ module Mobilize
     field :subs,     type: Hash   #used by run and write tasks to gsub input
     field :stage_id, type: String #need for id
     field :path_id,  type: String #need for id
-    field :_id,      type: String, default:->{"#{stage_id}#{path_id}"}
-    belongs_to :job
+    field :_id,      type: String, default:->{"#{stage_id}/#{path_id}"}
+    belongs_to :stage
     belongs_to :path
     has_one :cache
     has_one :worker
@@ -18,6 +18,10 @@ module Mobilize
     @@config = Mobilize.config("task")
 
     attr_accessor :session #used to hold onto session object for task
+
+    def job
+      self.stage.job
+    end
 
     #assign a cache and worker to task on creation
     after_create :find_or_create_worker_and_cache
