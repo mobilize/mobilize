@@ -2,6 +2,7 @@ require "test_helper"
 class TriggerTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
+    Mobilize::Job.purge!
     @worker_name               = Mobilize.config.fixture.ec2.worker_name
     @ec2                       = Mobilize::Fixture::Ec2.default     @worker_name
     @ec2_session               = Mobilize::Ec2.session

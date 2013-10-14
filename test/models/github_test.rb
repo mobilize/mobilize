@@ -2,6 +2,7 @@ require "test_helper"
 class GithubTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
+    Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
     @github_public             = @Fixture::Github.public
     @worker_name               = Mobilize.config.fixture.ec2.worker_name
