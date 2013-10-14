@@ -12,9 +12,17 @@ module Mobilize
 
     namespace ENV['MOBILIZE_ENV'] || "development"
 
+    #generates a yml configuration file 
+    #based on hash provided
+    def Config.write_from_hash(file_name, hash)
+      @file                   = File.open File.expand_path(file_name), "w"
+      @file.print               hash.to_yaml
+      @file.close
+      return true
+    end
     #takes file from samples, copies to ~/.mobilize,
     #creates symlink in config/
-    def Config.write_sample(file_name, force = nil)
+    def Config.write_from_sample(file_name, force = nil)
       @file_name              = file_name
       @abs_home_dir           = File.expand_path Mobilize.home_dir
       @source_path            = "#{Config.dir}/../samples/#{@file_name}"
