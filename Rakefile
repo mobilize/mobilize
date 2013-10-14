@@ -16,3 +16,9 @@ task :default => :test
 require 'mobilize'
 require 'resque/tasks'
 require 'resque/pool/tasks'
+
+task "resque:setup" do
+  puts "Starting Resque..."
+  puts ENV
+  Redis.connect url: ENV['REDIS_URL'], port: ENV['REDIS_PORT']
+end

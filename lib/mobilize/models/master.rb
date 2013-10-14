@@ -3,6 +3,7 @@ module Mobilize
     @@config                                     = Mobilize.config "master"
     def Master.config;                             @@config;end
 
+    #starts a basic redis instance
     def Master.start_redis
       @ec2                                       = Ec2.find_or_create_by(
                                                    name: Master.config.redis.name)
@@ -13,13 +14,12 @@ module Mobilize
                                                    user_name:         Mobilize.config.ssh.user_name,
                                                    private_key_path:  Mobilize.config.ssh.private_key_path,
                                                    ec2_id:            @ec2.id)
-      @redis_cmd                                 = ""
+      @redis_cmd                                 = "sudo apt-get install -y redis-server && " +
+                                                   "sudo service redis-server start"
+      @ssh.sh                                      @redis_cmd, false
+
     end
 
-    def Master.start_mongodb
-
-    end
-    
     def Master.start_workers
 
       #stop and restart resque workers
