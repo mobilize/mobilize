@@ -3,7 +3,7 @@ module Mobilize
     module Gfile
       def Gfile.default
         Mobilize::Gfile.find_or_create_by(
-        owner: Mobilize.config.minitest.google.email,
+        owner: Mobilize.config.fixture.google.email,
         name: "test_file"
         )
       end

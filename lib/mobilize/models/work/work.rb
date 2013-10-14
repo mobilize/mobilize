@@ -1,5 +1,5 @@
 module Mobilize
-  #used to patch status fields to job, stage, task
+  #used to patch methods and status fields to job, stage, task
   module Work
     extend ActiveSupport::Concern
     included do
@@ -11,8 +11,8 @@ module Mobilize
       field :status_at,           type: Time
       field :status,              type: String
       field :retries,             type: Fixnum, default:->{0}
-      field :max_retries,         type: Fixnum, default:->{Mobilize.config.job.max_retries}
-      field :retry_delay,         type: Fixnum, default:->{Mobilize.config.job.retry_delay}
+      field :max_retries,         type: Fixnum, default:->{Mobilize.config.work.max_retries}
+      field :retry_delay,         type: Fixnum, default:->{Mobilize.config.work.retry_delay}
     end
 
     def update_status(status)
@@ -27,6 +27,11 @@ module Mobilize
 
       Logger.info                 "#{@work.id} status: #{@work.status} " +
                                   "at #{@work.send @timestamp_string}"
+    end
+
+    def complete?
+      @work                    = self
+      return                     @work.status == "completed"
     end
   end
 end

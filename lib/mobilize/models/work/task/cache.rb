@@ -16,7 +16,7 @@ module Mobilize
       @task             = @cache.task
       @is_ssh           = @task.path.class == Mobilize::Ssh
       if @is_ssh
-        return            "#{@cache.job_dir}/ssh/stdin"
+        return            "#{@cache.job_dir}#{@cache.task.stage.name}/ssh/stdin"
       else
         @ssh            = @task.user.ec2.ssh
         @dir            = @task.worker.abs_dir.sub("~",@ssh.home_dir)
@@ -33,7 +33,7 @@ module Mobilize
       @cache            = self
       @task             = @cache.task
       @ssh              = @task.user.ec2.ssh
-      @home_dir         = Mobilize::Config.home_dir.sub("~",@ssh.home_dir)
+      @home_dir         = Mobilize.home_dir.sub("~",@ssh.home_dir)
       return              @home_dir
     end
 

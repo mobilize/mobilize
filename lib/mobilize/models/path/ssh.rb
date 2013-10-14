@@ -24,6 +24,13 @@ module Mobilize
       "session"#placeholder
     end
 
+    def shell_cmd
+      @ssh                 = self
+      @ssh_cmd             = "ssh -i #{@ssh.private_key_path} #{@ssh.user_name}@#{@ssh.ec2.dns}"
+      Logger.info            "Log in with: #{@ssh_cmd}"
+      return true
+    end
+
     def run(task)
       @ssh                 = self
       @task                = task

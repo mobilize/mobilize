@@ -7,7 +7,7 @@ God.watch do |w|
           }
   w.dir = File.expand_path(File.join(File.dirname(__FILE__),'..'))
   w.start = "resque-pool -d -E staging -o /dev/null " +
-            "-e /dev/null -p #{Mobilize.config.resque.pid_dir}/resque-pool-staging.pid"
+            "-e /dev/null -p #{File.expand_path Mobilize.home_dir}/resque-pool-staging.pid"
   w.start_grace = 10.seconds
  
   # restart if memory gets too high

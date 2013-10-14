@@ -68,16 +68,22 @@ module Mobilize
       return                  true
     end
 
+    def is_reader?(user)
+      @gfile                      = self
+      @user                       = user
+      @is_reader                  = @user.google_login == @gfile.owner or
+                                    @gfile.readers.include? @user.google_login
+      return @is_reader
+    end
+
     def read(task)
       @gfile                      = self
       @task                       = task
       @user                       = @task.user
       @worker                     = @task.worker
       @remote                     = @gfile.sync @task.session
-      @is_reader                  = @user.google_login == @gfile.owner or
-                                    @gfile.readers.include? @user.google_login
 
-      if @is_reader
+      if @gfile.is_reader?(@user)
          #make sure path exists but dir does not
          @worker.purge
          #in this case, directory is file name
@@ -90,16 +96,21 @@ module Mobilize
       end
     end
 
+    def is_writer?(user)
+      @user                        = user
+      @gfile                       = self
+      @is_writer                   = @user.google_login == @gfile.owner or
+                                     @gfile.writers.include?(@user.google_login)
+      return @is_writer
+    end
+
     def write(task)
       @gfile                       = self
       @task                        = task
       @user                        = @task.user
       @remote                      = @gfile.find_or_create_remote @task.session
 
-      @is_writer                   = @user.google_login == @gfile.owner or
-                                     @gfile.writers.include?(@user.google_login)
-
-      if @is_writer
+      if @gfile.is_writer?(@user)
         @remote.update_from_file     @task.input
         Logger.info                  "Uploaded #{@task.input} from #{@gfile.id}"
       else

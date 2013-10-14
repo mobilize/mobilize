@@ -25,8 +25,10 @@ module Mobilize
       @stage.update_status        :started
       @tasks                     = @stage.tasks
       @tasks.each              do |task|
-        if                        task.status != "completed"
-          Resque.enqueue_by       :mobilize, Task, task.id
+        unless                     task.working?  or
+                                   task.queued?   or
+                                   task.complete?
+          Resque.enqueue_by       "mobilize-#{Mobilize.env}", Task, task.id
         end
       end
     end

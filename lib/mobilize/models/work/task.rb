@@ -9,8 +9,8 @@ module Mobilize
     field :subs,     type: Hash   #used by run and write tasks to gsub input
     field :stage_id, type: String #need for id
     field :path_id,  type: String #need for id
-    field :_id,      type: String, default:->{"#{stage_id}#{path_id}"}
-    belongs_to :job
+    field :_id,      type: String, default:->{"#{stage_id}/#{path_id}"}
+    belongs_to :stage
     belongs_to :path
     has_one :cache
     has_one :worker
@@ -19,14 +19,18 @@ module Mobilize
 
     attr_accessor :session #used to hold onto session object for task
 
+    def job
+      self.stage.job
+    end
+
     #assign a cache and worker to task on creation
     after_create :find_or_create_worker_and_cache
     def find_or_create_worker_and_cache
-      @task             = self
-      @task.create_worker task_id: @task.id
-      Logger.info         "Created worker for #{@task.id}"
-      @task.create_cache  task_id: @task.id
-      Logger.info         "Created cache for #{@task.id}"
+      @task                   = self
+      @task.create_worker       task_id: @task.id
+      Logger.info               "Created worker for #{@task.id}"
+      @task.create_cache        task_id: @task.id
+      Logger.info               "Created cache for #{@task.id}"
     end
 
     def user
@@ -51,43 +55,80 @@ module Mobilize
         @string1                = Regexp.escape(k.to_s) # escape any special characters
         @string2                = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
         @replace_cmd            = "cd #{@task.worker.parent_dir} && " +
-                                  "(find . -type f \\( ! -path '*/.*' \\) | " +
+                                  "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{@string1}/#{@string2}/g')"
-        @replace_cmd.popen4(true)
+        @replace_cmd.popen4
         Logger.info               "Replaced #{@string1} with #{@string2} in #{@task.worker.parent_dir}"
       end
     end
 
     def Task.perform(task_id)
-      @task                   = Task.find(task_id)
-      @session                = @task.path_model.session
-      if                        @session
+      @task                      = Task.find(task_id)
+      @path                      = @task.path
+      @session                   = @path.class.session
+      if                           @session
+        @task.start
         begin
-          @path.send            @task.name, @task
+          @stage                 = @task.stage
+          @path.send               @stage.call, @task
           @task.complete
-        rescue               => @exc
-          @task.fail
-          if                    @task.retries < @@config.max_retries
-            Logger.info         message
+        rescue                  => @exc
+          if                       @task.retries < @@config.max_retries
             @task.retry
           else
-            Logger.error        message
+            @task.fail
           end
         end
       else
-        @task.requeue           "No session available"
+        Logger.info                "No session available for #{@task.id}"
       end
     end
 
-    def requeue(message)
-      @task              = self
-      #update status if the message has changed or if 
-      #it has been longer than the log frequency
-      if                   message != @task.status_message or
-        Time.now.utc > (@task.status_time + @@config.log_frequency)
-        Logger.info        @task.status_message
-      end
-      Resque.enqueue       :mobilize,Task,@task.id
+    def working?
+      @task                  = self
+      @workers               = Resque.workers
+      @workers.index         {|worker|
+        @payload             = worker.job['payload']
+        if @payload
+          @work_id           = @payload['args'].first
+          @working           = true if @work_id == @task.id
+        end
+        @working
+                             }
+      @working
+    end
+
+    def queued?
+      @task                  = self
+      @queued_jobs           = ::Resque.peek(Mobilize.queue,0,0).to_a
+      @queued_jobs.index     {|job|
+        @work_id             = job['args'].first
+        @queued              = true if @work_id == @task.id
+                              }
+      @queued
+    end
+
+    def retry
+      @task                  = self
+      @task.update_attributes  retries: @task.retries + 1
+      Resque.enqueue_to        Mobilize.queue, Task, @task.id
+    end
+
+    def start
+      @task                   = self
+      @task.update_status       :started
+    end
+
+    def complete
+      @task                   = self
+      @task.update_status       :completed
+    end
+
+    def fail
+      @task                   = self
+      @task.update_status     = :failed
+      @stage                  = @task.stage
+      @stage.fail
     end
 
     #take a task worker
@@ -116,6 +157,5 @@ module Mobilize
       @ssh = self.path
       @ssh.streams(self)
     end
-
   end
 end
