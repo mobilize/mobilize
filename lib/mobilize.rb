@@ -76,6 +76,7 @@ require "#{extensions_dir}/net-ssh"
 
 models_dir = "mobilize/models"
 
+require "#{models_dir}/master"
 require "#{models_dir}/user"
 
 work_dir = "#{models_dir}/work"
@@ -101,9 +102,6 @@ require "#{path_dir}/ssh"
 require "aws"
 amazon_dir = "#{path_dir}/amazon"
 require "#{amazon_dir}/ec2"
-require "#{amazon_dir}/hive"
-require "#{amazon_dir}/rds"
-require "#{amazon_dir}/s3"
 
 require "gmail"
 google_dir = "#{path_dir}/google"

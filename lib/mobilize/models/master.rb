@@ -1,10 +1,11 @@
 module Mobilize
   module Master
-    @@config               = Mobilize.config.master
+    @@config                                     = Mobilize.config "master"
+    def Master.config;                             @@config;end
 
     def Master.start_redis
       @ec2                                       = Ec2.find_or_create_by(
-                                                   name: @@config.master.redis.name)
+                                                   name: Master.config.redis.name)
 
       @ec2.find_or_create_instance                 Ec2.session
 

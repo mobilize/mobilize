@@ -66,6 +66,14 @@ test:
         owner_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_OWNER']%>
         repo_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
 development:
+  master:
+    redis:
+      name: mobilize-redis-test
+    mongodb:
+      name: mobilize-mongodb-test
+    resque:
+      - name:     mobilize-resque-test-01
+        workers:  5
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
@@ -110,6 +118,14 @@ development:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 staging:
+  master:
+    redis:
+      name: mobilize-redis-test
+    mongodb:
+      name: mobilize-mongodb-test
+    resque:
+      - name:     mobilize-resque-test-01
+        workers:  5
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
@@ -147,6 +163,14 @@ staging:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
+  master:
+    redis:
+      name: mobilize-redis-test
+    mongodb:
+      name: mobilize-mongodb-test
+    resque:
+      - name:     mobilize-resque-test-01
+        workers:  5
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
   log:
