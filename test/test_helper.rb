@@ -2,8 +2,6 @@ require 'rubygems'
 require 'bundler/setup'
 require 'minitest/autorun'
 $dir = File.dirname File.expand_path(__FILE__)
-#set test environment
-ENV['MOBILIZE_ENV'] = 'test'
 require 'mobilize'
 #drop test database
 Mongoid.purge!

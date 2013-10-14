@@ -9,6 +9,7 @@ Rake::TestTask.new do |test|
   test.libs << "test"
   test.libs << "lib"
   test.test_files = FileList['test/**/*_test.rb']
+  ENV['MOBILIZE_ENV'] = 'test'
 end
 task :default => :test
 

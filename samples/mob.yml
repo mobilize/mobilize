@@ -2,20 +2,25 @@
 #test includes special variables for running
 #tests, found under `fixture`
 test:
+  redis:
+    host:     <%= ENV['MOB_TEST_REDIS_HOST'] %>
+    port:     <%= ENV['MOB_TEST_REDIS_PORT'] %>
+    password: <%= ENV['MOB_TEST_REDIS_PASSWORD'] %>
+  mongodb:
+    username: <%= ENV['MOB_TEST_MONGODB_USERNAME'] %>
+    password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
+    database:     mobilize_test
+    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'].split(",") %>
+  resque:
+    workers: 5
+    nodes:   1
   master:
-    redis:
-      name: mobilize-redis-test
-    mongodb:
-      name: mobilize-mongodb-test
-    resque:
-      - name:     mobilize-resque-test-01
-        workers:  5
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
   log:
     level: info
-    ljust:   75
+    ljust:   75 #amount to pad the log source from the log message
   object:
     send_total_retries: 3
     send_sleep_time: 5
@@ -67,13 +72,18 @@ test:
         repo_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
 development:
   master:
-    redis:
-      name: mobilize-redis-test
-    mongodb:
-      name: mobilize-mongodb-test
-    resque:
-      - name:     mobilize-resque-test-01
-        workers:  5
+  resque:
+    workers: 5
+    nodes:   1
+  redis:
+    host:     <%= ENV['MOB_TEST_REDIS_HOST'] %>
+    port:     <%= ENV['MOB_TEST_REDIS_PORT'] %>
+    password: <%= ENV['MOB_TEST_REDIS_PASSWORD'] %>
+  mongodb:
+    username: <%= ENV['MOB_TEST_MONGODB_USERNAME'] %>
+    password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
+    database:     mobilize_development
+    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'].split(",") %>
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
