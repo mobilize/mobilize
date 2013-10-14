@@ -12,6 +12,14 @@ module Mobilize
     has_many :stages
     has_many :tasks
 
+    def Job.dir
+      "#{Mobilize.home_dir}/jobs"
+    end
+
+    def Job.purge!
+      FileUtils.rm_r "#{Mobilize.home_dir}/jobs", force: true
+    end
+
     def Job.perform(job_id)
          @job                   = Job.find job_id
       if @job.trigger.tripped?

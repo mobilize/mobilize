@@ -2,6 +2,7 @@ require "test_helper"
 class GfileTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
+    Mobilize::Job.purge!
     @Fixture                            = Mobilize::Fixture
     @gfile                              = @Fixture::Gfile.default
     @worker_name                        = Mobilize.config.fixture.ec2.worker_name

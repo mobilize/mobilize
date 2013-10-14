@@ -26,8 +26,6 @@ FileUtils.mkdir_p               @abs_log_dir unless File.exists? @abs_log_dir
 require "logger"
 require "mobilize/logger"
 
-Mobilize::Logger.info           "starting Mobilize in #{Mobilize.env} environment..."
-
 #write sample config files if not available
 require "#{Mobilize.root}/config/config"
 @config_files = ["mob.yml"]

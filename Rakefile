@@ -20,5 +20,7 @@ require 'resque/pool/tasks'
 require 'pp'
 task "resque:setup" do
   puts "Starting Resque..."
-  Resque.redis = Redis.new host: ENV['REDIS_HOST'], port: ENV['REDIS_PORT']
+  Resque.redis = Redis.new host:     Mobilize.config.redis.host,
+                           port:     Mobilize.config.redis.port,
+                           password: Mobilize.config.redis.password
 end
