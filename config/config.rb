@@ -3,11 +3,12 @@ require 'fileutils'
 module Mobilize
   class Config < Settingslogic
     @@dir                     = File.dirname File.expand_path(__FILE__)
-
+    def Config.dir;             @@dir;end
     @@path                    = "#{@@dir}/mob.yml"
+    def Config.path;            @@path;end
 
     #load settingslogic
-    source @@path if File.exists?(@@path)
+    source Config.path
 
     namespace ENV['MOBILIZE_ENV'] || "development"
 
@@ -16,8 +17,8 @@ module Mobilize
     def Config.write_sample(file_name, force = nil)
       @file_name              = file_name
       @abs_home_dir           = File.expand_path Mobilize.home_dir
-      @source_path            = "#{@@dir}/../samples/#{@file_name}"
-      @config_path            = "#{@@dir}/#{@file_name}"
+      @source_path            = "#{Config.dir}/../samples/#{@file_name}"
+      @config_path            = "#{Config.dir}/#{@file_name}"
       @target_path            = "#{@abs_home_dir}/#{@file_name}"
 
       FileUtils.mkdir_p         @abs_home_dir
