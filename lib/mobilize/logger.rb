@@ -1,8 +1,8 @@
 module Mobilize
   module Logger
-    def Logger.trace_header(stack_trace)
+    def Logger.trace_header(stack_trace,level)
       @header               = stack_trace.first.split(Mobilize.root).last
-      @response             = "[#{Time.now.utc}]: #{@header}"
+      @response             = "[#{Time.now.utc}][#{level}]: #{@header}"
       begin
         if                    Mobilize.config.log.level == "info"
           #cut off time and root trace at the beginning
@@ -19,13 +19,26 @@ module Mobilize
     end
     def Logger.info(message,object=nil)
       @caller               = caller(1)
-      @log                  = Logger.trace_header(@caller) + message
-      puts                    @log
+      @log                  = Logger.trace_header(@caller,"INFO") + message
+      Logger.write           @log
+      puts                   @log
     end
     def Logger.error(message,object=nil)
-      @c                    = caller(1)
-      @log                  = Logger.trace_header(@caller) + message
+      @caller               = caller(1)
+      @log                  = Logger.trace_header(@caller,"ERROR") + message
+      Logger.write            @log
       raise                   @log
+    end
+    def Logger.stat(message,object=nil)
+      @caller               = caller(1)
+      @log                  = Logger.trace_header(@caller,"STAT") + message
+      Logger.write            @log
+      puts                    @log
+    end
+    def Logger.write(log)
+      @file_path            = File.expand_path "#{Mobilize.log_dir}/#{Mobilize.env}.log"
+      @logger               = ::Logger.new @file_path, "daily"
+      @logger.info(log)
     end
   end
 end

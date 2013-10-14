@@ -38,7 +38,7 @@ module Mobilize
     def next_stage
       @job                      = self
       @stages                   = @job.stages.sort_by{|stage| stage.order}
-      @next_stage               = @stages.select{|stage| stage.status != "complete"}.first
+      @next_stage               = @stages.select{|stage| !stage.complete? }.first
       return                      @next_stage
     end
 

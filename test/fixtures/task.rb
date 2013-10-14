@@ -1,12 +1,12 @@
 module Mobilize
   module Fixture
     module Task
-      def Task.default(job,path,call,session,args={})
-        @task = job.tasks.find_or_create_by(
-          job_id: job.id, path_id: path.id, call: call
+      def Task.default(stage,path,session,args={})
+        @task = stage.tasks.find_or_create_by(
+          stage_id: stage.id, path_id: path.id
         )
         @task.session = session
-        @task.update_attributes(args)
+        @task.update_attributes(args) unless args.empty?
         @task
       end
     end

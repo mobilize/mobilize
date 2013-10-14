@@ -1,6 +1,90 @@
 #sample config yml for mobilize
+#test includes special variables for running
+#tests, found under `fixture`
+test:
+  redis:
+    host:     <%= ENV['MOB_TEST_REDIS_HOST'] %>
+    port:     <%= ENV['MOB_TEST_REDIS_PORT'] %>
+    password: <%= ENV['MOB_TEST_REDIS_PASSWORD'] %>
+  mongodb:
+    username: <%= ENV['MOB_TEST_MONGODB_USERNAME'] %>
+    password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
+    database:     mobilize_test
+    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'].split(",") %>
+  resque:
+    workers: 5
+    nodes:   1
+  master:
+  work:
+    retry_delay: 600 #number of seconds to wait between job failures before retry
+    max_retries: 5
+  log:
+    level: info
+    ljust:   75 #amount to pad the log source from the log message
+  object:
+    send_total_retries: 3
+    send_sleep_time: 5
+  task:
+    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
+  aws:
+    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
+  ec2:
+    keypair_name: mobilize
+    region: 'us-west-1'
+    ami: 'ami-fe002cbb'
+    size: 't1.micro'
+    security_groups:
+    - 'default'
+  ssh:
+    user_name: 'ubuntu'
+    private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
+  google:
+    api:
+      total_retries: 5
+      sleep_time: 1
+      timeout: 600
+      response_log_length: 25
+    owner:
+      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
+      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
+  github:
+    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
+    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
+  fixture:
+    google:
+      email: <%=ENV['MOB_FIXTURE_GOOGLE_EMAIL']%>
+    ec2:
+      worker_name: <%=ENV['MOB_FIXTURE_EC2_WORKER_NAME']%>
+    ssh:
+      user_name: <%=ENV['MOB_FIXTURE_SSH_USER_NAME']%>
+      private_key_path: <%=ENV['MOB_FIXTURE_SSH_PRIVATE_KEY_PATH']%>
+    github:
+      login: <%=ENV['MOB_FIXTURE_GITHUB_LOGIN']%>
+      public:
+        domain: github.com
+        owner_name: mobilize
+        repo_name: mobilize
+      private:
+        domain: github.com
+        owner_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_OWNER']%>
+        repo_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
 development:
-  job:
+  master:
+  resque:
+    workers: 5
+    nodes:   1
+  redis:
+    host:     <%= ENV['MOB_TEST_REDIS_HOST'] %>
+    port:     <%= ENV['MOB_TEST_REDIS_PORT'] %>
+    password: <%= ENV['MOB_TEST_REDIS_PASSWORD'] %>
+  mongodb:
+    username: <%= ENV['MOB_TEST_MONGODB_USERNAME'] %>
+    password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
+    database:     mobilize_development
+    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'].split(",") %>
+  work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
   log:
@@ -43,66 +127,16 @@ development:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
-#test includes special variables for running
-#tests, found under `minitest`
-test:
-  job:
-    retry_delay: 600 #number of seconds to wait between job failures before retry
-    max_retries: 5
-  log:
-    level: info
-    ljust:   75
-  object:
-    send_total_retries: 3
-    send_sleep_time: 5
-  task:
-    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
-  aws:
-    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
-    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
-  ec2:
-    keypair_name: mobilize
-    region: 'us-west-1'
-    ami: 'ami-fe002cbb'
-    size: 't1.micro'
-    security_groups:
-    - 'default'
-  ssh:
-    user_name: 'ubuntu'
-    private_key_path: <%=ENV['MOB_SSH_PRIVATE_KEY_PATH']%>
-  google:
-    api:
-      total_retries: 5
-      sleep_time: 1
-      timeout: 600
-      response_log_length: 25
-    owner:
-      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
-      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
-  github:
-    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
-    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
-    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
-  minitest:
-    google:
-      email: <%=ENV['MOB_MINITEST_GOOGLE_EMAIL']%>
-    ec2:
-      worker_name: <%=ENV['MOB_MINITEST_EC2_WORKER_NAME']%>
-    ssh:
-      user_name: <%=ENV['MOB_MINITEST_SSH_USER_NAME']%>
-      private_key_path: <%=ENV['MOB_MINITEST_SSH_PRIVATE_KEY_PATH']%>
-    github:
-      login: <%=ENV['MOB_MINITEST_GITHUB_LOGIN']%>
-      public:
-        domain: github.com
-        owner_name: mobilize
-        repo_name: mobilize
-      private:
-        domain: github.com
-        owner_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_OWNER']%>
-        repo_name: <%=ENV['MOB_MINITEST_GITHUB_PRIVATE_REPO']%>
 staging:
-  job:
+  master:
+    redis:
+      name: mobilize-redis-test
+    mongodb:
+      name: mobilize-mongodb-test
+    resque:
+      - name:     mobilize-resque-test-01
+        workers:  5
+  work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
   log:
@@ -139,7 +173,15 @@ staging:
     owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
 production:
-  job:
+  master:
+    redis:
+      name: mobilize-redis-test
+    mongodb:
+      name: mobilize-mongodb-test
+    resque:
+      - name:     mobilize-resque-test-01
+        workers:  5
+  work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
   log:
     dir: ~/.mobilize/log

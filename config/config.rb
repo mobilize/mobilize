@@ -3,26 +3,30 @@ require 'fileutils'
 module Mobilize
   class Config < Settingslogic
     @@dir                     = File.dirname File.expand_path(__FILE__)
-    @@home_dir                = "~/.mobilize"
-
-    def self.home_dir
-      @@home_dir
-    end
-
+    def Config.dir;             @@dir;end
     @@path                    = "#{@@dir}/mob.yml"
+    def Config.path;            @@path;end
 
     #load settingslogic
-    source @@path if File.exists?(@@path)
+    source Config.path
 
     namespace ENV['MOBILIZE_ENV'] || "development"
 
+    #generates a yml configuration file 
+    #based on hash provided
+    def Config.write_from_hash(file_name, hash)
+      @file                   = File.open File.expand_path(file_name), "w"
+      @file.print               hash.to_yaml
+      @file.close
+      return true
+    end
     #takes file from samples, copies to ~/.mobilize,
     #creates symlink in config/
-    def Config.write_sample(file_name, force = nil)
+    def Config.write_from_sample(file_name, force = nil)
       @file_name              = file_name
-      @abs_home_dir           = File.expand_path @@home_dir
-      @source_path            = "#{@@dir}/../samples/#{@file_name}"
-      @config_path            = "#{@@dir}/#{@file_name}"
+      @abs_home_dir           = File.expand_path Mobilize.home_dir
+      @source_path            = "#{Config.dir}/../samples/#{@file_name}"
+      @config_path            = "#{Config.dir}/#{@file_name}"
       @target_path            = "#{@abs_home_dir}/#{@file_name}"
 
       FileUtils.mkdir_p         @abs_home_dir
@@ -37,7 +41,6 @@ module Mobilize
 
       if                        !File.exists?(@config_path)
         FileUtils.ln_s          @target_path, @config_path, force: true
-        Mobilize::Logger.info   "added symlink to #{@target_path} in #{@config_path}"
       end
     end
   end

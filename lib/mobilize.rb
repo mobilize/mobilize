@@ -3,20 +3,36 @@ require "mobilize/version"
 module Mobilize
   #folder where project is installed
   def Mobilize.root
-    File.expand_path("#{File.dirname(File.expand_path(__FILE__))}/..")
+    File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/.."
   end
   def Mobilize.env
     #use MOBILIZE_ENV to manually set your environment when you start your app
     ENV['MOBILIZE_ENV'] || "development"
   end
+  def Mobilize.home_dir
+    "~/.mobilize"
+  end
+  def Mobilize.log_dir
+    "#{Mobilize.home_dir}/log"
+  end
+  def Mobilize.queue
+    "mobilize-#{Mobilize.env}"
+  end
 end
+
+#create log folder if not exists
+@abs_log_dir                  = File.expand_path Mobilize.log_dir
+FileUtils.mkdir_p               @abs_log_dir unless File.exists? @abs_log_dir
+require "logger"
 require "mobilize/logger"
 
-require "#{Mobilize.root}/config/config"
+Mobilize::Logger.info           "starting Mobilize in #{Mobilize.env} environment..."
+
 #write sample config files if not available
-["mob.yml","mongoid.yml","resque-pool.yml","resque-pool-#{Mobilize.env}.rb"].each do |file_name|
-  Mobilize::Config.write_sample(file_name)
-end
+require "#{Mobilize.root}/config/config"
+@config_files = ["mob.yml"]
+@config_files.each{|file_name| Mobilize::Config.write_from_sample file_name }
+
 module Mobilize
   def Mobilize.config(model=nil)
     @@config ||= begin
@@ -44,9 +60,28 @@ require "#{cli_dir}/cli"
 require 'pry'
 
 require 'mongoid'
-mongoid_config_path = "#{Mobilize.root}/config/mongoid.yml"
-if File.exists?(mongoid_config_path)
-  Mongoid.load!(mongoid_config_path, Mobilize.env)
+@mongoid_config_path     = "#{Mobilize.root}/config/mongoid.yml"
+begin
+  @Mongodb               = Mobilize.config.mongodb
+
+  @mongoid_config_hash   = { Mobilize.env => {
+                             'sessions'   =>
+                           { 'default'    =>
+                           {
+                             'username'             => @Mongodb.username,
+                             'password'             => @Mongodb.password,
+                             'database'             => @Mongodb.database,
+                             'persist_in_safe_mode' => true,
+                             'hosts'                => @Mongodb.hosts
+                           }
+                           }
+                           }}
+
+Mobilize::Config.write_from_hash    @mongoid_config_path, @mongoid_config_hash
+Mongoid.load!             @mongoid_config_path, Mobilize.env
+FileUtils.rm              @mongoid_config_path
+rescue                   => exc
+  puts "Unable to load Mongoid with current configs, skipping"
 end
 
 test_dir = "#{Mobilize.root}/test"
@@ -60,6 +95,7 @@ require "#{extensions_dir}/net-ssh"
 
 models_dir = "mobilize/models"
 
+require "#{models_dir}/master"
 require "#{models_dir}/user"
 
 work_dir = "#{models_dir}/work"
@@ -85,9 +121,6 @@ require "#{path_dir}/ssh"
 require "aws"
 amazon_dir = "#{path_dir}/amazon"
 require "#{amazon_dir}/ec2"
-require "#{amazon_dir}/hive"
-require "#{amazon_dir}/rds"
-require "#{amazon_dir}/s3"
 
 require "gmail"
 google_dir = "#{path_dir}/google"
