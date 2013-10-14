@@ -85,6 +85,7 @@ module Mobilize
 
       if @gfile.is_reader?(@user)
          #make sure path exists but dir does not
+         @worker.refresh
          @worker.purge
          #in this case, directory is file name
          @remote.download_to_file   @worker.dir
