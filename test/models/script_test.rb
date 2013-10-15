@@ -9,13 +9,12 @@ class ScriptTest < MiniTest::Unit::TestCase
     @ec2_session               = Mobilize::Ec2.session
     @ec2.find_or_create_instance @ec2_session
     @user                      = @Fixture::User.default
-    @script                    = @Fixture::Script.default
+    @stdin                     = "(echo 'log this to the log' > log) && cmd"
+    @script                    = @Fixture::Script.default(@stdin)
     @script_session            = Mobilize::Script.session
     @job                       = @Fixture::Job.default     @user, @ec2
-    @stage                     = @Fixture::Stage.default   @job, 1, "read"
-    @input_cmd                 = "(echo 'log this to the log' > log) && cmd"
+    @stage                     = @Fixture::Stage.default   @job, 1, "run"
     @script_task               = @Fixture::Task.default    @stage, @script, @script_session,
-                                                           input: @input_cmd,
                                                            subs: {
                                                            cmd: 'pwd'
                                                                        }
@@ -23,9 +22,9 @@ class ScriptTest < MiniTest::Unit::TestCase
 
   def test_run
     @script.run                  @script_task
-    @result                    = @script_task.streams
-    assert_in_delta              @result[:stdin].length,  1, 1000
-    assert_in_delta              @result[:stdout].length, 1, 1000
+    @result                    = @script.streams          @script_task
+    assert_equal                 @result[:stdin],         @stdin.gsub("cmd","pwd")
+    assert_equal                 @result[:stdout],        @script_task.dir
     assert_equal                 @result[:stderr],        ""
     assert_equal                 @result[:exit_signal],   "0"
     assert_equal                 @result[:log],           "log this to the log"

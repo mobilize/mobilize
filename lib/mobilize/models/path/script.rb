@@ -12,7 +12,7 @@ module Mobilize
       @task.refresh_dir
       @stdin_path        = @task.dir + "/stdin"
       @file              = File.open @stdin_path, "w"
-      @file.print          @task.input
+      @file.print          @script.stdin
       @file.close
       Logger.info          "wrote stdin into task dir at #{@stdin_path}"
     end
@@ -24,7 +24,8 @@ module Mobilize
     def run(task)
       @script                 =  self
       @task                   =  task
-      @ssh.write                 @task
+      @script.write              @task
+      @task.gsub!
       #cd to job dir and execute file from there
       @run_cmd                = "(cd #{@task.dir}/ && sh stdin) > " +
                                 "#{@task.dir}/stdout 2> " +
@@ -47,7 +48,7 @@ module Mobilize
       @result               = {}
       @stream_array.each      {|stream|
                                 value           = File.read "#{@task.dir}/#{stream.to_s}"
-                                @result[stream] = value
+                                @result[stream] = value[0..-2] #clip the trailing newline
                               }
 
       return                  @result

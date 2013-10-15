@@ -5,8 +5,8 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     include Mobilize::Work
-    field :input,    type: String #used by run and write tasks to specify input
-    field :subs,     type: Hash   #used by run and write tasks to gsub input
+    field :input,    type: String #used by write tasks to specify input
+    field :subs,     type: Hash   #used by run tasks to sub input
     field :stage_id, type: String #need for id
     field :path_id,  type: String #need for id
     field :_id,      type: String, default:->{"#{stage_id}/#{path_id}"}
@@ -126,20 +126,21 @@ module Mobilize
       return                      @path_dir
     end
 
-    def refresh
+    def refresh_dir
       @task                     = self
       FileUtils.rm_r              @task.dir, force: true
       FileUtils.mkdir_p           @task.dir
       Logger.info                 "Refreshed task dir " + @task.dir
     end
 
-    def purge
+    def purge_dir
       @task                     = self
+      FileUtils.mkdir_p           @task.dir
       FileUtils.rm_r              @task.dir, force: true
       Logger.info                 "Purged task dir "    + @task.dir
     end
 
-    def create
+    def create_dir
       @task                     = self
       FileUtils.mkdir_p           @task.dir
       Logger.info                 "Created task dir "   + @task.dir

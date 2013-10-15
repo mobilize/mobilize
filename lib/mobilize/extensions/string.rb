@@ -62,8 +62,8 @@ class String
   #which are made into underscores
   def alphanunderscore
     str          = self
-    alphanum_str = str.gsub(/[^A-Za-z0-9_\. \/]/,"")
-    under_str    = alphanum_str.gsub(/[ \/\.]/,"_")
+    alphanum_str = str.gsub(/[^A-Za-z0-9_\.@ \/]/,"")
+    under_str    = alphanum_str.gsub(/[ \/\.@]/,"_")
     return         under_str
   end
   def norm_num

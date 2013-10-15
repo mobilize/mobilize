@@ -10,7 +10,7 @@ module Mobilize
     ENV['MOBILIZE_ENV'] || "development"
   end
   def Mobilize.home_dir
-    "~/.mobilize"
+    File.expand_path "~/.mobilize"
   end
   def Mobilize.log_dir
     "#{Mobilize.home_dir}/log"
