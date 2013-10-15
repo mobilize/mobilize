@@ -5,7 +5,7 @@ module Mobilize
     field :stdin,            type: String
     field :task_id,          type: String
     field :name,             type: String, default:->{ stdin.alphanunderscore[0..254] }
-    field :_id,              type: String, default:->{"script/#{name}"}
+    field :_id,              type: String, default:->{"script/#{stdin.to_md5}"}
 
     def write(task)
       @task              = task

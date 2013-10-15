@@ -111,13 +111,18 @@ module Mobilize
 
     def dir
       @task                     = self
-      @dir                      = "#{Job.dir}/#{@task.id}"
+      @path                     = @task.path
+      if @path.class == Script  #scripts use the alphanunderscrore name for the directory
+        @dir                    = "#{Job.dir}/#{@task.stage.id}/script/#{@path.name}"
+      else
+        @dir                    = "#{Job.dir}/#{@task.id}"
+      end
       return                    @dir
     end
 
     def path_dir
       @task                     = self
-      @path_dir               = File.dirname @task.dir
+      @path_dir                 = File.dirname @task.dir
       return                      @path_dir
     end
 

@@ -111,11 +111,11 @@ require "#{path_dir}/github"
 require "resque"
 
 require "popen4"
-require "net/ssh"
-require "net/scp"
-require "#{path_dir}/ssh"
+require "#{path_dir}/script"
 
 require "aws"
+require "net/ssh"
+require "net/scp"
 amazon_dir = "#{path_dir}/amazon"
 require "#{amazon_dir}/ec2"
 

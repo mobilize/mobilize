@@ -12,7 +12,7 @@ class String
     pp self
   end
   def to_md5
-    Digest::MD5.hexdigest(self)
+    Digest::MD5.hexdigest self
   end
   #fires system command with full visibility into stdout and stderr
   #default returns stdout only
@@ -52,26 +52,26 @@ class String
     new_str     = str.clone
     char_string = "[\/^$. |?*+()"
     char_array  = char_string.chars.to_a
-    char_array  .each do |c|
-    new_str     .gsub!(c,"\\#{c}")
+    char_array.each do |c|
+    new_str.gsub! c,"\\#{c}"
     end
-    new_str
+    return        new_str
   end
   #makes everything alphanumeric
   #except spaces, slashes, and underscores
   #which are made into underscores
   def alphanunderscore
     str          = self
-    alphanum_str = str.gsub(/[^A-Za-z0-9_ \/]/,"")
-    under_str    = alphanum_str.gsub(/[ \/]/,"_")
-    return under_str
+    alphanum_str = str.gsub(/[^A-Za-z0-9_\. \/]/,"")
+    under_str    = alphanum_str.gsub(/[ \/\.]/,"_")
+    return         under_str
   end
   def norm_num
     no_commas = self.gsub(",","")
     no_dollar = no_commas.gsub("$","")
     no_pct    = no_dollar.gsub("%","")
     no_spaces = no_pct.gsub(" ","")
-    return no_spaces
+    return      no_spaces
   end
   def is_float?
     return self.norm_num.to_f.to_s == self.norm_num.to_s
