@@ -12,8 +12,6 @@ module Mobilize
     field :_id,      type: String, default:->{"#{stage_id}/#{path_id}"}
     belongs_to :stage
     belongs_to :path
-    has_one :cache
-    has_one :worker
 
     @@config = Mobilize.config("task")
 
@@ -23,28 +21,8 @@ module Mobilize
       self.stage.job
     end
 
-    #assign a cache and worker to task on creation
-    after_create :find_or_create_worker_and_cache
-    def find_or_create_worker_and_cache
-      @task                   = self
-      @task.create_worker       task_id: @task.id
-      Logger.info               "Created worker for #{@task.id}"
-      @task.create_cache        task_id: @task.id
-      Logger.info               "Created cache for #{@task.id}"
-    end
-
     def user
       self.job.user
-    end
-
-    def get_status
-      #try to get status from redis first
-      #then from job
-    end
-
-    def set_status(message)
-      #set status in redis first if possible
-      #then in DB
     end
 
     #gsubs keys in files with the replacement value given
@@ -54,11 +32,11 @@ module Mobilize
       @task.subs.each do |k,v|
         @string1                = Regexp.escape(k.to_s) # escape any special characters
         @string2                = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
-        @replace_cmd            = "cd #{@task.worker.parent_dir} && " +
+        @replace_cmd            = "cd #{@task.dir} && " +
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         @replace_cmd.popen4
-        Logger.info               "Replaced #{@string1} with #{@string2} in #{@task.worker.parent_dir}"
+        Logger.info               "Replaced #{@string1} with #{@string2} in #{@task.dir}"
       end
     end
 
@@ -131,31 +109,35 @@ module Mobilize
       @stage.fail
     end
 
-    #take a task worker
-    #and send it over to cache
-    #to ensure not too many connections are opened
-    def deploy
-      @task                       = self
-      @cache                      = @task.cache
-      @worker                     = @task.worker
-      @cache.refresh
-      @targz_rm_cmd               = "rm #{@worker.dir}.tar.gz"
-      @targz_rm_cmd.popen4(false)
-      Logger.info                   "Starting deploy for #{@task.id}"
-      @task.gsub!
-      @ssh                        = @task.user.ec2.ssh
-      @worker.pack
-      @ssh.cp                       "#{@worker.dir}.tar.gz", "#{@cache.dir}.tar.gz"
-      @targz_rm_cmd.popen4(true)
-      Logger.info                   "Deployed #{@task.id} to cache"
-      @cache.unpack
-      return true
+    def dir
+      @task                     = self
+      @dir                      = "#{Job.dir}/#{@task.id}"
+      return                    @dir
     end
 
-    #returns in, out, err, sig, log
-    def streams
-      @ssh = self.path
-      @ssh.streams(self)
+    def path_dir
+      @task                     = self
+      @path_dir               = File.dirname @task.dir
+      return                      @path_dir
+    end
+
+    def refresh
+      @task                     = self
+      FileUtils.rm_r              @task.dir, force: true
+      FileUtils.mkdir_p           @task.dir
+      Logger.info                 "Refreshed task dir " + @task.dir
+    end
+
+    def purge
+      @task                     = self
+      FileUtils.rm_r              @task.dir, force: true
+      Logger.info                 "Purged task dir "    + @task.dir
+    end
+
+    def create
+      @task                     = self
+      FileUtils.mkdir_p           @task.dir
+      Logger.info                 "Created task dir "   + @task.dir
     end
   end
 end

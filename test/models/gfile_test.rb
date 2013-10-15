@@ -48,9 +48,5 @@ class GfileTest < MiniTest::Unit::TestCase
     @test_output_string              = File.read @gfile_read_task.worker.dir
 
     assert_equal                       @test_input_string, @test_output_string
-
-    @test_cache_output_string        = @ssh.sh("cat #{@gfile_read_task.cache.dir}")[:stdout]
-
-    assert_equal                       @test_input_string, @test_cache_output_string
   end
 end
