@@ -22,11 +22,11 @@ class ScriptTest < MiniTest::Unit::TestCase
 
   def test_run
     @script.run                  @script_task
-    @result                    = @script.streams          @script_task
-    assert_equal                 @result[:stdin],         @stdin.gsub("cmd","pwd")
-    assert_equal                 @result[:stdout],        @script_task.dir
-    assert_equal                 @result[:stderr],        ""
-    assert_equal                 @result[:exit_signal],   "0"
-    assert_equal                 @result[:log],           "log this to the log"
+    @result                    = @script.streams                @script_task
+    assert_equal                 @result[:stdin].strip,         @stdin.gsub("cmd","pwd")
+    assert_equal                 @result[:stdout].strip,        @script_task.dir
+    assert_equal                 @result[:stderr].strip,        ""
+    assert_equal                 @result[:exit_signal].strip,   "0"
+    assert_equal                 @result[:log].strip,           "log this to the log"
   end
 end
