@@ -144,13 +144,13 @@ env:
   - "MOB_GITHUB_OWNER_LOGIN=mobilize"
 #mob_fixture_google_login
   - "MOB_FIXTURE_GOOGLE_EMAIL=mobilize.server@gmail.com"
-#mob_minitest_github_login
+#mob_fixture_github_login
   - "MOB_FIXTURE_GITHUB_LOGIN=mobilize"
-#mob_minitest_github_private_domain
+#mob_fixture_github_private_domain
   - "MOB_FIXTURE_GITHUB_PRIVATE_DOMAIN='github.com'"
-#mob_minitest_github_private_owner
+#mob_fixture_github_private_owner
   - "MOB_FIXTURE_GITHUB_PRIVATE_OWNER='mobilize'"
-#mob_minitest_ec2_worker_name
+#mob_fixture_ec2_worker_name
   - "MOB_FIXTURE_EC2_WORKER_NAME='mobilize-test'"
 #mob_ssh_user_name
   - "MOB_EC2_USER_NAME=ubuntu"
