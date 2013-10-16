@@ -7,7 +7,7 @@ module Mobilize
     field :owner,       type: Array
     field :readers,     type: Array
     field :writers,     type: Array
-    field :_id,         type: String, default:->{"gfile/#{owner.gsub(/[\.@]/,"_")}/#{name}"}
+    field :_id,         type: String, default:->{"gfile/#{owner.alphanunderscore}/#{name}"}
 
     @@config     = Mobilize.config("google")
 
@@ -62,7 +62,7 @@ module Mobilize
         remote.delete
         Logger.info           "Deleted remote #{remote.resource_id} for #{@gfile.id}"
       end
-      @task.worker.purge
+      @task.purge_dir
       @gfile.delete
       Logger.info             "Purged #{@gfile.id} from DB"
       return                  true
@@ -80,18 +80,15 @@ module Mobilize
       @gfile                      = self
       @task                       = task
       @user                       = @task.user
-      @worker                     = @task.worker
       @remote                     = @gfile.sync @task.session
 
       if @gfile.is_reader?(@user)
          #make sure path exists but dir does not
-         @worker.refresh
-         @worker.purge
+         @task.refresh_dir
          #in this case, directory is file name
-         @remote.download_to_file   @worker.dir
+         @remote.download_to_file   "#{@task.dir}/stdout"
          Logger.info                "Downloaded #{@gfile.id} to " +
-                                    "#{@worker.dir}"
-         @task.deploy
+                                    "#{@task.dir}/stdout"
       else
         Logger.error                "User #{@user.id} does not have read access to #{@gfile.id}"
       end
