@@ -98,8 +98,6 @@ module Mobilize
       @task                       = task
       #determine if the user in question is a collaborator on the repo
       @github.verify_collaborator   @task
-      #thus verified, get the ssh key and pull down the repo
-      @github.add_git_file          @task
       #add key, clone repo, go to specific revision, execute command
       @cmd                        = "export GIT_SSH=#{Github.sh_path} && " +
                                     "cd #{@task.path_dir} && " +
