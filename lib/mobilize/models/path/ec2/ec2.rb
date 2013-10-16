@@ -8,18 +8,18 @@ module Mobilize
     field    :size,             type: String, default:->{@@config.size}
     field    :keypair_name,     type: String, default:->{@@config.keypair_name}
     field    :security_groups,  type: Array,  default:->{@@config.security_groups}
-    field    :private_key_path, type: String, default:->{Mobilize.config.ec2.private_key_path}
-    field    :user_name,        type: String, default:->{Mobilize.config.ec2.user_name}
-    field    :home_dir,         type: String, default:->{"/home/#{user_name}"}
     field    :instance_id,      type: String
     field    :dns,              type: String #public dns
     field    :ip,               type: String #private ip
     field    :_id,              type: String, default:->{ name }
     has_many :jobs
+    has_one  :ssh
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
     @@config = Mobilize.config("ec2")
+
+    after_create :create_ssh
 
     def Ec2.session
       access_key_id     = Mobilize.config.aws.access_key_id
@@ -85,16 +85,17 @@ module Mobilize
       return             inst
     end
 
-    def sync(rem_inst)
+    def sync(instance)
+      @instance            = instance
       @ec2                 = self
       @ec2.update_attributes(
-        ami:                 rem_inst[:aws_image_id],
-        size:                rem_inst[:instance_type],
-        keypair_name:        rem_inst[:keypair_name],
-        security_groups:     rem_inst[:group_ids],
-        instance_id:         rem_inst[:aws_instance_id],
-        dns:                 rem_inst[:dns_name],
-        ip:                  rem_inst[:aws_private_ip_address]
+        ami:                 @instance[:aws_image_id],
+        size:                @instance[:instance_type],
+        keypair_name:        @instance[:keypair_name],
+        security_groups:     @instance[:group_ids],
+        instance_id:         @instance[:aws_instance_id],
+        dns:                 @instance[:dns_name],
+        ip:                  @instance[:aws_private_ip_address]
       )
       Logger.info            "synced instance #{@ec2.instance_id} with remote."
       return                 @ec2
@@ -167,39 +168,6 @@ module Mobilize
       #wait around until the instance is running
       @ec2.wait_for_instance        @session
       return                        @ec2.instance(@session)
-    end
-
-    def shell_cmd
-      @ec2                 = self
-      @ssh_cmd             = "ssh -i #{@ec2.private_key_path} #{@ec2.user_name}@#{@ec2.dns}"
-      Logger.info            "Log in with: #{@ssh_cmd}"
-      return true
-    end
-
-    def sh(command,  except =  true)
-      @ec2                  =  self
-      @ssh_args             = {keys: [@ec2.private_key_path],
-                               paranoid: false}
-
-      send_args             = ["start", @ec2.dns, @ec2.user_name, @ssh_args]
-      @result               = Net::SSH.send_w_retries(*send_args) do |ssh|
-                                ssh.run(command, except)
-                              end
-      return                  @result
-    end
-
-    def cp(loc_path, rem_path)
-      @ec2                  = self
-      @ssh_args             = {keys: [@ec2.private_key_path],
-                               paranoid: false}
-      send_args             = ["start",@ec2.dns,@ec2.user_name,@ssh_args]
-
-      @result               = Net::SCP.send_w_retries(*send_args) do |scp|
-                                scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
-                                  Logger.info "#{name}: #{sent}/#{total}"
-                                end
-                              end
-      return                  @result
     end
   end
 end
