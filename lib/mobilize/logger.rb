@@ -29,7 +29,7 @@ module Mobilize
       @log                  = Logger.trace_header(trace,level) + message
       @file_path            = File.expand_path "#{Mobilize.log_dir}/#{Mobilize.env}.log"
       @logger               = ::Logger.new @file_path, "daily"
-      @logger.info(log)
+      @logger.info(@log)
       if level == "ERROR"
         raise @log
       else
