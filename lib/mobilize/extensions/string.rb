@@ -47,6 +47,12 @@ class String
 
     end
   end
+  #returns a shortened version of the string with an ellipsis if appropriate
+  def ellipsize(length, ellipsis="(...)")
+    str               = self
+    ellipsis          = "" unless str.length > length
+    return              str[0..length-1] + " " + ellipsis
+  end
   def escape_regex
     str         = self
     new_str     = str.clone

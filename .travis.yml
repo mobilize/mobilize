@@ -2,21 +2,15 @@ language: ruby
 rvm:
 - 1.9.3
 bundler_args: --without development
-services:
-- mongodb
-- redis-server
 gemfile:
 - Gemfile
 script: rake install && 
-  mob decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
-  mob decode -p 'ec2_ssh_' -l 23 -f ec2_ssh_test.ssh && chmod 0400 ec2_ssh_test.ssh && 
+  mob test decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
+  mob test decode -p 'ec2_ssh_' -l 23 -f ec2_ssh_test.ssh && chmod 0400 ec2_ssh_test.ssh && 
   export MOB_EC2_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
   export MOB_FIXTURE_EC2_PRIVATE_KEY_PATH="$MOB_EC2_PRIVATE_KEY_PATH" && 
   export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && 
   rake test
-notifications:
-  recipients:
-  - mobilize.server@gmail.com
 branches:
   only:
   - master

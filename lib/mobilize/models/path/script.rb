@@ -43,7 +43,7 @@ module Mobilize
     def streams(task)
       @script               = self
       @task                 = task
-      @stream_array         = [:stdin,:stdout,:stderr,:exit_signal,:log]
+      @stream_array         = [:stdin, :stdout, :stderr, :exit_signal, :log]
 
       @result               = {}
       @stream_array.each      {|stream|

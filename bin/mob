@@ -1,15 +1,11 @@
 #!/usr/bin/env ruby
 
-def set_env
-  env = ARGV[1] || "development"
-  ENV['MOBILIZE_ENV'] ||= env
-end
-
-cmd = ARGV[0]
+env = ARGV[0]
+cmd = ARGV[1]
+ENV['MOBILIZE_ENV'] ||= env
 options={}
 
 if ['c','console'].include?(cmd)
-  set_env
   require 'mobilize'
   Mobilize.console
 elsif cmd == 'decode'
@@ -19,7 +15,6 @@ elsif cmd == 'configure'
   require "mobilize"
   Mobilize::Cli.configure(ARGV)
 elsif cmd == 'resque'
-  set_env
   require 'mobilize'
   Mobilize::Cli.resque(ARGV)
 elsif cmd =='root'

@@ -9,7 +9,9 @@ module Mobilize
     field :name,                type: String, default:->{"#{domain}/#{owner_name}/#{repo_name}"}
     field :_id,                 type: String, default:->{"github/#{name}"}
 
-    @@config = Mobilize.config("github")
+    @@config                  = Mobilize.config("github")
+
+    def Github.sh_path;         Mobilize.home_dir + "/keys/git.sh"; end
 
     def Github.session
       @session                = ::Github.new login:    @@config.owner_login,
@@ -98,40 +100,13 @@ module Mobilize
       @github.verify_collaborator   @task
       #thus verified, get the ssh key and pull down the repo
       @github.add_git_file          @task
-      #add keys, clone repo, go to specific revision, execute command
-      @cmd                        = "export GIT_SSH=#{@github.git_ssh_file_path(@task)} && " +
+      #add key, clone repo, go to specific revision, execute command
+      @cmd                        = "export GIT_SSH=#{Github.sh_path} && " +
                                     "cd #{@task.path_dir} && " +
                                     "git clone -q git@#{@github.name.sub("/",":")}.git --depth=1"
       @cmd.popen4(true)
-      @github.remove_git_files      @task
       Logger.info                   "Read private git repo #{@github._id}"
       return                        true
-    end
-
-    def git_ssh_file_path(task)
-      "#{task.path_dir}/git.ssh"
-    end
-
-    def add_git_file(task)
-      @github                 = self
-      @task                   = task
-      #set git to not check strict host
-      @git_ssh_cmd            = "#!/bin/sh\nexec /usr/bin/ssh " +
-                                "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
-                                "-i #{@@config.owner_ssh_key_path} \"$@\""
-
-      @file                   = File.open @github.git_ssh_file_path(@task),"w"
-      @file.print               @git_ssh_cmd
-      @file.close
-
-      @chmod_cmd              = "chmod 0700 #{@github.git_ssh_file_path(@task)}"
-      @chmod_cmd.popen4
-      Logger.info               "Added git files for repo #{@github._id}"
-      return                    true
-    end
-
-    def remove_git_files(task)
-      FileUtils.rm              self.git_ssh_file_path(task), force: true
     end
   end
 end
