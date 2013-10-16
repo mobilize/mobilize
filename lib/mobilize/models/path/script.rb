@@ -35,7 +35,7 @@ module Mobilize
       @run_cmd.popen4
 
       @streams                =  @script.streams @task
-      if                         @streams[:exit_signal] != "0"
+      if                         @streams[:exit_signal].strip != "0"
         Logger.error             @streams[:stderr]
       end
     end
@@ -48,7 +48,7 @@ module Mobilize
       @result               = {}
       @stream_array.each      {|stream|
                                 value           = File.read "#{@task.dir}/#{stream.to_s}"
-                                @result[stream] = value[0..-2] #clip the trailing newline
+                                @result[stream] = value
                               }
 
       return                  @result
