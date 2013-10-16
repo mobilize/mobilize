@@ -18,27 +18,23 @@ module Mobilize
       return                  @ljusted_response
     end
     def Logger.info(message,object=nil)
-      @caller               = caller(1)
-      @log                  = Logger.trace_header(@caller,"INFO") + message
-      Logger.write           @log
-      puts                   @log
+      @trace               = caller(1)
+      Logger.write           message, "INFO", @trace
     end
     def Logger.error(message,object=nil)
-      @caller               = caller(1)
-      @log                  = Logger.trace_header(@caller,"ERROR") + message
-      Logger.write            @log
-      raise                   @log
+      @trace                = caller(1)
+      Logger.write            message, "ERROR", @trace
     end
-    def Logger.stat(message,object=nil)
-      @caller               = caller(1)
-      @log                  = Logger.trace_header(@caller,"STAT") + message
-      Logger.write            @log
-      puts                    @log
-    end
-    def Logger.write(log)
+    def Logger.write(message,level,trace)
+      @log                  = Logger.trace_header(trace,level) + message
       @file_path            = File.expand_path "#{Mobilize.log_dir}/#{Mobilize.env}.log"
       @logger               = ::Logger.new @file_path, "daily"
       @logger.info(log)
+      if level == "ERROR"
+        raise @log
+      else
+        puts  @log
+      end
     end
   end
 end
