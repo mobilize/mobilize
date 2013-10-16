@@ -10,7 +10,7 @@ Mongoid.purge!
 require               "./test/fixtures/ec2"
 require               "./test/fixtures/github"
 require               "./test/fixtures/gfile"
-require               "./test/fixtures/ssh"
+require               "./test/fixtures/script"
 require               "./test/fixtures/user"
 require               "./test/fixtures/job"
 require               "./test/fixtures/stage"

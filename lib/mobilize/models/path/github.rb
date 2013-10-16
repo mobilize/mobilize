@@ -48,12 +48,10 @@ module Mobilize
     #clones repo into worker with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
-    #deploys to ssh cache on completion
     def read(task)
       @github                = self
       @task                  = task
-      @task.worker.refresh
-      @task.worker.purge
+      @task.purge_dir
       begin
         Logger.info            "attempting public read for #{@github.id}"
         @github.read_public    @task
@@ -62,18 +60,17 @@ module Mobilize
         @github.read_private   @task
       end
       #get size of objects and log
-      @log_cmd               = "cd #{@task.worker.dir} && git count-objects -H"
+      @log_cmd               = "cd #{@task.dir} && git count-objects -H"
       @size                  = @log_cmd.popen4
-      Logger.info              "Read #{@github.id} into #{@task.worker.dir}: #{@size}"
+      Logger.info              "Read #{@github.id} into #{@task.dir}: #{@size}"
       #deploy github repo
-      @task.deploy
       return                   true
     end
 
     def read_public(task)
       @github                = self
       @task                  = task
-      @cmd                   = "cd #{@task.worker.parent_dir} && " +
+      @cmd                   = "cd #{@task.path_dir} && " +
                                "git clone -q https://u:p@#{@github.name}.git --depth=1"
       @cmd.popen4(true)
       Logger.info              "Read complete: #{@github._id}"
@@ -103,7 +100,7 @@ module Mobilize
       @github.add_git_file          @task
       #add keys, clone repo, go to specific revision, execute command
       @cmd                        = "export GIT_SSH=#{@github.git_ssh_file_path(@task)} && " +
-                                    "cd #{@task.worker.parent_dir} && " +
+                                    "cd #{@task.path_dir} && " +
                                     "git clone -q git@#{@github.name.sub("/",":")}.git --depth=1"
       @cmd.popen4(true)
       @github.remove_git_files      @task
@@ -112,7 +109,7 @@ module Mobilize
     end
 
     def git_ssh_file_path(task)
-      "#{task.worker.parent_dir}/git.ssh"
+      "#{task.path_dir}/git.ssh"
     end
 
     def add_git_file(task)
