@@ -3,17 +3,19 @@ module Mobilize
   class Ec2
     include Mongoid::Document
     include Mongoid::Timestamps
-    field :name,            type: String #name tag on the ec2 instance
-    field :ami,             type: String, default:->{@@config.ami}
-    field :size,            type: String, default:->{@@config.size}
-    field :keypair_name,    type: String, default:->{@@config.keypair_name}
-    field :security_groups, type: Array,  default:->{@@config.security_groups}
-    field :instance_id,     type: String
-    field :dns,             type: String #public dns
-    field :ip,              type: String #private ip
-    field :_id,             type: String, default:->{ name }
-    has_one :ssh
-    has_many :users
+    field    :name,             type: String #name tag on the ec2 instance
+    field    :ami,              type: String, default:->{@@config.ami}
+    field    :size,             type: String, default:->{@@config.size}
+    field    :keypair_name,     type: String, default:->{@@config.keypair_name}
+    field    :security_groups,  type: Array,  default:->{@@config.security_groups}
+    field    :private_key_path, type: String, default:->{Mobilize.config.ec2.private_key_path}
+    field    :user_name,        type: String, default:->{Mobilize.config.ec2.user_name}
+    field    :home_dir,         type: String, default:->{"/home/#{user_name}"}
+    field    :instance_id,      type: String
+    field    :dns,              type: String #public dns
+    field    :ip,               type: String #private ip
+    field    :_id,              type: String, default:->{ name }
+    has_many :jobs
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
@@ -165,6 +167,39 @@ module Mobilize
       #wait around until the instance is running
       @ec2.wait_for_instance        @session
       return                        @ec2.instance(@session)
+    end
+
+    def shell_cmd
+      @ec2                 = self
+      @ssh_cmd             = "ssh -i #{@ec2.private_key_path} #{@ec2.user_name}@#{@ec2.dns}"
+      Logger.info            "Log in with: #{@ssh_cmd}"
+      return true
+    end
+
+    def sh(command,  except =  true)
+      @ec2                  =  self
+      @ssh_args             = {keys: [@ec2.private_key_path],
+                               paranoid: false}
+
+      send_args             = ["start", @ec2.dns, @ec2.user_name, @ssh_args]
+      @result               = Net::SSH.send_w_retries(*send_args) do |ssh|
+                                ssh.run(command, except)
+                              end
+      return                  @result
+    end
+
+    def cp(loc_path, rem_path)
+      @ec2                  = self
+      @ssh_args             = {keys: [@ec2.private_key_path],
+                               paranoid: false}
+      send_args             = ["start",@ec2.dns,@ec2.user_name,@ssh_args]
+
+      @result               = Net::SCP.send_w_retries(*send_args) do |scp|
+                                scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
+                                  Logger.info "#{name}: #{sent}/#{total}"
+                                end
+                              end
+      return                  @result
     end
   end
 end

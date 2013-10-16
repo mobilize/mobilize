@@ -8,6 +8,7 @@ module Mobilize
     field :user_id,          type: String
     field :_id,              type: String, default:->{"#{user_id}/#{name}"}
     belongs_to :user
+    belongs_to :ec2
     has_one :trigger
     has_many :stages
     has_many :tasks

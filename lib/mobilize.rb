@@ -10,7 +10,7 @@ module Mobilize
     ENV['MOBILIZE_ENV'] || "development"
   end
   def Mobilize.home_dir
-    "~/.mobilize"
+    File.expand_path "~/.mobilize"
   end
   def Mobilize.log_dir
     "#{Mobilize.home_dir}/log"
@@ -102,8 +102,7 @@ require "#{work_dir}/job"
 require "#{work_dir}/trigger"
 require "#{work_dir}/stage"
 require "#{work_dir}/task"
-require "#{work_dir}/task/cache"
-require "#{work_dir}/task/worker"
+require "#{work_dir}/worker"
 
 path_dir = "#{models_dir}/path"
 require "#{path_dir}/path"
@@ -112,11 +111,11 @@ require "#{path_dir}/github"
 require "resque"
 
 require "popen4"
-require "net/ssh"
-require "net/scp"
-require "#{path_dir}/ssh"
+require "#{path_dir}/script"
 
 require "aws"
+require "net/ssh"
+require "net/scp"
 amazon_dir = "#{path_dir}/amazon"
 require "#{amazon_dir}/ec2"
 
