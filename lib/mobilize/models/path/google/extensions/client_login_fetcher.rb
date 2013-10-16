@@ -7,7 +7,6 @@ module GoogleDrive
       @timeout                    = Mobilize.config.google.api.timeout
       @response                   = nil
       @current_retries            = 0
-      @log_length                 = Mobilize.config.google.api.response_log_length
       @identifier                 = "Google API #{method.to_s} #{extra_header.to_s}"
       @success                    = false
       while                         @success == false
@@ -69,10 +68,8 @@ module GoogleDrive
       @identifier, @response, @status,
       @current_retries, @time           = identifier, response, status, current_retries, time
       @total_retries                    = Mobilize.config.google.api.total_retries
-      @log_length                       = Mobilize.config.google.api.response_log_length
-      @ellipsis                         = @log_length < @response.body.length ? "(...)" : ""
       @message                          = "#{@identifier} #{@status} with " +
-                                          "#{@response.body[0..@log_length]}#{@ellipsis};"
+                                          "#{@response.body.ellipsize(25)};"
       @message                         += if @current_retries > 0
                                             " retry #{@current_retries.to_s} of #{@total_retries.to_s}" +
                                             " in #{@time.to_s}"

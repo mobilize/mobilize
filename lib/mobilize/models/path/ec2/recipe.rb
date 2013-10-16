@@ -20,7 +20,7 @@ module Mobilize
     def write_mobrc
       @ssh                  = self
 
-      @mobrc_path           = @ssh.home_dir + "/.mobilize/mobrc"
+      @mobrc_path           = @ssh.mobilize_dir + "/mobrc"
 
       @mob_envs             = ENV.select{|env|
                                           env.key.starts_with? "MOB"}
@@ -32,12 +32,15 @@ module Mobilize
       @ssh.write              @mobrc_string, @mobrc_path
       return true
     end
+    def upload_keys
+      @ssh.cp Config.key_dir, @ssh.key_dir
+    end
     def install_mobilize
       @ssh.ec2.find_or_create_instance Ec2.session
       @ssh.install_rvm
       @ssh.install_git
       @ssh.write_mobrc
-      @ssh.write_keys
+      @ssh.upload_keys
     end
   end
 end

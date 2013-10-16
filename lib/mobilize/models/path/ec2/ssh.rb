@@ -7,7 +7,12 @@ module Mobilize
     field      :home_dir,         type: String, default:->{"/home/#{user_name}"}
     belongs_to :ec2
 
+    def mobilize_dir;             "#{self.home_dir}/.mobilize";end
+
+    def key_dir;                  "#{self.mobilize_dir}/keys";end
+
     def Ssh.private_key_path;     "#{Mobilize.home_dir}/keys/ec2.ssh"; end #created during configuration
+
 
     def shell_cmd
       @ssh                      = self
@@ -29,17 +34,19 @@ module Mobilize
     end
 
     def cp(loc_path, rem_path)
-      @ssh                      = self
-      @ssh_args                 = {keys: [@ssh.private_key_path],
-                                   paranoid: false}
-      send_args                 = ["start",@ssh.dns,@ssh.user_name,@ssh_args]
+      @ssh, @loc_path, @rem_path = self, loc_path, rem_path
 
-      @result                   = Net::SCP.send_w_retries(*send_args) do |scp|
-                                    scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
-                                      Logger.info "#{name}: #{sent}/#{total}"
-                                    end
-                                  end
-      return                      @result
+      @ssh.sh                      "mkdir -p " + File.dirname(@rem_path)
+      @ssh_args                  = {keys: [Ssh.private_key_path],
+                                    paranoid: false}
+      send_args                  = ["start",@ssh.dns,@ssh.user_name,@ssh_args]
+
+      @result                    = Net::SCP.send_w_retries(*send_args) do |scp|
+                                     scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
+                                       Logger.info "#{name}: #{sent}/#{total}"
+                                     end
+                                   end
+      return                       @result
     end
 
     def write(string, rem_path)
@@ -49,10 +56,9 @@ module Mobilize
       begin
         @file.write               @string
         @file.close
-        @ssh.sh                   "mkdir -p " + File.dirname(@rem_path)
         @ssh.cp                   @file.path, @rem_path
       ensure
-        @file.close
+        @file.close unless @file.closed?
         @file.unlink
       end
       Logger.info                 "Wrote string #{@string.ellipsize(10)} to #{@ssh.id}:#{@rem_path}"

@@ -121,9 +121,10 @@ require "#{ec2_dir}/recipe"
 require "#{ec2_dir}/ssh"
 require "#{ec2_dir}/engine"
 
-unless File.exists? Mobilize::Github.sh_path and 
+unless File.exists? Mobilize::Github.sh_path and
        File.exists? Mobilize::Ssh.private_key_path
-  Mobilize::Config.write_key_files
+
+       Mobilize::Config.write_key_files
 end
 
 require "gmail"

@@ -2,10 +2,8 @@ require "settingslogic"
 require 'fileutils'
 module Mobilize
   class Config < Settingslogic
-    @@dir                     = File.dirname File.expand_path(__FILE__)
-    def Config.dir;             @@dir;end
-    @@path                    = "#{@@dir}/mob.yml"
-    def Config.path;            @@path;end
+    def Config.dir;             File.dirname File.expand_path(__FILE__);end
+    def Config.path;            "#{Config.dir}/mob.yml";end
 
     #load settingslogic
     source Config.path
