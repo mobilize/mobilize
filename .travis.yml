@@ -155,6 +155,6 @@ env:
 #mob_ssh_user_name
   - "MOB_EC2_USER_NAME=ubuntu"
 #mob_minitest_ssh_user_name
-  - "MOB_FIXTURE_SSH_USER_NAME=ubuntu"
+  - "MOB_FIXTURE_EC2_USER_NAME=ubuntu"
 #mobilize_env
   - "MOBILIZE_ENV=test"
