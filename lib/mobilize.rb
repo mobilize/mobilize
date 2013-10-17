@@ -32,11 +32,7 @@ Mobilize::Config.write_from_sample "mob.yml"
 
 module Mobilize
   def Mobilize.config(model=nil)
-    @@config ||= begin
-                   Config.new
-                 rescue => exc
-                   puts exc.to_s, exc.backtrace
-                 end
+    @@config ||= Config.new
     if @@config
       model ? @@config.send(model) : @@config
     end
