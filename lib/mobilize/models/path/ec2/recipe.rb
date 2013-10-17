@@ -38,8 +38,16 @@ module Mobilize
     end
     def clone_mobilize
       @ssh                   = self
-      @clone_cmd             = "git clone http://u:p@github.com/mobilize/mobilize.git"
-      @ssh.sh                  @clone_cmd
+      @ssh.install             "git clone http://u:p@github.com/mobilize/mobilize.git",
+                               "Cloning Mobilize on #{@ssh.ec2.id}"
+    end
+    def install_redis_server
+      @ssh                   = self
+      @ssh.install             "sudo apt-get -y redis-server",
+                               "Installing redis-server on #{@ssh.ec2.id}"
+      #installation starts redis-server for some reason
+      @ssh.sh                  "ps aux | grep redis-server | awk '{print $2}' | (sudo xargs kill)"
+      return true
     end
     def install_mobilize_gem
       @ssh                   = self
@@ -52,9 +60,17 @@ module Mobilize
       @ssh.ec2.find_or_create_instance Ec2.session
       @ssh.install_rvm
       @ssh.install_git
+      @ssh.install_redis_server
       @ssh.write_mobrc
       @ssh.upload_keys
       @ssh.install_mobilize_gem
+    end
+    def start_engine
+      @ssh                          = self
+      @ssh.install_mobilize
+      @ssh.write_resque_pool
+      @ssh.write_god_file
+      @ssh
     end
   end
 end

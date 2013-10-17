@@ -114,7 +114,6 @@ ec2_dir = "#{path_dir}/ec2"
 require "#{ec2_dir}/ec2"
 require "#{ec2_dir}/recipe"
 require "#{ec2_dir}/ssh"
-require "#{ec2_dir}/engine"
 require "#{ec2_dir}/extensions/net-ssh.rb"
 
 unless File.exists? Mobilize::Github.sh_path and
