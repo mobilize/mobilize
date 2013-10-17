@@ -29,10 +29,9 @@ test:
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
-  ssh:
+  box:
     user_name: 'ubuntu'
     private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
-  box:
     keypair_name: mobilize
     region: 'us-west-1'
     ami: 'ami-fe002cbb'
@@ -146,10 +145,9 @@ staging:
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
-  ssh:
+  box:
     user_name: 'ubuntu'
     private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
-  box:
     keypair_name: mobilize
     region: 'us-west-1'
     ami: 'ami-fe002cbb'
@@ -192,10 +190,9 @@ production:
   aws:
     access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
-  ssh:
+  box:
     user_name: 'ubuntu'
     private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
-  box:
     keypair_name: mobilize
     region: 'us-west-1'
     ami: 'ami-fe002cbb'

@@ -15,16 +15,10 @@ module Mobilize
     field    :ip,               type: String #private ip
     field    :_id,              type: String, default:->{ name }
     has_many :jobs
-    has_one  :ssh
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
     @@config = Mobilize.config("box")
-
-    after_create :find_or_create_ssh
-    def find_or_create_ssh
-      self.create_ssh box_id: self.id
-    end
 
     def Box.session
       access_key_id     = Mobilize.config.aws.access_key_id

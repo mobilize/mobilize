@@ -1,7 +1,5 @@
 module Mobilize
   module Ssh
-    include Mongoid::Document
-    include Mongoid::Timestamps
     extend ActiveSupport::Concern
     included do
       field      :user_name,        type: String, default:->{Mobilize.config.box.user_name}
@@ -14,7 +12,7 @@ module Mobilize
 
     def key_dir;                  "#{self.mobilize_dir}/keys";end
 
-    def Box.private_key_path;     "#{Mobilize.home_dir}/keys/box.ssh"; end #created during configuration
+    def self.private_key_path;     "#{Mobilize.home_dir}/keys/box.ssh"; end #created during configuration
 
 
     def ssh_cmd
