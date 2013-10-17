@@ -5,12 +5,12 @@ class GithubTest < MiniTest::Unit::TestCase
     Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
     @github_public             = @Fixture::Github.public
-    @worker_name               = Mobilize.config.fixture.ec2.worker_name
-    @ec2                       = @Fixture::Ec2.default      @worker_name
-    @ec2.find_or_create_instance Mobilize::Ec2.session
+    @worker_name               = Mobilize.config.fixture.box.worker_name
+    @box                       = @Fixture::Box.default      @worker_name
+    @box.find_or_create_instance Mobilize::Box.session
     @user                      = @Fixture::User.default
     @github_private            = @Fixture::Github.private
-    @job                       = @Fixture::Job.default      @user, @ec2
+    @job                       = @Fixture::Job.default      @user, @box
     @stage                     = @Fixture::Stage.default    @job,  1,  "read"
     #assign same session to both githubs
     @github_session            = Mobilize::Github.session

@@ -51,16 +51,16 @@ module Mobilize
     end
     def Config.write_key_files
       FileUtils.mkdir_p            Config.key_dir
-      Config.write_ec2_file     if Mobilize.config.ssh.private_key_path
+      Config.write_box_file     if Mobilize.config.box.private_key_path
       Config.write_git_files    if Mobilize.config.github.owner_ssh_key_path
       return true
     end
-    def Config.write_ec2_file
-      @ec2_ssh_path           = "#{Config.key_dir}/ec2.ssh"
-      FileUtils.cp              Mobilize.config.ssh.private_key_path,
-                                @ec2_ssh_path
-      FileUtils.chmod           0700, @ec2_ssh_path
-      Logger.info               "Wrote ec2 ssh file"
+    def Config.write_box_file
+      @box_ssh_path           = "#{Config.key_dir}/box.ssh"
+      FileUtils.cp              Mobilize.config.box.private_key_path,
+                                @box_ssh_path
+      FileUtils.chmod           0700, @box_ssh_path
+      Logger.info               "Wrote box ssh file"
     end
     def Config.write_git_files
       @git_ssh_path           = "#{Config.key_dir}/git.ssh"

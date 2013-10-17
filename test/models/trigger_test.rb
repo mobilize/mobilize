@@ -3,13 +3,13 @@ class TriggerTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     Mobilize::Job.purge!
-    @worker_name               = Mobilize.config.fixture.ec2.worker_name
-    @ec2                       = Mobilize::Fixture::Ec2.default     @worker_name
-    @ec2_session               = Mobilize::Ec2.session
-    @ec2.find_or_create_instance @ec2_session
+    @worker_name               = Mobilize.config.fixture.box.worker_name
+    @box                       = Mobilize::Fixture::Box.default     @worker_name
+    @box_session               = Mobilize::Box.session
+    @box.find_or_create_instance @box_session
     @user                      = Mobilize::Fixture::User.default
-    @job                       = Mobilize::Fixture::Job.default     @user, @ec2
-    @parent_job                = Mobilize::Fixture::Job.parent      @user, @ec2
+    @job                       = Mobilize::Fixture::Job.default     @user, @box
+    @parent_job                = Mobilize::Fixture::Job.parent      @user, @box
   end
 
   def test_tripped
@@ -18,13 +18,13 @@ class TriggerTest < MiniTest::Unit::TestCase
     @trip_methods.each        { |trip_method|
       if                         trip_method.to_s.index("parent")
         @parent_job.delete
-        @parent_job            = Mobilize::Fixture::Job.parent @user, @ec2
+        @parent_job            = Mobilize::Fixture::Job.parent @user, @box
         @job.delete
-        @job                   = Mobilize::Fixture::Job.default @user, @ec2
+        @job                   = Mobilize::Fixture::Job.default @user, @box
         @expected              = Mobilize::Fixture::Trigger.send(trip_method, @job, @parent_job)
       else
         @job.delete
-        @job                   = Mobilize::Fixture::Job.default @user, @ec2
+        @job                   = Mobilize::Fixture::Job.default @user, @box
         @expected              = Mobilize::Fixture::Trigger.send(trip_method, @job)
       end
       Mobilize::Logger.info      "Checking Trigger #{trip_method.to_s}"

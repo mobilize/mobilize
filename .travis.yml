@@ -10,8 +10,8 @@ gemfile:
 script: rake install && 
   mob test decode -p 'git_ssh_' -l 22 -f git_ssh_test.ssh && chmod 0400 git_ssh_test.ssh && 
   mob test decode -p 'ec2_ssh_' -l 23 -f ec2_ssh_test.ssh && chmod 0400 ec2_ssh_test.ssh && 
-  export MOB_EC2_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
-  export MOB_FIXTURE_EC2_PRIVATE_KEY_PATH="$MOB_EC2_PRIVATE_KEY_PATH" && 
+  export MOB_BOX_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh_test.ssh" && 
+  export MOB_FIXTURE_BOX_PRIVATE_KEY_PATH="$MOB_BOX_PRIVATE_KEY_PATH" && 
   export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh_test.ssh" && 
   rake test
 branches:
@@ -148,10 +148,10 @@ env:
 #mob_fixture_github_private_owner
   - "MOB_FIXTURE_GITHUB_PRIVATE_OWNER='mobilize'"
 #mob_fixture_ec2_worker_name
-  - "MOB_FIXTURE_EC2_WORKER_NAME='mobilize-test'"
+  - "MOB_FIXTURE_BOX_WORKER_NAME='mobilize-test'"
 #mob_ssh_user_name
-  - "MOB_EC2_USER_NAME=ubuntu"
+  - "MOB_BOX_USER_NAME=ubuntu"
 #mob_minitest_ssh_user_name
-  - "MOB_FIXTURE_EC2_USER_NAME=ubuntu"
+  - "MOB_FIXTURE_BOX_USER_NAME=ubuntu"
 #mobilize_env
   - "MOBILIZE_ENV=test"

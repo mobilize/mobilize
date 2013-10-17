@@ -86,11 +86,11 @@ module Mobilize
       Mobilize::Logger.info             "god load #{Mobilize.root}/config/#{@god_file}".popen4
     end
 
-    def Cli.ec2(args,options={})
+    def Cli.box(args,options={})
       @args, @options                 = args, options
       @opt_parser                     = OptionParser.new do |opts|
         @opts                         = opts
-        @opts.banner                  = "Usage: mob <env> ec2 [-n --name NAME] [-r --recipe RECIPE] [-p --purge] [-c --create]"
+        @opts.banner                  = "Usage: mob <env> box [-n --name NAME] [-r --recipe RECIPE] [-p --purge] [-c --create]"
 
         name_args                     = ["-n", "--name NAME", "name of node"]
         @opts.on(*name_args)          { |name| @options[:name] = name }
@@ -108,18 +108,18 @@ module Mobilize
       @opt_parser.parse!                @args
 
       if @options[:purge]
-        @ec2                                      = Mobilize::Ec2.find_or_create_by_name @options[:name]
-        @ec2.purge!                                 Ec2.session
+        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
+        @box.purge!                                 Box.session
       end
 
       if @options[:create]
-        @ec2                                      = Mobilize::Ec2.find_or_create_by_name @options[:name]
-        @ec2.find_or_create_instance                Ec2.session
+        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
+        @box.find_or_create_instance                Box.session
       end
 
       if @options[:recipe]
-        @ec2                                      = Mobilize::Ec2.find_or_create_by_name @options[:name]
-        @ec2.ssh.send @options[:recipe]
+        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
+        @box.send @options[:recipe]
       end
     end
   end

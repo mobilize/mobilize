@@ -110,11 +110,11 @@ require "#{path_dir}/script"
 require "aws"
 require "net/ssh"
 require "net/scp"
-ec2_dir = "#{path_dir}/ec2"
-require "#{ec2_dir}/ec2"
-require "#{ec2_dir}/recipe"
-require "#{ec2_dir}/ssh"
-require "#{ec2_dir}/extensions/net-ssh.rb"
+box_dir = "#{path_dir}/box"
+require "#{box_dir}/box"
+require "#{box_dir}/recipe"
+require "#{box_dir}/ssh"
+require "#{box_dir}/extensions/net-ssh.rb"
 
 unless File.exists? Mobilize::Github.sh_path and
        File.exists? Mobilize::Ssh.private_key_path

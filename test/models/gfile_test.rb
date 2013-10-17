@@ -5,13 +5,13 @@ class GfileTest < MiniTest::Unit::TestCase
     Mobilize::Job.purge!
     @Fixture                            = Mobilize::Fixture
     @gfile                              = @Fixture::Gfile.default
-    @worker_name                        = Mobilize.config.fixture.ec2.worker_name
-    @ec2                                = @Fixture::Ec2.default      @worker_name
-    @ec2.find_or_create_instance          Mobilize::Ec2.session
+    @worker_name                        = Mobilize.config.fixture.box.worker_name
+    @box                                = @Fixture::Box.default      @worker_name
+    @box.find_or_create_instance          Mobilize::Box.session
     @script                             = @Fixture::Script.default   "print test_file_string"
     @script_session                     = Mobilize::Script.session
     @user                               = @Fixture::User.default
-    @job                                = @Fixture::Job.default      @user, @ec2
+    @job                                = @Fixture::Job.default      @user, @box
     @gfile_session                      = Mobilize::Gfile.session
     @stage01                            = @Fixture::Stage.default    @job, 1, "run"
     @stage02                            = @Fixture::Stage.default    @job, 2, "write"
