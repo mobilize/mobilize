@@ -2,6 +2,9 @@ language: ruby
 rvm:
 - 1.9.3
 bundler_args: --without development
+services:
+- mongodb
+- redis-server
 gemfile:
 - Gemfile
 script: rake install && 
