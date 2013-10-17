@@ -62,7 +62,7 @@ module Mobilize
         @github.read_private   @task
       end
       #get size of objects and log
-      @log_cmd               = "cd #{@task.dir} && git count-objects -H"
+      @log_cmd               = "cd #{@task.dir} && git count-objects -v"
       @size                  = @log_cmd.popen4
       Logger.info              "Read #{@github.id} into #{@task.dir}: #{@size}"
       #deploy github repo

@@ -2,8 +2,7 @@ require "settingslogic"
 require 'fileutils'
 module Mobilize
   class Config < Settingslogic
-    def Config.dir;                File.dirname File.expand_path(__FILE__); end
-    def Config.path;               "#{Config.dir}/mob.yml";                 end
+    def Config.path;               "#{Mobilize.home_dir}/config/config.yml";end
     def Config.key_dir;            "#{Mobilize.home_dir}/keys";             end
 
     #load settingslogic
@@ -23,12 +22,10 @@ module Mobilize
     #creates symlink in config/
     def Config.write_from_sample(file_name, force = nil)
       @file_name              = file_name
-      @abs_home_dir           = File.expand_path Mobilize.home_dir
-      @source_path            = "#{Config.dir}/../samples/#{@file_name}"
-      @config_path            = "#{Config.dir}/#{@file_name}"
-      @target_path            = "#{@abs_home_dir}/#{@file_name}"
+      @source_path            = "#{Mobilize.root}/samples/#{@file_name}"
+      @target_path            = "#{Mobilize.home_dir}/config/#{@file_name}"
 
-      FileUtils.mkdir_p         @abs_home_dir
+      FileUtils.mkdir_p         File.dirname @target_path
 
       @force_write            = (File.exists?(@target_path) and force == true)
       if                        @force_write or !File.exists?(@target_path)
@@ -36,10 +33,6 @@ module Mobilize
         FileUtils.ln_s          @target_path, @config_path, force: true
         Mobilize::Logger.info   "Wrote default to #{@target_path}, " +
                                 "please add environment variables accordingly"
-      end
-
-      if                        !File.exists?(@config_path)
-        FileUtils.ln_s          @target_path, @config_path, force: true
       end
     end
     #loads rc file from home directory if present
@@ -57,7 +50,7 @@ module Mobilize
       end
     end
     def Config.write_key_files
-      FileUtils.mkdir_p         Config.key_dir
+      FileUtils.mkdir_p            Config.key_dir
       Config.write_ec2_file     if Mobilize.config.ssh.private_key_path
       Config.write_git_files    if Mobilize.config.github.owner_ssh_key_path
       return true

@@ -37,8 +37,15 @@ module Mobilize
       @ssh.cp   Config.key_dir, @ssh.key_dir
     end
     def clone_mobilize
-      @ssh    = self
-      @ssh.sh   ""
+      @ssh                   = self
+      @clone_cmd             = "git clone http://u:p@github.com/mobilize/mobilize.git"
+      @ssh.sh                  @clone_cmd
+    end
+    def install_mobilize_gem
+      @ssh                   = self
+      @ssh.clone_mobilize
+      @install_cmd           = "bash -l -c 'cd mobilize && bundle install && rake install'"
+      @ssh.sh                  @install_cmd
     end
     def install_mobilize
       @ssh                           = self
@@ -47,8 +54,7 @@ module Mobilize
       @ssh.install_git
       @ssh.write_mobrc
       @ssh.upload_keys
-      @ssh.clone_mobilize
-      @ssh.rake_install
+      @ssh.install_mobilize_gem
     end
   end
 end

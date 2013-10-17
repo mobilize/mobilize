@@ -18,19 +18,20 @@ module Mobilize
 
     def shell_cmd
       @ssh                      = self
-      @ssh_cmd                  = "ssh -i #{Ssh.private_key_path} #{@ssh.user_name}@#{@ssh.ec2.dns}"
-      Logger.info                 "Log in with: #{@ssh_cmd}"
-      return                      true
+      @ssh_cmd                  = "ssh -i #{Ssh.private_key_path} " +
+                                  "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
+                                  "#{@ssh.user_name}@#{@ssh.ec2.dns}"
+      return                      @ssh_cmd
     end
 
-    def sh(command,  except     = true)
+    def sh(command,  except = true, streams=[:stdout, :stderr])
       @ssh                      = self
       @ssh_args                 = {keys: [Ssh.private_key_path],
                                    paranoid: false}
 
       send_args                 = ["start", @ssh.ec2.dns, @ssh.user_name, @ssh_args]
       @result                   = Net::SSH.send_w_retries(*send_args) do |ssh|
-                                    ssh.run(command, except)
+                                    ssh.run(command, except, streams)
                                   end
       return                      @result
     end

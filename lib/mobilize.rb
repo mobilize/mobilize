@@ -26,9 +26,9 @@ require "logger"
 require "mobilize/logger"
 
 #write sample config files if not available
-require "#{Mobilize.root}/config/config"
+require "config"
 Mobilize::Config.load_rc
-Mobilize::Config.write_from_sample "mob.yml"
+Mobilize::Config.write_from_sample "config.yml"
 
 module Mobilize
   def Mobilize.config(model=nil)
@@ -84,7 +84,6 @@ extensions_dir = "mobilize/extensions"
 require "#{extensions_dir}/object"
 require "#{extensions_dir}/string"
 require "#{extensions_dir}/yaml"
-require "#{extensions_dir}/net-ssh"
 
 models_dir = "mobilize/models"
 
@@ -116,6 +115,7 @@ require "#{ec2_dir}/ec2"
 require "#{ec2_dir}/recipe"
 require "#{ec2_dir}/ssh"
 require "#{ec2_dir}/engine"
+require "#{ec2_dir}/extensions/net-ssh.rb"
 
 unless File.exists? Mobilize::Github.sh_path and
        File.exists? Mobilize::Ssh.private_key_path

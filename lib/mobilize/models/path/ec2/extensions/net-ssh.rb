@@ -6,7 +6,7 @@ module Net
     module Connection
       class Session
         #except=true means exception will be raised on exit_code != 0
-        def run(command, except=true)
+        def run(command, except=true, streams=[ :stdout, :stderr ])
           @ssh                                   = self
           @stdout_data, @stderr_data             = [""]*2
           @exit_code, @exit_signal               = []
@@ -14,14 +14,16 @@ module Net
 
             channel.exec(command)               do |ch, success|
               unless                                success
-                abort                               "FAILED: couldn't execute command (ssh.channel.exec)"
+                Mobilize::Logger.error          "FAILED: couldn't execute command (ssh.channel.exec)"
               end
               channel.on_data                   do |ch_d,data|
                 @stdout_data                    += data
+                Mobilize::Logger.info(          "stdout: #{data}")  if streams.include?(:stdout)
               end
 
               channel.on_extended_data          do |ch_ed,type,data|
                 @stderr_data                    += data
+                Mobilize::Logger.info(          "stderr: #{data}") if streams.include?(:stderr)
               end
 
               channel.on_request("exit-status") do |ch_exst,data|

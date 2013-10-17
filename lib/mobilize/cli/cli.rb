@@ -70,6 +70,10 @@ module Mobilize
       end
     end
 
+    def Cli.console(args)
+      Mobilize.console
+    end
+
     def Cli.god
       @god_file                       = "resque-pool-#{Mobilize.env}.rb"
       @pool_file                      = "resque-pool.yml"
