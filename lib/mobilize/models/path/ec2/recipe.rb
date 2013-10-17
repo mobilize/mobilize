@@ -26,7 +26,7 @@ module Mobilize
                                           key.starts_with? "MOB"}
 
       @mobrc_string         = @mob_envs.map{|key,value|
-                                            %{export #{key}="#{value}"}
+                                            %{export #{key}=#{value}}
                                            }.join("\n")
 
       @ssh.write              @mobrc_string, @mobrc_path
@@ -36,6 +36,10 @@ module Mobilize
       @ssh    = self
       @ssh.cp   Config.key_dir, @ssh.key_dir
     end
+    def clone_mobilize
+      @ssh    = self
+      @ssh.sh   ""
+    end
     def install_mobilize
       @ssh                           = self
       @ssh.ec2.find_or_create_instance Ec2.session
@@ -43,6 +47,8 @@ module Mobilize
       @ssh.install_git
       @ssh.write_mobrc
       @ssh.upload_keys
+      @ssh.clone_mobilize
+      @ssh.rake_install
     end
   end
 end
