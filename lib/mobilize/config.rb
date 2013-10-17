@@ -2,9 +2,9 @@ require "settingslogic"
 require 'fileutils'
 module Mobilize
   class Config < Settingslogic
-    def Config.dir;                File.dirname File.expand_path(__FILE__); end
-    def Config.path;               "#{Config.dir}/mob.yml";                 end
-    def Config.key_dir;            "#{Mobilize.home_dir}/keys";             end
+    def Config.dir;                "#{Mobilize.home_dir}/config";end
+    def Config.path;               "#{Config.dir}/config.yml";end
+    def Config.key_dir;            "#{Mobilize.home_dir}/keys";end
 
     #load settingslogic
     source Config.path
@@ -23,28 +23,21 @@ module Mobilize
     #creates symlink in config/
     def Config.write_from_sample(file_name, force = nil)
       @file_name              = file_name
-      @abs_home_dir           = File.expand_path Mobilize.home_dir
-      @source_path            = "#{Config.dir}/../samples/#{@file_name}"
-      @config_path            = "#{Config.dir}/#{@file_name}"
-      @target_path            = "#{@abs_home_dir}/#{@file_name}"
+      @source_path            = "#{Mobilize.root}/samples/#{@file_name}"
+      @target_path            = "#{Config.dir}/#{@file_name}"
 
-      FileUtils.mkdir_p         @abs_home_dir
+      FileUtils.mkdir_p         File.dirname @target_path
 
       @force_write            = (File.exists?(@target_path) and force == true)
       if                        @force_write or !File.exists?(@target_path)
         FileUtils.cp            @source_path, @target_path
-        FileUtils.ln_s          @target_path, @config_path, force: true
         Mobilize::Logger.info   "Wrote default to #{@target_path}, " +
                                 "please add environment variables accordingly"
-      end
-
-      if                        !File.exists?(@config_path)
-        FileUtils.ln_s          @target_path, @config_path, force: true
       end
     end
     #loads rc file from home directory if present
     def Config.load_rc
-      env_file                    = "#{Mobilize.home_dir}/mobrc"
+      env_file                    = "#{Config.dir}/mobrc"
       if File.exists?               env_file
         env_vars                  = File.readlines env_file
         env_vars.each             do |env_var|
@@ -57,17 +50,17 @@ module Mobilize
       end
     end
     def Config.write_key_files
-      FileUtils.mkdir_p         Config.key_dir
-      Config.write_ec2_file     if Mobilize.config.ssh.private_key_path
+      FileUtils.mkdir_p            Config.key_dir
+      Config.write_box_file     if Mobilize.config.box.private_key_path
       Config.write_git_files    if Mobilize.config.github.owner_ssh_key_path
       return true
     end
-    def Config.write_ec2_file
-      @ec2_ssh_path           = "#{Config.key_dir}/ec2.ssh"
-      FileUtils.cp              Mobilize.config.ssh.private_key_path,
-                                @ec2_ssh_path
-      FileUtils.chmod           0700, @ec2_ssh_path
-      Logger.info               "Wrote ec2 ssh file"
+    def Config.write_box_file
+      @box_ssh_path           = "#{Config.key_dir}/box.ssh"
+      FileUtils.cp              Mobilize.config.box.private_key_path,
+                                @box_ssh_path
+      FileUtils.chmod           0700, @box_ssh_path
+      Logger.info               "Wrote box ssh file"
     end
     def Config.write_git_files
       @git_ssh_path           = "#{Config.key_dir}/git.ssh"

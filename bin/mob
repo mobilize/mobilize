@@ -5,19 +5,5 @@ cmd = ARGV[1]
 ENV['MOBILIZE_ENV'] ||= env
 options={}
 
-if ['c','console'].include?(cmd)
-  require 'mobilize'
-  Mobilize.console
-elsif cmd == 'decode'
-  require 'mobilize'
-  Mobilize::Cli.decode(ARGV)
-elsif cmd == 'configure'
-  require "mobilize"
-  Mobilize::Cli.configure(ARGV)
-elsif cmd == 'resque'
-  require 'mobilize'
-  Mobilize::Cli.resque(ARGV)
-elsif cmd =='root'
-  require 'mobilize'
-  puts Mobilize.root
-end
+require 'mobilize'
+Mobilize::Cli.send cmd, ARGV

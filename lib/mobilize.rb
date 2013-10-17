@@ -26,13 +26,13 @@ require "logger"
 require "mobilize/logger"
 
 #write sample config files if not available
-require "#{Mobilize.root}/config/config"
+require "mobilize/config"
 Mobilize::Config.load_rc
-Mobilize::Config.write_from_sample "mob.yml"
+Mobilize::Config.write_from_sample "config.yml"
 
 module Mobilize
   def Mobilize.config(model=nil)
-    @@config ||= Config.new
+    @@config ||= Mobilize::Config.new
     if @@config
       model ? @@config.send(model) : @@config
     end
@@ -53,7 +53,7 @@ require "#{cli_dir}/cli"
 require 'pry'
 
 require 'mongoid'
-@mongoid_config_path     = "#{Mobilize.root}/config/mongoid.yml"
+@mongoid_config_path     = "#{Mobilize::Config.dir}/mongoid.yml"
 begin
   @Mongodb               = Mobilize.config.mongodb
 
@@ -65,7 +65,7 @@ begin
                              'password'             => @Mongodb.password,
                              'database'             => @Mongodb.database,
                              'persist_in_safe_mode' => true,
-                             'hosts'                => @Mongodb.hosts
+                             'hosts'                => @Mongodb.hosts.split(",")
                            }
                            }
                            }}
@@ -74,7 +74,7 @@ Mobilize::Config.write_from_hash    @mongoid_config_path, @mongoid_config_hash
 Mongoid.load!                       @mongoid_config_path, Mobilize.env
 FileUtils.rm                        @mongoid_config_path
 rescue                           => exc
-  puts "Unable to load Mongoid with current configs, skipping"
+  puts "Unable to load Mongoid with current configs: #{exc.to_s}"
 end
 
 test_dir = "#{Mobilize.root}/test"
@@ -84,7 +84,6 @@ extensions_dir = "mobilize/extensions"
 require "#{extensions_dir}/object"
 require "#{extensions_dir}/string"
 require "#{extensions_dir}/yaml"
-require "#{extensions_dir}/net-ssh"
 
 models_dir = "mobilize/models"
 
@@ -111,11 +110,11 @@ require "#{path_dir}/script"
 require "aws"
 require "net/ssh"
 require "net/scp"
-ec2_dir = "#{path_dir}/ec2"
-require "#{ec2_dir}/ec2"
-require "#{ec2_dir}/recipe"
-require "#{ec2_dir}/ssh"
-require "#{ec2_dir}/engine"
+box_dir = "#{models_dir}/box"
+require "#{box_dir}/recipe"
+require "#{box_dir}/ssh"
+require "#{box_dir}/box"
+require "#{box_dir}/extensions/net-ssh.rb"
 
 unless File.exists? Mobilize::Github.sh_path and
        File.exists? Mobilize::Ssh.private_key_path

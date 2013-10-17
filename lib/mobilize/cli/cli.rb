@@ -70,6 +70,10 @@ module Mobilize
       end
     end
 
+    def Cli.console(args)
+      Mobilize.console
+    end
+
     def Cli.god
       @god_file                       = "resque-pool-#{Mobilize.env}.rb"
       @pool_file                      = "resque-pool.yml"
@@ -80,6 +84,43 @@ module Mobilize
 
       Mobilize::Logger.info             "god".popen4
       Mobilize::Logger.info             "god load #{Mobilize.root}/config/#{@god_file}".popen4
+    end
+
+    def Cli.box(args,options={})
+      @args, @options                 = args, options
+      @opt_parser                     = OptionParser.new do |opts|
+        @opts                         = opts
+        @opts.banner                  = "Usage: mob <env> box [-n --name NAME] [-r --recipe RECIPE] [-p --purge] [-c --create]"
+
+        name_args                     = ["-n", "--name NAME", "name of node"]
+        @opts.on(*name_args)          { |name| @options[:name] = name }
+
+        recipe_args                   = ["-r", "--recipe RECIPE", "execute RECIPE on given node"]
+        @opts.on(*recipe_args)        { |recipe| @options[:recipe] = recipe }
+
+        purge_args                    = ["-p", "--purge", "purge instance if existing"]
+        @opts.on(*purge_args)         { |purge| @options[:purge] = true }
+
+        create_args                   = ["-c", "--create", "create instance"]
+        @opts.on(*create_args)        { |create| @options[:create] = true }
+
+      end
+      @opt_parser.parse!                @args
+
+      if @options[:purge]
+        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
+        @box.purge!                                 Box.session
+      end
+
+      if @options[:create]
+        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
+        @box.find_or_create_instance                Box.session
+      end
+
+      if @options[:recipe]
+        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
+        @box.send @options[:recipe]
+      end
     end
   end
 end

@@ -1,9 +1,11 @@
 module Mobilize
-  #an Ec2 resolves to an ec2 instance
-  class Ec2
+  #a Box resolves to an ec2 instance
+  class Box
     include Mongoid::Document
     include Mongoid::Timestamps
-    field    :name,             type: String #name tag on the ec2 instance
+    include Mobilize::Ssh
+    include Mobilize::Recipe
+    field    :name,             type: String
     field    :ami,              type: String, default:->{@@config.ami}
     field    :size,             type: String, default:->{@@config.size}
     field    :keypair_name,     type: String, default:->{@@config.keypair_name}
@@ -13,18 +15,12 @@ module Mobilize
     field    :ip,               type: String #private ip
     field    :_id,              type: String, default:->{ name }
     has_many :jobs
-    has_one  :ssh
 
     index({dns: 1}, {unique: true, name: "dns_index"})
 
-    @@config = Mobilize.config("ec2")
+    @@config = Mobilize.config("box")
 
-    after_create :find_or_create_ssh
-    def find_or_create_ssh
-      self.create_ssh ec2_id: self.id
-    end
-
-    def Ec2.session
+    def Box.session
       access_key_id     = Mobilize.config.aws.access_key_id
       secret_access_key = Mobilize.config.aws.secret_access_key
       region            = @@config.region
@@ -33,18 +29,18 @@ module Mobilize
       return              @session
     end
 
-    def Ec2.instances(session, params=nil)
+    def Box.instances(session, params=nil)
       params          ||= {aws_state: ['running','pending']}
       @session          = session
       all_insts         = @session.describe_instances.map{|i| i.with_indifferent_access}
-      filtered_insts    = Ec2.filter_instances(all_insts,params)
+      filtered_insts    = Box.filter_instances(all_insts,params)
       Logger.info         "got #{filtered_insts.length.to_s} " +
                           "instances for #{@session.params[:region]}, " +
                           "params: #{params.to_s}"
       return              filtered_insts
     end
 
-    def Ec2.filter_instances(all_insts,params=nil)
+    def Box.filter_instances(all_insts,params=nil)
       params         ||= {aws_state: ['running','pending']}
       #check for params that match inside the selected instances
       all_insts.select do |i|
@@ -53,45 +49,45 @@ module Mobilize
       end
     end
 
-    def Ec2.instances_by_name(name,session,params=nil)
+    def Box.instances_by_name(name,session,params=nil)
       params         ||= {aws_state: ['running','pending']}
       @session         = session
-      insts            = Ec2.instances(@session).select{|i| i[:tags][:name] == name}
+      insts            = Box.instances(@session).select{|i| i[:tags][:name] == name}
       Logger.info        "found #{insts.length.to_s} instances by name #{name}"
       return             insts
     end
 
     def find_or_create_instance(session)
-      @ec2             = self
+      @box             = self
       @session         = session
       begin
         #check for an instance_id assigned, so verify and
         #update w any changes
-        return           @ec2.instance(@session) if @ec2.instance_id
+        return           @box.instance(@session) if @box.instance_id
       rescue
         #go ahead and create an instance if it turns out this ID is wrong
       end
       #create an instance based on current parameters
-      return             @ec2.create_instance(@session)
+      return             @box.create_instance(@session)
     end
 
     #find instance by ID, update DB record with latest from AWS
     def instance(session)
-      @ec2             = self
+      @box             = self
       @session         = session
-      params           = {aws_instance_id: @ec2.instance_id,
+      params           = {aws_instance_id: @box.instance_id,
                           aws_state:       ['running','pending']
                          }
-      inst             = Ec2.instances(@session,params).first
-      inst             = @ec2.create_instance(@session) if inst.nil?
-      @ec2.sync          inst
+      inst             = Box.instances(@session,params).first
+      inst             = @box.create_instance(@session) if inst.nil?
+      @box.sync          inst
       return             inst
     end
 
     def sync(instance)
       @instance            = instance
-      @ec2                 = self
-      @ec2.update_attributes(
+      @box                 = self
+      @box.update_attributes(
         ami:                 @instance[:aws_image_id],
         size:                @instance[:instance_type],
         keypair_name:        @instance[:keypair_name],
@@ -100,51 +96,51 @@ module Mobilize
         dns:                 @instance[:dns_name],
         ip:                  @instance[:aws_private_ip_address]
       )
-      Logger.info            "synced instance #{@ec2.instance_id} with remote."
-      return                 @ec2
+      Logger.info            "synced instance #{@box.instance_id} with remote."
+      return                 @box
     end
 
     def purge!(session)
       #terminates the remote instance then
       #deletes the local database instance
-      @ec2                         = self
+      @box                         = self
       @session                     = session
       #terminate instances by name
-      insts                        = Ec2.instances_by_name(@ec2.name,@session)
+      insts                        = Box.instances_by_name(@box.name,@session)
 
       insts.each do |i|
         @session.terminate_instances [i[:aws_instance_id]]
         Logger.info                  "Terminated instance #{i[:aws_instance_id]}"
       end
 
-      @ec2.delete
-      Logger.info                    "Purged #{@ec2.id} from DB"
+      @box.delete
+      Logger.info                    "Purged #{@box.id} from DB"
       return                         true
     end
 
     def launch(session)
-      @ec2                        = self
+      @box                        = self
       @session                    = session
-      inst_params = {key_name:      @ec2.keypair_name,
-                     group_ids:     @ec2.security_groups,
-                     instance_type: @ec2.size}
+      inst_params = {key_name:      @box.keypair_name,
+                     group_ids:     @box.security_groups,
+                     instance_type: @box.size}
 
-      inst                        = @session.launch_instances(@ec2.ami, inst_params).first
-      @session.create_tag           inst[:aws_instance_id], "name", @ec2.name
+      inst                        = @session.launch_instances(@box.ami, inst_params).first
+      @session.create_tag           inst[:aws_instance_id], "name", @box.name
       return                        inst
     end
 
     def resolve_instance(session)
-      @ec2                        = self
+      @box                        = self
       @session                    = session
-      insts                       = Ec2.instances_by_name(@ec2.name,@session)
+      insts                       = Box.instances_by_name(@box.name,@session)
 
       if                            insts.length>1
         Logger.error                "You have more than 1 running instance named " +
-                                    "#{@ec2.name} -- please investigate your configuration"
+                                    "#{@box.name} -- please investigate your configuration"
       elsif                         insts.length == 1
         inst                      = insts.first
-        Logger.info                 "Instance #{inst[:aws_instance_id]} found, assigning to #{@ec2.name}"
+        Logger.info                 "Instance #{inst[:aws_instance_id]} found, assigning to #{@box.name}"
       elsif                         insts.empty?
         inst                      = nil
       end
@@ -153,24 +149,24 @@ module Mobilize
     end
 
     def wait_for_instance(session)
-      @ec2                        = self
+      @box                        = self
       @session                    = session
-      state                       = @ec2.instance(@session)[:aws_state]
+      state                       = @box.instance(@session)[:aws_state]
       while                         state != "running"
-        Logger.info                 "Instance #{@ec2.instance_id} still at #{state} -- waiting 10 sec"
+        Logger.info                 "Instance #{@box.instance_id} still at #{state} -- waiting 10 sec"
         sleep                       10
-        state                     = @ec2.instance(@session)[:aws_state]
+        state                     = @box.instance(@session)[:aws_state]
       end
     end
 
     def create_instance(session)
-      @ec2                        = self
+      @box                        = self
       @session                    = session
-      inst                        = @ec2.resolve_instance(@session) || @ec2.launch(@session)
-      @ec2.sync                     inst
+      inst                        = @box.resolve_instance(@session) || @box.launch(@session)
+      @box.sync                     inst
       #wait around until the instance is running
-      @ec2.wait_for_instance        @session
-      return                        @ec2.instance(@session)
+      @box.wait_for_instance        @session
+      return                        @box.instance(@session)
     end
   end
 end
