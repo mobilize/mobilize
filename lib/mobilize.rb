@@ -32,11 +32,7 @@ Mobilize::Config.write_from_sample "mob.yml"
 
 module Mobilize
   def Mobilize.config(model=nil)
-    @@config ||= begin
-                   Config.new
-                 rescue
-                   nil
-                 end
+    @@config ||= Config.new
     if @@config
       model ? @@config.send(model) : @@config
     end
@@ -75,9 +71,9 @@ begin
                            }}
 
 Mobilize::Config.write_from_hash    @mongoid_config_path, @mongoid_config_hash
-Mongoid.load!             @mongoid_config_path, Mobilize.env
-FileUtils.rm              @mongoid_config_path
-rescue                   => exc
+Mongoid.load!                       @mongoid_config_path, Mobilize.env
+FileUtils.rm                        @mongoid_config_path
+rescue                           => exc
   puts "Unable to load Mongoid with current configs, skipping"
 end
 
