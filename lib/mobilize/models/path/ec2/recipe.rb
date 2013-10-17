@@ -22,8 +22,8 @@ module Mobilize
 
       @mobrc_path           = @ssh.mobilize_dir + "/mobrc"
 
-      @mob_envs             = ENV.select{|env|
-                                          env.key.starts_with? "MOB"}
+      @mob_envs             = ENV.select{|key,value|
+                                          key.starts_with? "MOB"}
 
       @mobrc_string         = @mob_envs.map{|key,value|
                                             %{export #{key}="#{value}"}
@@ -33,9 +33,11 @@ module Mobilize
       return true
     end
     def upload_keys
-      @ssh.cp Config.key_dir, @ssh.key_dir
+      @ssh    = self
+      @ssh.cp   Config.key_dir, @ssh.key_dir
     end
     def install_mobilize
+      @ssh                           = self
       @ssh.ec2.find_or_create_instance Ec2.session
       @ssh.install_rvm
       @ssh.install_git

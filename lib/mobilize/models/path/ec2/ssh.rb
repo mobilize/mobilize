@@ -5,6 +5,8 @@ module Mobilize
     include Mobilize::Recipe
     field      :user_name,        type: String, default:->{Mobilize.config.ssh.user_name}
     field      :home_dir,         type: String, default:->{"/home/#{user_name}"}
+    field      :ec2_id,           type: String
+    field      :_id,              type: String, default:->{ec2_id + ".ssh"}
     belongs_to :ec2
 
     def mobilize_dir;             "#{self.home_dir}/.mobilize";end
@@ -16,7 +18,7 @@ module Mobilize
 
     def shell_cmd
       @ssh                      = self
-      @ssh_cmd                  = "ssh -i #{Ssh.private_key_path} #{@ssh.user_name}@#{@ssh.dns}"
+      @ssh_cmd                  = "ssh -i #{Ssh.private_key_path} #{@ssh.user_name}@#{@ssh.ec2.dns}"
       Logger.info                 "Log in with: #{@ssh_cmd}"
       return                      true
     end
@@ -26,7 +28,7 @@ module Mobilize
       @ssh_args                 = {keys: [Ssh.private_key_path],
                                    paranoid: false}
 
-      send_args                 = ["start", @ssh.dns, @ssh.user_name, @ssh_args]
+      send_args                 = ["start", @ssh.ec2.dns, @ssh.user_name, @ssh_args]
       @result                   = Net::SSH.send_w_retries(*send_args) do |ssh|
                                     ssh.run(command, except)
                                   end
@@ -39,10 +41,10 @@ module Mobilize
       @ssh.sh                      "mkdir -p " + File.dirname(@rem_path)
       @ssh_args                  = {keys: [Ssh.private_key_path],
                                     paranoid: false}
-      send_args                  = ["start",@ssh.dns,@ssh.user_name,@ssh_args]
+      send_args                  = ["start",@ssh.ec2.dns,@ssh.user_name,@ssh_args]
 
       @result                    = Net::SCP.send_w_retries(*send_args) do |scp|
-                                     scp.upload!(loc_path,rem_path) do |ch, name, sent, total|
+                                     scp.upload!(loc_path,rem_path, recursive: true) do |ch, name, sent, total|
                                        Logger.info "#{name}: #{sent}/#{total}"
                                      end
                                    end

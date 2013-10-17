@@ -19,7 +19,10 @@ module Mobilize
 
     @@config = Mobilize.config("ec2")
 
-    after_create :create_ssh
+    after_create :find_or_create_ssh
+    def find_or_create_ssh
+      self.create_ssh ec2_id: self.id
+    end
 
     def Ec2.session
       access_key_id     = Mobilize.config.aws.access_key_id

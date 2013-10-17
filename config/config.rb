@@ -2,8 +2,9 @@ require "settingslogic"
 require 'fileutils'
 module Mobilize
   class Config < Settingslogic
-    def Config.dir;             File.dirname File.expand_path(__FILE__);end
-    def Config.path;            "#{Config.dir}/mob.yml";end
+    def Config.dir;                File.dirname File.expand_path(__FILE__); end
+    def Config.path;               "#{Config.dir}/mob.yml";                 end
+    def Config.key_dir;            "#{Mobilize.home_dir}/keys";             end
 
     #load settingslogic
     source Config.path
@@ -56,26 +57,25 @@ module Mobilize
       end
     end
     def Config.write_key_files
-      @key_dir                = "#{Mobilize.home_dir}/keys"
-      FileUtils.mkdir_p         @key_dir
+      FileUtils.mkdir_p         Config.key_dir
       Config.write_ec2_file
       Config.write_git_files
       return true
     end
     def Config.write_ec2_file
-      @ec2_ssh_path           = "#{Mobilize.home_dir}/keys/ec2.ssh"
+      @ec2_ssh_path           = "#{Config.key_dir}/ec2.ssh"
       FileUtils.cp              Mobilize.config.ssh.private_key_path,
                                 @ec2_ssh_path
       FileUtils.chmod           0700, @ec2_ssh_path
       Logger.info               "Wrote ec2 ssh file"
     end
     def Config.write_git_files
-      @git_ssh_path           = "#{Mobilize.home_dir}/keys/git.ssh"
+      @git_ssh_path           = "#{Config.key_dir}/git.ssh"
       FileUtils.cp              Mobilize.config.github.owner_ssh_key_path,
                                 @git_ssh_path
 
       #set git to not check strict host
-      @git_sh_path           = "#{Mobilize.home_dir}/keys/git.sh"
+      @git_sh_path           = "#{Config.key_dir}/git.sh"
       @git_sh_cmd            = "#!/bin/sh\nexec /usr/bin/ssh " +
                                 "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
                                 "-i #{@git_ssh_path} \"$@\""
