@@ -5,6 +5,9 @@ bundler_args: --without development
 services:
 - mongodb
 - redis-server
+notifications:
+  recipients:
+  - mobilize.server@gmail.com
 gemfile:
 - Gemfile
 script: rake install && 
