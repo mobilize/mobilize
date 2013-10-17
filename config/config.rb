@@ -59,7 +59,7 @@ module Mobilize
     def Config.write_key_files
       FileUtils.mkdir_p         Config.key_dir
       Config.write_ec2_file     if Mobilize.config.ssh.private_key_path
-      Config.write_git_files    if Mobilize.config.ssh.github.owner_ssh_key_path
+      Config.write_git_files    if Mobilize.config.github.owner_ssh_key_path
       return true
     end
     def Config.write_ec2_file
