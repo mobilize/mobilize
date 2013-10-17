@@ -44,6 +44,7 @@ test:
       total_retries: 5
       sleep_time: 1
       timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
@@ -112,6 +113,7 @@ development:
       total_retries: 5
       sleep_time: 1
       timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
@@ -161,6 +163,7 @@ staging:
       total_retries: 5
       sleep_time: 1
       timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
@@ -207,6 +210,7 @@ production:
       total_retries: 5
       sleep_time: 1
       timeout: 600
+      response_log_length: 25
     owner:
       email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>

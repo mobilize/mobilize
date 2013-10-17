@@ -34,8 +34,8 @@ module Mobilize
   def Mobilize.config(model=nil)
     @@config ||= begin
                    Config.new
-                 rescue
-                   nil
+                 rescue => exc
+                   puts exc.to_s, exc.backtrace
                  end
     if @@config
       model ? @@config.send(model) : @@config
