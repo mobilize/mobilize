@@ -2,10 +2,9 @@ require "settingslogic"
 require 'fileutils'
 module Mobilize
   class Config < Settingslogic
-    @@dir                     = File.dirname File.expand_path(__FILE__)
-    def Config.dir;             @@dir;end
-    @@path                    = "#{@@dir}/mob.yml"
-    def Config.path;            @@path;end
+    def Config.dir;                File.dirname File.expand_path(__FILE__); end
+    def Config.path;               "#{Config.dir}/mob.yml";                 end
+    def Config.key_dir;            "#{Mobilize.home_dir}/keys";             end
 
     #load settingslogic
     source Config.path
@@ -42,6 +41,50 @@ module Mobilize
       if                        !File.exists?(@config_path)
         FileUtils.ln_s          @target_path, @config_path, force: true
       end
+    end
+    #loads rc file from home directory if present
+    def Config.load_rc
+      env_file                    = "#{Mobilize.home_dir}/mobrc"
+      if File.exists?               env_file
+        env_vars                  = File.readlines env_file
+        env_vars.each             do |env_var|
+          export_key,value          = env_var.split("=")
+          if export_key[0..5]      == "export"
+            key                     = export_key.split(" ").last
+            ENV[key]                = value.strip
+          end
+        end
+      end
+    end
+    def Config.write_key_files
+      FileUtils.mkdir_p         Config.key_dir
+      Config.write_ec2_file
+      Config.write_git_files
+      return true
+    end
+    def Config.write_ec2_file
+      @ec2_ssh_path           = "#{Config.key_dir}/ec2.ssh"
+      FileUtils.cp              Mobilize.config.ssh.private_key_path,
+                                @ec2_ssh_path
+      FileUtils.chmod           0700, @ec2_ssh_path
+      Logger.info               "Wrote ec2 ssh file"
+    end
+    def Config.write_git_files
+      @git_ssh_path           = "#{Config.key_dir}/git.ssh"
+      FileUtils.cp              Mobilize.config.github.owner_ssh_key_path,
+                                @git_ssh_path
+
+      #set git to not check strict host
+      @git_sh_path           = "#{Config.key_dir}/git.sh"
+      @git_sh_cmd            = "#!/bin/sh\nexec /usr/bin/ssh " +
+                                "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
+                                "-i #{@git_ssh_path} \"$@\""
+
+      File.write                @git_sh_path, @git_sh_cmd
+
+      FileUtils.chmod           0700, [@git_sh_path, @git_ssh_path]
+      Logger.info               "Wrote git ssh files"
+      return                    true
     end
   end
 end

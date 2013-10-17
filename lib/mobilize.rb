@@ -6,7 +6,6 @@ module Mobilize
     File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/.."
   end
   def Mobilize.env
-    #use MOBILIZE_ENV to manually set your environment when you start your app
     ENV['MOBILIZE_ENV'] || "development"
   end
   def Mobilize.home_dir
@@ -28,8 +27,8 @@ require "mobilize/logger"
 
 #write sample config files if not available
 require "#{Mobilize.root}/config/config"
-@config_files = ["mob.yml"]
-@config_files.each{|file_name| Mobilize::Config.write_from_sample file_name }
+Mobilize::Config.load_rc
+Mobilize::Config.write_from_sample "mob.yml"
 
 module Mobilize
   def Mobilize.config(model=nil)
@@ -118,7 +117,15 @@ require "net/ssh"
 require "net/scp"
 ec2_dir = "#{path_dir}/ec2"
 require "#{ec2_dir}/ec2"
+require "#{ec2_dir}/recipe"
 require "#{ec2_dir}/ssh"
+require "#{ec2_dir}/engine"
+
+unless File.exists? Mobilize::Github.sh_path and
+       File.exists? Mobilize::Ssh.private_key_path
+
+       Mobilize::Config.write_key_files
+end
 
 require "gmail"
 google_dir = "#{path_dir}/google"
