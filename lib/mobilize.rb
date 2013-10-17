@@ -71,9 +71,9 @@ begin
                            }}
 
 Mobilize::Config.write_from_hash    @mongoid_config_path, @mongoid_config_hash
-Mongoid.load!             @mongoid_config_path, Mobilize.env
-FileUtils.rm              @mongoid_config_path
-rescue                   => exc
+Mongoid.load!                       @mongoid_config_path, Mobilize.env
+FileUtils.rm                        @mongoid_config_path
+rescue                           => exc
   puts "Unable to load Mongoid with current configs, skipping"
 end
 
