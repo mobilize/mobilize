@@ -26,7 +26,7 @@ require "logger"
 require "mobilize/logger"
 
 #write sample config files if not available
-require "config"
+require "mobilize/config"
 Mobilize::Config.load_rc
 Mobilize::Config.write_from_sample "config.yml"
 
@@ -53,7 +53,7 @@ require "#{cli_dir}/cli"
 require 'pry'
 
 require 'mongoid'
-@mongoid_config_path     = "#{Mobilize.root}/config/mongoid.yml"
+@mongoid_config_path     = "#{Mobilize::Config.dir}/mongoid.yml"
 begin
   @Mongodb               = Mobilize.config.mongodb
 
@@ -65,7 +65,7 @@ begin
                              'password'             => @Mongodb.password,
                              'database'             => @Mongodb.database,
                              'persist_in_safe_mode' => true,
-                             'hosts'                => @Mongodb.hosts
+                             'hosts'                => @Mongodb.hosts.split(",")
                            }
                            }
                            }}
@@ -74,7 +74,7 @@ Mobilize::Config.write_from_hash    @mongoid_config_path, @mongoid_config_hash
 Mongoid.load!                       @mongoid_config_path, Mobilize.env
 FileUtils.rm                        @mongoid_config_path
 rescue                           => exc
-  puts "Unable to load Mongoid with current configs, skipping"
+  puts "Unable to load Mongoid with current configs: #{exc.to_s}"
 end
 
 test_dir = "#{Mobilize.root}/test"

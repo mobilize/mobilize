@@ -2,8 +2,9 @@ require "settingslogic"
 require 'fileutils'
 module Mobilize
   class Config < Settingslogic
-    def Config.path;               "#{Mobilize.home_dir}/config/config.yml";end
-    def Config.key_dir;            "#{Mobilize.home_dir}/keys";             end
+    def Config.dir;                "#{Mobilize.home_dir}/config";end
+    def Config.path;               "#{Config.dir}/config.yml";end
+    def Config.key_dir;            "#{Mobilize.home_dir}/keys";end
 
     #load settingslogic
     source Config.path
@@ -23,21 +24,20 @@ module Mobilize
     def Config.write_from_sample(file_name, force = nil)
       @file_name              = file_name
       @source_path            = "#{Mobilize.root}/samples/#{@file_name}"
-      @target_path            = "#{Mobilize.home_dir}/config/#{@file_name}"
+      @target_path            = "#{Config.dir}/#{@file_name}"
 
       FileUtils.mkdir_p         File.dirname @target_path
 
       @force_write            = (File.exists?(@target_path) and force == true)
       if                        @force_write or !File.exists?(@target_path)
         FileUtils.cp            @source_path, @target_path
-        FileUtils.ln_s          @target_path, @config_path, force: true
         Mobilize::Logger.info   "Wrote default to #{@target_path}, " +
                                 "please add environment variables accordingly"
       end
     end
     #loads rc file from home directory if present
     def Config.load_rc
-      env_file                    = "#{Mobilize.home_dir}/mobrc"
+      env_file                    = "#{Config.dir}/mobrc"
       if File.exists?               env_file
         env_vars                  = File.readlines env_file
         env_vars.each             do |env_var|

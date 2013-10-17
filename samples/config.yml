@@ -10,7 +10,7 @@ test:
     username: <%= ENV['MOB_TEST_MONGODB_USERNAME'] %>
     password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
     database:     mobilize_test
-    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'].split(",") %>
+    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'] %>
   resque:
     workers: 5
     nodes:   1
@@ -81,7 +81,7 @@ development:
     username: <%= ENV['MOB_TEST_MONGODB_USERNAME'] %>
     password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
     database:     mobilize_development
-    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'].split(",") %>
+    hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'] %>
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
