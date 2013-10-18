@@ -92,13 +92,13 @@ module Mobilize
       @args, @options                 = args, options
       @opt_parser                     = OptionParser.new do |opts|
         @opts                         = opts
-        @opts.banner                  = "Usage: mob <env> box [-n --name NAME] [-r --recipe RECIPE] [-p --purge] [-c --create]"
+        @opts.banner                  = "Usage: mob <env> box [-n --name NAME] [-a --action ACTION] [-p --purge] [-c --create]"
 
         name_args                     = ["-n", "--name NAME", "name of node"]
         @opts.on(*name_args)          { |name| @options[:name] = name }
 
-        recipe_args                   = ["-r", "--recipe RECIPE", "execute RECIPE on given node"]
-        @opts.on(*recipe_args)        { |recipe| @options[:recipe] = recipe }
+        action_args                   = ["-a", "--action ACTION", "execute ACTION on given node"]
+        @opts.on(*action_args)        { |action| @options[:action] = action }
 
         purge_args                    = ["-p", "--purge", "purge instance if existing"]
         @opts.on(*purge_args)         { |purge| @options[:purge] = true }
@@ -109,7 +109,7 @@ module Mobilize
       end
       @opt_parser.parse!                @args
 
-      [:purge, :create, :recipe].each { |cmd| Cli.send("box_#{cmd.to_s}", @options) if @options[cmd]}
+      [:purge, :create, :action].each { |cmd| Cli.send("box_#{cmd.to_s}", @options) if @options[cmd]}
 
     end
 
@@ -123,9 +123,9 @@ module Mobilize
       @box.find_or_create_instance      Box.session
     end
 
-    def Cli.box_recipe(options)
+    def Cli.box_action(options)
       @box                            = Mobilize::Box.find_or_create_by name: options[:name]
-      @box.send options[:recipe]
+      @box.send options[:action]
     end
   end
 end

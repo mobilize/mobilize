@@ -73,7 +73,7 @@ module Mobilize
 
           @box.write_mobrc
 
-          @box.upload_keys
+          @box.write_keys
 
           @box.install_mobilize_gem
 
