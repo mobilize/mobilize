@@ -20,6 +20,8 @@ module Mobilize
 
     @@config = Mobilize.config("box")
 
+    def Box.private_key_path;     "#{Config.key_dir}/box.ssh"; end #created during configuration    
+
     def Box.session
       access_key_id     = Mobilize.config.aws.access_key_id
       secret_access_key = Mobilize.config.aws.secret_access_key

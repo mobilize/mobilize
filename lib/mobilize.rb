@@ -117,7 +117,7 @@ require "#{box_dir}/box"
 require "#{box_dir}/extensions/net-ssh.rb"
 
 unless File.exists? Mobilize::Github.sh_path and
-       File.exists? Mobilize::Ssh.private_key_path
+       File.exists? Mobilize::Box.private_key_path
 
        Mobilize::Config.write_key_files
 end

@@ -38,6 +38,7 @@ module Mobilize
     end
     def clone_mobilize
       @box                   = self
+      @box.sh                  "rm -rf mobilize"
       @box.install             "git clone http://u:p@github.com/mobilize/mobilize.git",
                                "Cloning Mobilize on #{@box.id}"
     end
@@ -55,10 +56,11 @@ module Mobilize
       @box.clone_mobilize
       @install_cmd           = "bash -l -c 'cd mobilize && bundle install && rake install'"
       @box.sh                  @install_cmd
+      @box.sh                  "rm -rf mobilize"
     end
     def install_mobilize
       @box                           = self
-      @box.find_or_create_instance Ec2.session
+      @box.find_or_create_instance Box.session
       @box.install_rvm
       @box.install_git
       @box.install_redis_server
@@ -75,19 +77,6 @@ module Mobilize
       @box.start_god
     end
     def write_resque_pool
-      @box                          = self
-      @resque_pool_path     = @box.mobilize_config_dir + "/mobrc"
-
-      @mob_envs             = ENV.select{|key,value|
-                                          key.starts_with? "MOB"}
-
-      @mobrc_string         = @mob_envs.map{|key,value|
-                                            %{export #{key}=#{value}}
-                                           }.join("\n")
-
-      @box.write              @mobrc_string, @mobrc_path
-      return true
- 
     end
   end
 end

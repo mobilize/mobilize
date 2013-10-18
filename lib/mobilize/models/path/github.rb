@@ -11,7 +11,7 @@ module Mobilize
 
     @@config                  = Mobilize.config("github")
 
-    def Github.sh_path;         Mobilize.home_dir + "/keys/git.sh"; end
+    def Github.sh_path;         Config.key_dir + "/git.sh"; end
 
     def Github.session
       @session                = ::Github.new login:    @@config.owner_login,

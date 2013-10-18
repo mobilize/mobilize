@@ -107,20 +107,23 @@ module Mobilize
       end
       @opt_parser.parse!                @args
 
-      if @options[:purge]
-        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
-        @box.purge!                                 Box.session
-      end
+      [:purge, :create, :recipe].each { |cmd| Cli.send("box_#{cmd.to_s}", @options) if @options[cmd]}
 
-      if @options[:create]
-        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
-        @box.find_or_create_instance                Box.session
-      end
+    end
 
-      if @options[:recipe]
-        @box                                      = Mobilize::Box.find_or_create_by name: @options[:name]
-        @box.send @options[:recipe]
-      end
+    def Cli.box_purge(options)
+      @box                            = Mobilize::Box.find_or_create_by name: options[:name]
+      @box.purge!                       Box.session
+    end
+
+    def Cli.box_create(options)
+      @box                            = Mobilize::Box.find_or_create_by name: options[:name]
+      @box.find_or_create_instance      Box.session
+    end
+
+    def Cli.box_recipe(options)
+      @box                            = Mobilize::Box.find_or_create_by name: options[:name]
+      @box.send options[:recipe]
     end
   end
 end
