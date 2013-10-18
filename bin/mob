@@ -3,7 +3,6 @@
 env = ARGV[0]
 cmd = ARGV[1]
 ENV['MOBILIZE_ENV'] ||= env
-options={}
 
 require 'mobilize'
 Mobilize::Cli.send cmd, ARGV

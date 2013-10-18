@@ -32,9 +32,25 @@ module Mobilize
       @box.write              @mobrc_string, @mobrc_path
       return true
     end
+    def write_resque_pool
+      @box                  = self
+
+      @resque_pool_path     = @box.mobilize_config_dir + "/resque-pool.yml"
+
+      @resque_pool_string   = {"test"=>{"mobilize-#{Mobilize.env}" => Mobilize.config.engine.workers}}.to_yaml
+
+      @box.write              @resque_pool_path, @resque_pool_string
+      return true
+    end
     def upload_keys
       @box    = self
       @box.cp   Config.key_dir, @box.key_dir
+    end
+    def upload_god_file
+      @box           = self
+      @samples_dir   = "#{Mobilize.root}/samples"
+      @god_file_name = "resque-pool-#{Mobilize.env}.rb"
+      @box.cp          "#{@samples_dir}/#{@god_file_name}", "#{@box.mobilize_config_dir}/#{@god_file_name}"
     end
     def clone_mobilize
       @box                   = self
@@ -51,15 +67,19 @@ module Mobilize
                                 false
       return true
     end
+    def install_god
+      @box                   = self
+      @install_cmd           = "gem install god"
+    end
     def install_mobilize_gem
       @box                   = self
       @box.clone_mobilize
-      @install_cmd           = "bash -l -c 'cd mobilize && bundle install && rake install'"
+      @install_cmd           = "cd mobilize && bundle install && rake install"
       @box.sh                  @install_cmd
       @box.sh                  "rm -rf mobilize"
     end
     def install_mobilize
-      @box                           = self
+      @box                       = self
       @box.find_or_create_instance Box.session
       @box.install_rvm
       @box.install_git
@@ -68,15 +88,17 @@ module Mobilize
       @box.upload_keys
       @box.install_mobilize_gem
     end
+    def start_god
+      @box                           = self
+      @box.sh 
+    end
     def start_engine
-      @box                          = self
+      @box                           = self
       @box.install_mobilize
       @box.write_resque_pool
-      @box.write_god_file
+      @box.upload_god_file
       @box.install_god
       @box.start_god
-    end
-    def write_resque_pool
     end
   end
 end

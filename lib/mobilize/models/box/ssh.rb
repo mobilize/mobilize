@@ -20,47 +20,61 @@ module Mobilize
       puts                        @ssh_cmd
     end
 
-    def sh(command,  except = true, streams=[:stdout, :stderr])
-      @box                      = self
-      @ssh_args                 = {keys: [Box.private_key_path],
-                                   paranoid: false}
+    def sh(command,  except = true, streams = [:stdout, :stderr])
+      @box                                  = self
 
-      send_args                 = ["start", @box.dns, @box.user_name, @ssh_args]
-      @result                   = Net::SSH.send_w_retries(*send_args) do |ssh|
-                                    ssh.run(command, except, streams)
-                                  end
-      return                      @result
+      @ssh_args                             = {keys: [Box.private_key_path],
+                                               paranoid: false}
+
+      @command_file_path                    = "/tmp/" + "#{command}#{Time.now.utc.to_f.to_s}".to_md5
+
+      @box.write                              command, @command_file_path, false
+
+      send_args                             = ["start", @box.dns, @box.user_name, @ssh_args]
+
+      @result                               = Net::SSH.send_w_retries(*send_args) do |ssh|
+                                                ssh.run("bash -l -c 'sh #{@command_file_path}'", except, streams)
+                                              end
+
+      Net::SSH.send_w_retries(*send_args)   {|ssh| ssh.run "rm #{@command_file_path}"}
+
+      return                                 @result
     end
 
-    def cp(loc_path, rem_path)
+    def cp(loc_path, rem_path, mkdir = true, log = true)
       @box, @loc_path, @rem_path = self, loc_path, rem_path
 
-      @box.sh                      "mkdir -p " + File.dirname(@rem_path)
+      @box.sh(                     "mkdir -p " + File.dirname(@rem_path)) if mkdir
+
       @ssh_args                  = {keys: [Box.private_key_path],
                                     paranoid: false}
+
       send_args                  = ["start",@box.dns,@box.user_name,@ssh_args]
 
       @result                    = Net::SCP.send_w_retries(*send_args) do |scp|
                                      scp.upload!(loc_path,rem_path, recursive: true) do |ch, name, sent, total|
-                                       Logger.info "#{name}: #{sent}/#{total}"
+                                       Logger.info("#{name}: #{sent}/#{total}") if log
                                      end
                                    end
+
       return                       @result
     end
 
-    def write(string, rem_path)
+    def write(string, rem_path, mkdir = true)
       @box                      = self
+
       @string, @rem_path        = string, rem_path
-      @file                     = Tempfile.new 'box_write'
+
+      @temp_file_path           = "/tmp/" + "#{string}#{Time.now.utc.to_f.to_s}".to_md5
+
       begin
-        @file.write               @string
-        @file.close
-        @box.cp                   @file.path, @rem_path
+        File.write                @temp_file_path, @string
+        @box.cp                   @temp_file_path, @rem_path, mkdir, false
       ensure
-        @file.close unless @file.closed?
-        @file.unlink
+        FileUtils.rm              @temp_file_path, force: true
       end
-      Logger.info                 "Wrote string #{@string.ellipsize(10)} to #{@box.id}:#{@rem_path}"
+
+      Logger.info                 "Wrote: #{@string.ellipsize(25)} to #{@box.id}:#{@rem_path}"
     end
   end
 end

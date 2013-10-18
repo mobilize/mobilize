@@ -11,9 +11,8 @@ test:
     password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
     database:     mobilize_test
     hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'] %>
-  resque:
+  engine:
     workers: 5
-    nodes:   1
   master:
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
@@ -69,7 +68,7 @@ test:
         repo_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
 development:
   master:
-  resque:
+  engine:
     workers: 5
     nodes:   1
   redis:

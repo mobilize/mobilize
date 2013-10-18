@@ -3,22 +3,22 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     include Mobilize::Work
-    field :name,             type: String
-    field :active,           type: Boolean
-    field :user_id,          type: String
-    field :_id,              type: String, default:->{"#{user_id}/#{name}"}
+    field      :name,             type: String
+    field      :active,           type: Boolean
+    field      :user_id,          type: String
+    field      :_id,              type: String, default:->{"#{user_id}/#{name}"}
     belongs_to :user
     belongs_to :box
-    has_one :trigger
-    has_many :stages
-    has_many :tasks
+    has_one    :trigger
+    has_many   :stages
+    has_many   :tasks
 
     def Job.dir
       "#{Mobilize.home_dir}/jobs"
     end
 
     def Job.purge!
-      FileUtils.rm_r "#{Mobilize.home_dir}/jobs", force: true
+      FileUtils.rm_r Job.dir, force: true
     end
 
     def Job.perform(job_id)

@@ -48,9 +48,8 @@ module GoogleDrive
       @clf                        = self
       @total_retries              = Mobilize.config.google.api.total_retries
       @success                    = false
-      if                            @response.nil? or @response.code.starts_with?("4")
-        @clf.mobilize_log           @identifier, @response, "fatal", @current_retries, 0
-      elsif                         @response.code.starts_with?("5")
+      if                            @response.nil? or @response.code.starts_with?("4") or
+                                    @response.code.starts_with?("5")
         @current_retries          = @clf.exponential_retry @identifier, @response, @current_retries
       else
         @clf.mobilize_log           @identifier, @response, "success", @current_retries, 0
