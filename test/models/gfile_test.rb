@@ -6,8 +6,7 @@ class GfileTest < MiniTest::Unit::TestCase
     @Fixture                            = Mobilize::Fixture
     @gfile                              = @Fixture::Gfile.default
     @worker_name                        = Mobilize.config.fixture.box.worker_name
-    @box                                = @Fixture::Box.default      @worker_name
-    @box.find_or_create_instance          Mobilize::Box.session
+    @box                                = Mobilize::Box.sync_or_launch_by_name @worker_name
     @script                             = @Fixture::Script.default   "print test_file_string"
     @script_session                     = Mobilize::Script.session
     @user                               = @Fixture::User.default

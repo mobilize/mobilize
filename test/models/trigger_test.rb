@@ -4,9 +4,8 @@ class TriggerTest < MiniTest::Unit::TestCase
     Mongoid.purge!
     Mobilize::Job.purge!
     @worker_name               = Mobilize.config.fixture.box.worker_name
-    @box                       = Mobilize::Fixture::Box.default     @worker_name
-    @box_session               = Mobilize::Box.session
-    @box.find_or_create_instance @box_session
+    @box                       = Mobilize::Fixture::Box.default       @worker_name
+    @box_session               = Mobilize::Box.sync_or_launch_by_name @worker_name
     @user                      = Mobilize::Fixture::User.default
     @job                       = Mobilize::Fixture::Job.default     @user, @box
     @parent_job                = Mobilize::Fixture::Job.parent      @user, @box

@@ -49,7 +49,7 @@ module Mobilize
                              @matches.first  == true
       end
 
-      Logger.write        "got #{@remotes.length.to_s} " +
+      Logger.write        "#{@remotes.length.to_s} " +
                           "remotes for #{@session.params[:region]}, " +
                           "params: #{@params.to_s}"
       @remotes
@@ -79,7 +79,7 @@ module Mobilize
       @remote_index         = @remotes.index{|remote|
                                               remote[:aws_remote_id] == @box.remote_id }
 
-      if @remote_index.nil?
+      if                      @remote_index.nil? and !@remotes.empty?
         @remote_index       = 0
 
         if                  @remotes.length > 1
@@ -87,10 +87,10 @@ module Mobilize
         end
       end
 
-      if                    @remote_index
-        @box.sync           @remotes[@remote_index]
+      if                      @remote_index
+        @box.sync             @remotes[@remote_index]
       else
-        @box.launch         @session
+        @box.launch           @session
       end
     end
 
@@ -152,11 +152,12 @@ module Mobilize
 
       @remote_params               = {key_name:      @box.keypair_name,
                                       group_ids:     @box.security_groups,
-                                      remote_type:   @box.size}
+                                      instance_type:   @box.size}
 
-      @remote                      = @session.launch_instances(@box.ami, @inst_params).first
+      @remote                      = @session.launch_instances(@box.ami, @remote_params).first
 
-      @session.create_tag            @remote[:aws_instance_id], "name", @box.name
+      @box.update_attributes         remote_id: @remote[:aws_instance_id]
+      @session.create_tag            @box.remote_id, "name", @box.name
       @remote                      = @box.wait_for_running @session
       @box.sync                      @remote
     end

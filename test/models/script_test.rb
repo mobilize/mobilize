@@ -5,9 +5,7 @@ class ScriptTest < MiniTest::Unit::TestCase
     Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
     @worker_name               = Mobilize.config.fixture.box.worker_name
-    @box                       = @Fixture::Box.default     @worker_name
-    @box_session               = Mobilize::Box.session
-    @box.find_or_create_instance @box_session
+    @box                       = Mobilize::Box.sync_or_launch_by_name @worker_name
     @user                      = @Fixture::User.default
     @stdin                     = "(echo 'log this to the log' > log) && cmd"
     @script                    = @Fixture::Script.default(@stdin)

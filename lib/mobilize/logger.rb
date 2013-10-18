@@ -17,7 +17,7 @@ module Mobilize
       @ljusted_response     = "#{@header}:".ljust(@ljust_length," ")
       return                  @ljusted_response
     end
-    def Logger.write(message, level=nil, trace)
+    def Logger.write(message, level = nil)
       @trace, @message      = caller(1), message
       @level              ||= "INFO"
       @log                  = Logger.trace_header(@trace,@level) + @message
