@@ -8,19 +8,16 @@ module Mobilize
 
     def mobilize_dir;             "#{self.home_dir}/.mobilize";end
 
-    def config_dir;               "#{self.mobilize_dir}/config";end
+    def mobilize_config_dir;      "#{self.mobilize_dir}/config";end
 
     def key_dir;                  "#{self.mobilize_dir}/keys";end
-
-    def self.private_key_path;     "#{Mobilize.home_dir}/keys/box.ssh"; end #created during configuration
-
 
     def ssh_cmd
       @box                      = self
       @ssh_cmd                  = "ssh -i #{Box.private_key_path} " +
                                   "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
                                   "#{@box.user_name}@#{@box.dns}"
-      return                      @ssh_cmd
+      puts                        @ssh_cmd
     end
 
     def sh(command,  except = true, streams=[:stdout, :stderr])
