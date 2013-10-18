@@ -3,8 +3,7 @@ module Mobilize
   class Box
     include Mongoid::Document
     include Mongoid::Timestamps
-    include Mobilize::Ssh
-    include Mobilize::Recipe
+    include Mobilize::Box::Action
     field    :name,             type: String
     field    :ami,              type: String, default:->{@@config.ami}
     field    :size,             type: String, default:->{@@config.size}
