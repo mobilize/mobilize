@@ -16,7 +16,7 @@ module Mobilize
     def Github.session
       @session                = ::Github.new login:    @@config.owner_login,
                                              password: @@config.owner_password
-      Logger.info               "Logged into Github."
+      Logger.write              "Logged into Github."
       return                    @session
     end
 
@@ -31,10 +31,10 @@ module Mobilize
                                                  repo: @github.repo_name
         @call                 = [action,category].compact.join(".")
         @calls_left           = @response.headers.ratelimit_remaining
-        Logger.info             "#{@call} successful for #{@github._id} repo call; " +
+        Logger.write            "#{@call} successful for #{@github._id} repo call; " +
                                 "#{@calls_left} calls left this hour"
       rescue
-        Logger.error            "Could not access #{@github._id}"
+        Logger.write            "Could not access #{@github._id}", "FATAL"
       end
       return                    @response
     end
@@ -55,16 +55,16 @@ module Mobilize
       @task                  = task
       @task.purge_dir
       begin
-        Logger.info            "attempting public read for #{@github.id}"
+        Logger.write           "attempting public read for #{@github.id}"
         @github.read_public    @task
       rescue
-        Logger.info            "public read failed, attempting private read for #{@github.id}"
+        Logger.write           "public read failed, attempting private read for #{@github.id}"
         @github.read_private   @task
       end
       #get size of objects and log
       @log_cmd               = "cd #{@task.dir} && git count-objects -v"
       @size                  = @log_cmd.popen4
-      Logger.info              "Read #{@github.id} into #{@task.dir}: #{@size}"
+      Logger.write             "Read #{@github.id} into #{@task.dir}: #{@size}"
       #deploy github repo
       return                   true
     end
@@ -75,7 +75,7 @@ module Mobilize
       @cmd                   = "cd #{@task.path_dir} && " +
                                "git clone -q https://u:p@#{@github.name}.git --depth=1"
       @cmd.popen4(true)
-      Logger.info              "Read complete: #{@github._id}"
+      Logger.write             "Read complete: #{@github._id}"
       return true
     end
 
@@ -86,10 +86,10 @@ module Mobilize
       @is_collaborator       = @github.collaborators(@task).include?(@user.github_login)
 
       if @is_collaborator
-        Logger.info            "Verified user #{@user._id} has access to #{@github._id}"
+        Logger.write           "Verified user #{@user._id} has access to #{@github._id}"
         return                 true
       else
-        Logger.error           "User #{@user._id} does not have access to #{@github._id}"
+        Logger.write           "User #{@user._id} does not have access to #{@github._id}", "FATAL"
       end
     end
 
@@ -103,7 +103,7 @@ module Mobilize
                                     "cd #{@task.path_dir} && " +
                                     "git clone -q git@#{@github.name.sub("/",":")}.git --depth=1"
       @cmd.popen4(true)
-      Logger.info                   "Read private git repo #{@github._id}"
+      Logger.write                  "Read private git repo #{@github._id}"
       return                        true
     end
   end

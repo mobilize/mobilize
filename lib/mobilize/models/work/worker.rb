@@ -15,7 +15,7 @@ module Mobilize
                                 "tar -zcvf #{@worker.dir}.tar.gz " +
                                 "#{File.basename(@worker.dir)}"
       @pack_cmd.popen4(true)
-      Logger.info               "Packed worker for #{@task.id} in #{@worker.dir}.tar.gz"
+      Logger.write              "Packed worker for #{@task.id} in #{@worker.dir}.tar.gz"
     end
   end
 end

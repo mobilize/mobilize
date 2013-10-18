@@ -14,7 +14,7 @@ module Mobilize
       @file              = File.open @stdin_path, "w"
       @file.print          @script.stdin
       @file.close
-      Logger.info          "wrote stdin into task dir at #{@stdin_path}"
+      Logger.write         "wrote stdin into task dir at #{@stdin_path}"
     end
 
     def Script.session
@@ -36,7 +36,7 @@ module Mobilize
 
       @streams                =  @script.streams @task
       if                         @streams[:exit_signal].strip != "0"
-        Logger.error             @streams[:stderr]
+        Logger.write             @streams[:stderr], "FATAL"
       end
     end
 

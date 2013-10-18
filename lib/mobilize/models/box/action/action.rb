@@ -85,7 +85,7 @@ module Mobilize
           FileUtils.rm              @temp_file_path, force: true
         end
 
-        Logger.info                 "Wrote: #{@string.ellipsize(25)} to #{@box.id}:#{@rem_path}" if log
+        Logger.write                "Wrote: #{@string.ellipsize(25)} to #{@box.id}:#{@rem_path}" if log
 
       end
     end

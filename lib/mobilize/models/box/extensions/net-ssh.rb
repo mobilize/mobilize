@@ -19,7 +19,7 @@ module Net
           @ssh.loop
 
           if                                    @except and @exit_code!=0
-            Mobilize::Logger.error              @stderr_data
+            Mobilize::Logger.write              @stderr_data, "FATAL"
           else
             @result                           = {  stdout:      @stdout_data,
                                                    stderr:      @stderr_data,
@@ -32,7 +32,7 @@ module Net
           @ssh                     = self
           channel.exec(@command) do |ch, success|
             unless                            success
-              Mobilize::Logger.error          "FAILED: couldn't execute command (ssh.channel.exec)"
+              Mobilize::Logger.write          "FAILED: couldn't execute command (ssh.channel.exec)", "FATAL"
             end
             channel.on_data                   do |ch_d,data|
               @stdout_data                    += data
@@ -54,7 +54,7 @@ module Net
           end
         end
         def log_stream(stream,data)
-          Mobilize::Logger.info("#{stream.to_s}: #{data}")  if @streams.include?(stream)
+          Mobilize::Logger.write("#{stream.to_s}: #{data}")  if @streams.include?(stream)
         end
       end
     end

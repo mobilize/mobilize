@@ -1,6 +1,6 @@
 module Mobilize
   module Logger
-    def Logger.trace_header(stack_trace,level)
+    def Logger.trace_header(stack_trace, level)
       @header               = stack_trace.first.split(Mobilize.root).last
       @response             = "[#{Time.now.utc}][#{level}]: #{@header}"
       begin
@@ -17,20 +17,14 @@ module Mobilize
       @ljusted_response     = "#{@header}:".ljust(@ljust_length," ")
       return                  @ljusted_response
     end
-    def Logger.info(message,object=nil)
-      @trace               = caller(1)
-      Logger.write           message, "INFO", @trace
-    end
-    def Logger.error(message,object=nil)
-      @trace                = caller(1)
-      Logger.write            message, "ERROR", @trace
-    end
-    def Logger.write(message,level,trace)
-      @log                  = Logger.trace_header(trace,level) + message
+    def Logger.write(message, level=nil, trace)
+      @trace, @message      = caller(1), message
+      @level              ||= "INFO"
+      @log                  = Logger.trace_header(@trace,@level) + @message
       @file_path            = File.expand_path "#{Mobilize.log_dir}/#{Mobilize.env}.log"
       @logger               = ::Logger.new @file_path, "daily"
       @logger.info(@log)
-      if level == "ERROR"
+      if level == "FATAL"
         raise @log
       else
         puts  @log

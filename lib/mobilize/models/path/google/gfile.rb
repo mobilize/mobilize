@@ -15,13 +15,13 @@ module Mobilize
       @email             = email
       if @email         == @@config.owner.email
         @password        = @@config.owner.password
-        Logger.info        "Got password for google owner email #{@email}"
+        Logger.write       "Got password for google owner email #{@email}"
       else
         @password        = @@config.worker.accounts.select{|w| w.email == @email}.first
         if @password
-          Logger.info      "Got password for google worker email #{@email}"
+          Logger.write     "Got password for google worker email #{@email}"
         else
-          Logger.error     "Could not find password for email #{@email}"
+          Logger.write     "Could not find password for email #{@email}", "FATAL"
         end
       end
       return               @password
@@ -31,7 +31,7 @@ module Mobilize
       @email          = @@config.owner.email
       @password       = Gfile.get_password @email
       @session        = ::GoogleDrive.login @email, @password
-      Logger.info       "Logged into Google Drive."
+      Logger.write      "Logged into Google Drive."
       return            @session
     end
 
@@ -40,7 +40,7 @@ module Mobilize
       @gfile                 = self
       @remote                = @gfile.remote @session
       unless                   @remote
-        Logger.error           "Could not find remote for #{@gfile.id}"
+        Logger.write           "Could not find remote for #{@gfile.id}", "FATAL"
       end
       @roles                 = @gfile.remote_roles @remote
       @gfile.update_attributes name:    @remote.title,
@@ -60,11 +60,11 @@ module Mobilize
                                         title: @gfile.name
       @remotes.each       do |remote|
         remote.delete
-        Logger.info           "Deleted remote #{remote.resource_id} for #{@gfile.id}"
+        Logger.write          "Deleted remote #{remote.resource_id} for #{@gfile.id}"
       end
       @task.purge_dir
       @gfile.delete
-      Logger.info             "Purged #{@gfile.id} from DB"
+      Logger.write            "Purged #{@gfile.id} from DB"
       return                  true
     end
 
@@ -87,10 +87,10 @@ module Mobilize
          @task.refresh_dir
          #in this case, directory is file name
          @remote.download_to_file   "#{@task.dir}/stdout"
-         Logger.info                "Downloaded #{@gfile.id} to " +
+         Logger.write               "Downloaded #{@gfile.id} to " +
                                     "#{@task.dir}/stdout"
       else
-        Logger.error                "User #{@user.id} does not have read access to #{@gfile.id}"
+        Logger.write                "User #{@user.id} does not have read access to #{@gfile.id}", "FATAL"
       end
     end
 
@@ -110,9 +110,9 @@ module Mobilize
 
       if @gfile.is_writer?(@user)
         @remote.update_from_file     @task.input
-        Logger.info                  "Uploaded #{@task.input} from #{@gfile.id}"
+        Logger.write                 "Uploaded #{@task.input} from #{@gfile.id}"
       else
-        Logger.error                 "User #{@user.id} does not have write access to #{@gfile.id}"
+        Logger.write                 "User #{@user.id} does not have write access to #{@gfile.id}", "FATAL"
       end
     end
 
@@ -146,7 +146,7 @@ module Mobilize
       if                            @remotes.length>1
         @remote                   = @gfile.resolve_remotes @remotes
       elsif                         @remotes.length == 1
-        Logger.info                 "Remote #{@remotes.first.resource_id} found, " +
+        Logger.write                "Remote #{@remotes.first.resource_id} found, " +
                                     "assigning to #{@gfile.id}"
         @remote                   = @remotes.first
       elsif                         @remotes.empty?
@@ -167,10 +167,10 @@ module Mobilize
       @base_message               = "There are #{@remotes.length} remotes " +
                                     "owned by #{@gfile.owner} and named #{@gfile.name};"
       if @remote
-        Logger.info                 @base_message + " you should delete all incorrect versions."
+        Logger.write                @base_message + " you should delete all incorrect versions."
         return                      @remote
       else
-        Logger.error                @base_message + " and no local key; you should delete all incorrect versions."
+        Logger.write                @base_message + " and no local key; you should delete all incorrect versions.", "FATAL"
       end
     end
 

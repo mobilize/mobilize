@@ -29,7 +29,6 @@ module Mobilize
       Logger.write         "Got ec2 session for region #{@region}"
 
       @session
-
     end
 
     def Box.remotes(params = nil, session = nil)
@@ -50,7 +49,7 @@ module Mobilize
                              @matches.first  == true
       end
 
-      Logger.info         "got #{@remotes.length.to_s} " +
+      Logger.write        "got #{@remotes.length.to_s} " +
                           "remotes for #{@session.params[:region]}, " +
                           "params: #{@params.to_s}"
       @remotes
@@ -167,7 +166,7 @@ module Mobilize
       @session                  ||= Box.session
       @remote                     = @box.remote @session
       while                         @remote[:aws_state] != "running"
-        Logger.info                 "remote #{@box.remote_id} still at #{@remote[:aws_state]} -- waiting 10 sec"
+        Logger.write                "remote #{@box.remote_id} still at #{@remote[:aws_state]} -- waiting 10 sec"
         sleep                       10
         @remote                   = @box.remote @session
       end

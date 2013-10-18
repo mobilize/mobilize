@@ -21,7 +21,7 @@ module Mobilize
 
       @num_workers                = @resque_pool_config[Mobilize.env][Mobilize.queue]
 
-      Mobilize::Logger.error        "Could not start resque workers" unless @test_workers.length == @num_workers
+      Mobilize::Logger.write(       "Could not start resque workers", "FATAL") unless @test_workers.length == @num_workers
     end
 
     def Master.stop
