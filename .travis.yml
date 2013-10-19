@@ -148,7 +148,7 @@ env:
 #mob_fixture_github_private_owner
   - "MOB_FIXTURE_GITHUB_PRIVATE_OWNER='mobilize'"
 #mob_fixture_ec2_worker_name
-  - "MOB_FIXTURE_BOX_WORKER_NAME='mobilize-test'"
+  - "MOB_FIXTURE_BOX_NAME=-'mobilize-boxtest'"
 #mob_ssh_user_name
   - "MOB_BOX_USER_NAME=ubuntu"
 #mob_minitest_ssh_user_name
