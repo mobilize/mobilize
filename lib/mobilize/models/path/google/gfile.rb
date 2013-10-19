@@ -2,17 +2,19 @@ module Mobilize
   class Gfile < Path
     include Mongoid::Document
     include Mongoid::Timestamps
-    field :key,         type: String
+    field :remote_id,   type: String
     field :name,        type: String
     field :owner,       type: Array
     field :readers,     type: Array
     field :writers,     type: Array
     field :_id,         type: String, default:->{"gfile/#{owner.alphanunderscore}/#{name}"}
 
-    @@config     = Mobilize.config("google")
+    @@config             = Mobilize.config("google")
 
     def Gfile.get_password(email)
+
       @email             = email
+
       if @email         == @@config.owner.email
         @password        = @@config.owner.password
         Logger.write       "Got password for google owner email #{@email}"
@@ -24,157 +26,156 @@ module Mobilize
           Logger.write     "Could not find password for email #{@email}", "FATAL"
         end
       end
-      return               @password
+      @password
     end
 
     def Gfile.session(email = nil)
+
       @email          = @@config.owner.email
       @password       = Gfile.get_password @email
+
       @session        = ::GoogleDrive.login @email, @password
+
       Logger.write      "Logged into Google Drive."
-      return            @session
+      @session
     end
 
-    def sync(session)
-      @session               = session
-      @gfile                 = self
+    def sync(remote, session)
+      @gfile, @remote, @session       = self, remote, session
+
       @remote                = @gfile.remote @session
-      unless                   @remote
-        Logger.write           "Could not find remote for #{@gfile.id}", "FATAL"
-      end
-      @roles                 = @gfile.remote_roles @remote
+      @roles                 = @gfile.roles @remote
+
       @gfile.update_attributes name:    @remote.title,
                                key:     @remote.resource_id,
                                owner:   @roles[:owner].first,
                                readers: @roles[:reader],
                                writers: @roles[:writer]
-      return                   @remote
+      @remote
     end
 
-    #delete remote, worker, and local db object
-    def purge!(task)
-      @gfile                = self
-      @task                 = task
-      @remotes              = Gfile.remotes_by @task.session,
-                                        owner: @gfile.owner,
-                                        title: @gfile.name
-      @remotes.each       do |remote|
-        remote.delete
-        Logger.write          "Deleted remote #{remote.resource_id} for #{@gfile.id}"
-      end
-      @task.purge_dir
+    #delete remote and local db object
+    def purge!(session)
+      @gfile, @session      = self, session
+      @remote               = @gfile.remote
+      Logger.write            "Deleting remote #{@remote.resource_id} for #{@gfile.id}"
+
+      @remote.delete
       @gfile.delete
       Logger.write            "Purged #{@gfile.id} from DB"
-      return                  true
+
+      true
     end
 
     def is_reader?(user)
-      @gfile                      = self
-      @user                       = user
+      @gfile, @user               = self, user
       @is_reader                  = @user.google_login == @gfile.owner or
                                     @gfile.readers.include? @user.google_login
-      return @is_reader
+    end
+
+    def is_writer?(user)
+      @user, @gfile                = user, self
+      @is_writer                   = @user.google_login == @gfile.owner or
+                                     @gfile.writers.include?(@user.google_login)
     end
 
     def read(task)
-      @gfile                      = self
-      @task                       = task
-      @user                       = @task.user
+      @gfile, @task, @user        = self, task, task.user
+
       @remote                     = @gfile.sync @task.session
 
-      if @gfile.is_reader?(@user)
-         #make sure path exists but dir does not
-         @task.refresh_dir
-         #in this case, directory is file name
-         @remote.download_to_file   "#{@task.dir}/stdout"
-         Logger.write               "Downloaded #{@gfile.id} to " +
-                                    "#{@task.dir}/stdout"
+      if @gfile.is_reader?          @user
+        #make sure path exists but dir does not
+        @task.refresh_dir
+
+        @remote.download_to_file   "#{@task.dir}/stdout"
+        Logger.write               "Downloaded #{@gfile.id} to #{@task.dir}/stdout"
+        Logger.write               "#{@user.google_login}: #{File.size(@task.input).to_s} bytes", "STAT"
       else
         Logger.write                "User #{@user.id} does not have read access to #{@gfile.id}", "FATAL"
       end
     end
 
-    def is_writer?(user)
-      @user                        = user
-      @gfile                       = self
-      @is_writer                   = @user.google_login == @gfile.owner or
-                                     @gfile.writers.include?(@user.google_login)
-      return @is_writer
-    end
-
     def write(task)
-      @gfile                       = self
-      @task                        = task
-      @user                        = @task.user
+      @gfile, @task, @user         = self, task, task.user
+
       @remote                      = @gfile.find_or_create_remote @task.session
 
-      if @gfile.is_writer?(@user)
+      if @gfile.is_writer?           @user
+
         @remote.update_from_file     @task.input
         Logger.write                 "Uploaded #{@task.input} from #{@gfile.id}"
+        Logger.write                 "#{@user.google_login}: #{File.size(@task.input).to_s} bytes", "STAT"
       else
-        Logger.write                 "User #{@user.id} does not have write access to #{@gfile.id}", "FATAL"
+        Logger.write                 "#{@user.google_login} does not have write access to #{@gfile.id}", "FATAL"
       end
+      true
     end
 
     def Gfile.remotes_by(session,params={})
-      @session                    = session
+      @session                             = session
 
       if params[:title]
-        params["title-exact"]     = true
+        params["title-exact"]              = true
       end
 
-      @remotes                    = @session.files params
-      return                        @remotes
+      @remotes                             = @session.files params
+      #sort by published date for seniority
+      @remotes.sort_by {|remote|
+                        @remote            = remote
+                        @publish_element   = @remote.document_feed_entry.css("published")
+                        @publish_timestamp = @publish_element.children.first.text
+                        @publish_timestamp
+                        }
     end
 
-    def find_or_create_remote(session)
-      @gfile                      = self
-      @session                    = session
-      #create remote file with a blank string if there isn't one
       @remote                     = @gfile.remote(@session) || @session.upload_from_string("", @gfile.name)
       @gfile.sync                   @session
-      return                        @remote
+
+
+    #creates both file and its remote
+    def Gfile.find_or_create_by_owner_and_name(owner, name, session)
+      @owner, @name, @session     = owner, name, session
+
+      @gfile                      = Gfile.find_or_create_by owner: @owner, name: @name
+
+      @remote                     = @gfile.remote(@session) if @gfile.remote_id
+
+      @remotes                    = if @remote.nil?
+                                      Gfile.remotes_by @session, owner: @owner, title: @name
+                                    end
+
+      unless                        @remotes.empty?
+        @remote                   = @remotes.first
+
+        if                          @remotes.length > 1
+        Logger.write(               "TOO MANY REMOTES: #{@remotes.length} remotes " +
+                                    "by #{@gfile.owner} with name #{@gfile.name}", "WARN")
+        end
+      end
+
+      if                      @remote
+        @gfile.sync           @remote
+      else
+        @gfile.launch         @session
+      end
     end
 
     def remote(session)
-      @gfile                      = self
-      @session                    = session
-      @remotes                    = Gfile.remotes_by @session,
-                                              owner: @gfile.owner,
-                                              title: @gfile.name
+      @gfile, @session    =  self, session
 
-      if                            @remotes.length>1
-        @remote                   = @gfile.resolve_remotes @remotes
-      elsif                         @remotes.length == 1
-        Logger.write                "Remote #{@remotes.first.resource_id} found, " +
-                                    "assigning to #{@gfile.id}"
-        @remote                   = @remotes.first
-      elsif                         @remotes.empty?
-        @remote                   = nil
-      end
-      return                        @remote
+      Logger.write(         "Gfile has no remote_id", "FATAL") unless @gfile.remote_id
+
+      @remotes            =  Gfile.remotes_by(@session,owner: @gfile.owner, title: @gfile.title)
+
+      @remotes            = @remotes.select{|remote|
+                                            @remote              = remote
+                                            @remote.resource_id == @gfile.remote_id
+                                           }
+      @remotes.first
     end
 
-    def resolve_remotes(remotes)
-      @gfile                      = self
-      @remotes                    = remotes
-
-
-      @remote                     = @remotes.select{|remote|
-                                                     remote.resource_id == @gfile.key
-                                                   }.first if @gfile.key
-
-      @base_message               = "There are #{@remotes.length} remotes " +
-                                    "owned by #{@gfile.owner} and named #{@gfile.name};"
-      if @remote
-        Logger.write                @base_message + " you should delete all incorrect versions."
-        return                      @remote
-      else
-        Logger.write                @base_message + " and no local key; you should delete all incorrect versions.", "FATAL"
-      end
-    end
-
-    def remote_roles(remote)
+    def roles(remote)
       @remote                    = remote
       @acls                      = @remote.acl.to_enum.to_a
       @roles                     = {owner: [], reader: [], writer: []}
@@ -188,7 +189,7 @@ module Mobilize
         @sym_role                = @acl.role.to_sym
         @roles[@sym_role]       << @scope
       end
-      return                       @roles
+      @roles
     end
   end
 end

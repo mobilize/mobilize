@@ -17,38 +17,38 @@ class String
   #fires system command with full visibility into stdout and stderr
   #default returns stdout only
   #with option to return all streams in hash
-  def popen4(except=nil,all_streams=nil)
-    except              = true unless except == false
-    all_streams       ||= false
-    in_str              = self
-    out_str,err_str     = []
+  def popen4(except = nil, all_streams = nil)
+    @except               = true unless except == false
+    @all_streams        ||= false
+    @in_str               = self
+    @out_str, @err_str    = []
 
-    status              = Open4.popen4(in_str) do |pid,stdin,stdout,stderr|
-                         out_str = stdout.read
-                         err_str = stderr.read
-                       end
+    @status               = Open4.popen4(@in_str) do |pid,stdin,stdout,stderr|
+                              @out_str = stdout.read
+                              @err_str = stderr.read
+                            end
 
-    exit_status         = status.exitstatus
+    @exit_status          = @status.exitstatus
 
-    if exit_status != 0 and
-       except      == true
+    if @exit_status != 0 and
+       @except      == true
 
-       Mobilize::Logger.write err_str, "FATAL"
+       Mobilize::Logger.write @err_str, "FATAL"
 
-    elsif all_streams == false
+    elsif @all_streams == false
 
-      return out_str
+      return @out_str
 
     else
 
-      return {in: in_str,
-              out: out_str,
-              err: err_str}
+      return {in: @in_str,
+              out: @out_str,
+              err: @err_str}
 
     end
   end
   #returns a shortened version of the string with an ellipsis if appropriate
-  def ellipsize(length, ellipsis="(...)")
+  def ellipsize(length, ellipsis = "(...)")
     str               = self
     ellipsis          = "" unless str.length > length
     return              str[0..length-1] + " " + ellipsis

@@ -6,7 +6,7 @@ class GithubTest < MiniTest::Unit::TestCase
     @Fixture                   = Mobilize::Fixture
     @github_public             = @Fixture::Github.public
     @worker_name               = Mobilize.config.fixture.box.worker_name
-    @box                       = Mobilize::Box.sync_or_launch_by_name @worker_name
+    @box                       = Mobilize::Box.find_or_create_remote_by_name @worker_name
     @user                      = @Fixture::User.default
     @github_private            = @Fixture::Github.private
     @job                       = @Fixture::Job.default      @user, @box

@@ -19,7 +19,7 @@ class BoxTest < MiniTest::Unit::TestCase
     #make sure all instances with the test name are terminated
     @box.terminate               @box_session
     #create new instance
-    @box                       = @Box.sync_or_launch_by_name @worker_name, @box_session
+    @box                       = @Box.find_or_create_remote_by_name @worker_name, @box_session
 
     assert_equal                 @box.remote(@box_session)[:aws_state],
                                  "running"
@@ -28,7 +28,7 @@ class BoxTest < MiniTest::Unit::TestCase
     #and assign to database object, making them equal
     remote_id                  = @box.remote_id
     @box.delete
-    @box                       = @Box.sync_or_launch_by_name @worker_name, @box_session
+    @box                       = @Box.find_or_create_remote_by_name @worker_name, @box_session
 
     assert_equal                 @box.remote_id, remote_id
 
@@ -40,7 +40,7 @@ class BoxTest < MiniTest::Unit::TestCase
 
   def test_terminate
     #make sure the instance is up and running for latest @box
-    @box                       = @Box.sync_or_launch_by_name @worker_name, @box_session
+    @box                       = @Box.find_or_create_remote_by_name @worker_name, @box_session
     assert_equal                 @box.remote(@box_session)[:aws_state],
                                  "running"
     @box.terminate               @box_session

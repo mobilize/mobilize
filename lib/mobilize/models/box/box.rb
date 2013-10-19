@@ -68,27 +68,30 @@ module Mobilize
       @remotes
     end
 
-    def Box.sync_or_launch_by_name(name, session = nil)
+    #creates both DB box and its remote
+    def Box.find_or_create_by_name(name, session = nil)
 
       @name                 = name
       @session              = session || Box.session
 
       @box                  = Box.find_or_create_by name: @name
-      @remotes              = Box.remotes_by_name   @name, nil, @session
 
-      @remote_index         = @remotes.index{|remote|
-                                              remote[:aws_remote_id] == @box.remote_id }
+      @remote               = @box.remote(@session) if @box.remote_id
 
-      if                      @remote_index.nil? and !@remotes.empty?
-        @remote_index       = 0
+      @remotes              = if @remote.nil?
+                                Box.remotes_by_name   @name, nil, @session
+                              end
 
-        if                  @remotes.length > 1
-          Logger.write      "TOO MANY REMOTES: #{@remotes.length} remotes named #{@name}", "WARN"
+      unless                  @remotes.empty?
+        @remote             = @remotes.first
+
+        if                    @remotes.length > 1
+          Logger.write       "TOO MANY REMOTES: #{@remotes.length} remotes named #{@name}", "WARN"
         end
       end
 
-      if                      @remote_index
-        @box.sync             @remotes[@remote_index]
+      if                      @remote
+        @box.sync             @remote
       else
         @box.launch           @session
       end
@@ -96,8 +99,10 @@ module Mobilize
 
     def remote(session = nil)
       @box             = self
-      Logger.write       "Box has no remote_id" unless @box.remote_id
-      @session       ||= session
+      @session         = session || Box.session
+
+      Logger.write(     "Box has no remote_id", "FATAL") unless @box.remote_id
+
       @remotes         = Box.remotes_by_name @box.name,
                                              {aws_state:       ['running','pending'],
                                               aws_instance_id: @box.remote_id},
@@ -125,7 +130,7 @@ module Mobilize
       #terminates the remote remote then
       #deletes the local database remote
       @box                          = self
-      @session                    ||= Box.session
+      @session                      = session || Box.session
       #terminate remotes by name
       @remotes                      = Box.remotes_by_name @box.name,nil, @session
 
@@ -148,7 +153,7 @@ module Mobilize
 
       @box                         = self
 
-      @session                   ||= Box.session
+      @session                     = session || Box.session
 
       @remote_params               = {key_name:      @box.keypair_name,
                                       group_ids:     @box.security_groups,
@@ -164,7 +169,7 @@ module Mobilize
 
     def wait_for_running(session  = nil)
       @box                        = self
-      @session                  ||= Box.session
+      @session                    = session || Box.session
       @remote                     = @box.remote @session
       while                         @remote[:aws_state] != "running"
         Logger.write                "remote #{@box.remote_id} still at #{@remote[:aws_state]} -- waiting 10 sec"

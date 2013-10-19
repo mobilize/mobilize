@@ -61,10 +61,15 @@ module Mobilize
         Logger.write           "public read failed, attempting private read for #{@github.id}"
         @github.read_private   @task
       end
-      #get size of objects and log
+      #get size of objects and log, formatted for no line breaks
       @log_cmd               = "cd #{@task.dir} && git count-objects -v"
-      @size                  = @log_cmd.popen4
-      Logger.write             "Read #{@github.id} into #{@task.dir}: #{@size}"
+
+      @size                  = @log_cmd.popen4.split("\n").join(", ")
+
+      Logger.write             "Read #{@github.id} into #{@task.dir}"
+
+      @stat                  = @task.user.google_login + ": " + @size
+      Logger.write             @stat, "STAT"
       #deploy github repo
       return                   true
     end
