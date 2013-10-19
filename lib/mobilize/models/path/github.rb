@@ -31,10 +31,10 @@ module Mobilize
                                                  repo: _github.repo_name
         _call                 = [action,category].compact.join(".")
         _calls_left           = _response.headers.ratelimit_remaining
-        Logger.write            "#{_call} successful for #{_github._id} repo call; " +
+        Logger.write            "#{_call} successful for #{_github.id} repo call; " +
                                 "#{_calls_left} calls left this hour"
       rescue
-        Logger.write            "Could not access #{_github._id}", "FATAL"
+        Logger.write            "Could not access #{_github.id}", "FATAL"
       end
       _response
     end
@@ -80,7 +80,7 @@ module Mobilize
       _cmd                   = "cd #{_task.path_dir} && " +
                                "git clone -q https://u:p@#{_github.name}.git --depth=1"
       _cmd.popen4(true)
-      Logger.write             "Read complete: #{_github._id}"
+      Logger.write             "Read complete: #{_github.id}"
       true
     end
 
@@ -91,10 +91,10 @@ module Mobilize
       _is_collaborator       = _github.collaborators(_task).include?(_user.github_login)
 
       if _is_collaborator
-        Logger.write           "Verified user #{_user._id} has access to #{_github._id}"
+        Logger.write           "Verified user #{_user.id} has access to #{_github.id}"
         true
       else
-        Logger.write           "User #{_user._id} does not have access to #{_github._id}", "FATAL"
+        Logger.write           "User #{_user.id} does not have access to #{_github.id}", "FATAL"
       end
     end
 
@@ -108,7 +108,7 @@ module Mobilize
                                     "cd #{_task.path_dir} && " +
                                     "git clone -q git@#{_github.name.sub("/",":")}.git --depth=1"
       _cmd.popen4(true)
-      Logger.write                  "Read private git repo #{_github._id}"
+      Logger.write                  "Read private git repo #{_github.id}"
       true
     end
   end
