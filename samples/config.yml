@@ -50,8 +50,9 @@ test:
     owner_login:        <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
     owner_password:     <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
   fixture:
+    google:
+      email: <%=ENV['MOB_FIXTURE_GOOGLE_EMAIL']%>
     gfile:
-      owner: <%=ENV['MOB_FIXTURE_GOOGLE_EMAIL']%>
       name:  "mobilize_gfile_test"
     box:
       name:             <%=ENV['MOB_FIXTURE_BOX_NAME']%>

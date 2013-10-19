@@ -5,8 +5,7 @@ class GithubTest < MiniTest::Unit::TestCase
     Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
     @github_public             = @Fixture::Github.public
-    @worker_name               = Mobilize.config.fixture.box.worker_name
-    @box                       = Mobilize::Box.find_or_create_by_name @worker_name
+    @box                       = Mobilize::Box.find_or_create_by_name Mobilize.config.fixture.box.name
     @user                      = @Fixture::User.default
     @github_private            = @Fixture::Github.private
     @job                       = @Fixture::Job.default      @user, @box
@@ -19,13 +18,13 @@ class GithubTest < MiniTest::Unit::TestCase
 
   def test_read
     @github_public.send          @stage.call, @github_public_task
-    @status_cmd                = "cd #{@github_public_task.dir} && git status"
-    assert_in_delta              @status_cmd.popen4.length, 1, 1000
+    _status_cmd                = "cd #{@github_public_task.dir} && git status"
+    assert_in_delta              _status_cmd.popen4.length, 1, 1000
 
     if @github_private
       @github_private.send       @stage.call, @github_private_task
-      @status_cmd              = "cd #{@github_private_task.dir} && git status"
-      assert_in_delta            @status_cmd.popen4.length, 1, 1000
+      _status_cmd              = "cd #{@github_private_task.dir} && git status"
+      assert_in_delta            _status_cmd.popen4.length, 1, 1000
     end
   end
 end
