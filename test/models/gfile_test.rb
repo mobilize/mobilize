@@ -13,7 +13,7 @@ class GfileTest < MiniTest::Unit::TestCase
 
     @box                                = Mobilize::Box.find_or_create_by_name @Config.box.name
 
-    @script                             = @Script.find_or_create_by stdin: "print test_file_string"
+    @script                             = @Script.find_or_create_by stdin: "echo test_file_string"
 
     @user                               = @Fixture::User.default
     @job                                = @Fixture::Job.default      @user, @box
@@ -29,16 +29,18 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def test_find_or_create_remote
     #remove all remotes for this file
-    @gfile.terminate                  @gfile_read_task
-    @gfile                          = @Fixture::Gfile.default
-    @gfile.find_or_create_remote      @gfile_session
+    @gfile.terminate                  @gfile_session
+    @gfile                          = @Gfile.find_or_create_by_owner_and_name(
+                                      @gfile_owner, @gfile_name, @gfile_session)
+
     #delete DB version, start over, should find existing instance
     #with same key
-    _key                             = @gfile.key
+    _remote_id                      = @gfile.remote_id
     @gfile.delete
-    @gfile                          = @Fixture::Gfile.default
-    @gfile.find_or_create_remote      @gfile_session
-    assert_equal                      @gfile.key, _key
+    @gfile                          = @Gfile.find_or_create_by_owner_and_name(
+                                      @gfile_owner, @gfile_name, @gfile_session)
+
+    assert_equal                      @gfile.remote_id, _remote_id
   end
 
   def test_write_and_read

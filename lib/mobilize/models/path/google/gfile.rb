@@ -43,13 +43,13 @@ module Mobilize
     def sync(remote)
       _gfile, _remote                 = self, remote
 
-      _roles                          = _gfile.roles _remote
+      _roles                          = _gfile.roles(_remote)
 
-      _gfile.update_attributes name:    _remote.title,
-                               key:     _remote.resource_id,
-                               owner:   _roles[:owner].first,
-                               readers: _roles[:reader],
-                               writers: _roles[:writer]
+      _gfile.update_attributes name:        _remote.title,
+                               remote_id:   _remote.resource_id,
+                               owner:       _roles[:owner].first,
+                               readers:     _roles[:reader],
+                               writers:     _roles[:writer]
       _gfile
     end
 
@@ -88,7 +88,7 @@ module Mobilize
     def read(task)
       _gfile, _task, _user        = self, task, task.user
 
-      _remote                     = _gfile.sync _task.session
+      _remote                     = _gfile.remote _task.session
 
       if _gfile.is_reader?          _user
         #make sure path exists but dir does not
@@ -96,7 +96,7 @@ module Mobilize
 
         _remote.download_to_file   "#{_task.dir}/stdout"
         Logger.write               "Downloaded #{_gfile.id} to #{_task.dir}/stdout"
-        Logger.write               "#{_user.google_login}: #{File.size(_task.input).to_s} bytes", "STAT"
+        Logger.write               "#{_user.google_login}: #{File.size("#{_task.dir}/stdout").to_s} bytes", "STAT"
       else
         Logger.write               "User #{_user.id} does not have read access to #{_gfile.id}", "FATAL"
       end
@@ -119,17 +119,17 @@ module Mobilize
     end
 
     def Gfile.remotes_by(session, params = {})
-      _session                             = session
+      _session, _params                    = session, params
 
-      if params[:title]
-        params["title-exact"]              = true
+      if _params[:title]
+        _params["title-exact"]              = true
       end
 
-      _remotes                             = _session.files params
+      _remotes                             = _session.files _params
       #sort by published date for seniority
       _remotes.sort_by {|remote|
                         _remote            = remote
-                        _publish_element   = _remote.document_feed_entry.css("published")
+                        _publish_element   = _remote.document_feed_entry.css "published"
                         _publish_timestamp = _publish_element.children.first.text
                         _publish_timestamp
                         }
@@ -167,7 +167,7 @@ module Mobilize
 
       Logger.write(        "Gfile has no remote_id", "FATAL") unless _gfile.remote_id
 
-      _remotes            = Gfile.remotes_by(_session, owner: _gfile.owner, title: _gfile.title)
+      _remotes            = Gfile.remotes_by _session, owner: _gfile.owner, title: _gfile.name
 
       _remotes            = _remotes.select{|remote|
                                             _remote              = remote
