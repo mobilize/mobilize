@@ -21,163 +21,154 @@ module Mobilize
 
     def Box.session
 
-      @access_key_id     = Mobilize.config.aws.access_key_id
-      @secret_access_key = Mobilize.config.aws.secret_access_key
-      @region            = @@config.region
-      @session           = Aws::Ec2.new @access_key_id, @secret_access_key, region: @region
+      _access_key_id     = Mobilize.config.aws.access_key_id
+      _secret_access_key = Mobilize.config.aws.secret_access_key
+      _region            = @@config.region
+      _session           = Aws::Ec2.new _access_key_id, _secret_access_key, region: _region
 
-      Logger.write         "Got ec2 session for region #{@region}"
+      Logger.write         "Got ec2 session for region #{_region}"
 
-      @session
+      _session
     end
 
     def Box.remotes(params = nil, session = nil)
 
-      @params            = params  || {aws_state: ['running','pending']}
-      @session           = session ||  Box.session
+      _params            = params  || {aws_state: ['running','pending']}
+      _session           = session ||  Box.session
 
-      @remotes           = @session.describe_instances.map{|remote| remote.with_indifferent_access }
+      _remotes           = _session.describe_instances.map{|remote| remote.with_indifferent_access }
       #check for params that match inside the selected remotes
-      @remotes           = @remotes.select do  |remote|
-                             @remote          = remote
-                             @matches         = @params.map{|key, value|
-                                                                 @key, @value = key, value
-                                                                 @value.to_a.include? @remote[@key]
+      _remotes           = _remotes.select do  |remote|
+                             _remote          = remote
+                             _matches         = _params.map{|key, value|
+                                                                 _key, _value = key, value
+                                                                 _value.to_a.include? _remote[_key]
                                                                }.uniq
                              #return remotes that match
-                             @matches.length == 1 and
-                             @matches.first  == true
+                             _matches.length == 1 and
+                             _matches.first  == true
       end
 
-      Logger.write        "#{@remotes.length.to_s} " +
-                          "remotes for #{@session.params[:region]}, " +
-                          "params: #{@params.to_s}"
-      @remotes
+      Logger.write        "#{_remotes.length.to_s} " +
+                          "remotes for #{_session.params[:region]}, " +
+                          "params: #{_params.to_s}"
+      _remotes
     end
 
     def Box.remotes_by_name(name, params = nil, session = Box.session)
 
-      @name                    = name
-      @params                  = params  || {aws_state: ['running','pending']}
-      @session                 = session || Box.session
+      _name                    = name
+      _params                  = params  || {aws_state: ['running','pending']}
+      _session                 = session || Box.session
 
-      @remotes                 = Box.remotes(@params, @session).select{|remote| remote[:tags][:name] == @name}
+      _remotes                 = Box.remotes(_params, _session).select{|remote| remote[:tags][:name] == _name}
 
-      Logger.write               "#{@remotes.length.to_s} remotes by name #{@name}"
+      Logger.write               "#{_remotes.length.to_s} remotes by name #{_name}"
 
-      @remotes
+      _remotes
     end
 
     #creates both DB box and its remote
     def Box.find_or_create_by_name(name, session = nil)
 
-      @name                 = name
-      @session              = session || Box.session
+      _name, _session       = name, (session || Box.session)
 
-      @box                  = Box.find_or_create_by name: @name
+      _box                  = Box.find_or_create_by name: _name
 
-      @remote               = @box.remote(@session) if @box.remote_id
-
-      @remotes              = if @remote.nil?
-                                Box.remotes_by_name   @name, nil, @session
+      _remote               = _box.remote(_session) if _box.remote_id
+      _remotes              = if _remote.nil?
+                                Box.remotes_by_name   _name, nil, _session
                               end
+      unless                  _remotes.blank?
+        _remote             = _remotes.first
 
-      unless                  @remotes.empty?
-        @remote             = @remotes.first
-
-        if                    @remotes.length > 1
-          Logger.write       "TOO MANY REMOTES: #{@remotes.length} remotes named #{@name}", "WARN"
+        if                    _remotes.length > 1
+          Logger.write       "TOO MANY REMOTES: #{_remotes.length} remotes named #{_name}", "WARN"
         end
       end
 
-      if                      @remote
-        @box.sync             @remote
+      if                      _remote
+        _box.sync             _remote
       else
-        @box.launch           @session
+        _box.launch           _session
       end
     end
 
     def remote(session = nil)
-      @box             = self
-      @session         = session || Box.session
+      _box             = self
+      _session         = session || Box.session
 
-      Logger.write(     "Box has no remote_id", "FATAL") unless @box.remote_id
+      Logger.write(     "Box has no remote_id", "FATAL") unless _box.remote_id
 
-      @remotes         = Box.remotes_by_name @box.name,
+      _remotes         = Box.remotes_by_name _box.name,
                                              {aws_state:       ['running','pending'],
-                                              aws_instance_id: @box.remote_id},
-                                             @session
-      @remotes.first
+                                              aws_instance_id: _box.remote_id},
+                                             _session
+      _remote          = _remotes.first
+      Logger.write(      "Found remote #{_box.remote_id} for #{_box.id}," +
+                         " currently #{_remote[:aws_state]}") if _remote
+      _remote
     end
 
     def sync(remote)
-      @box, @remote        = self, remote
+      _box, _remote        = self, remote
 
-      @box.update_attributes(
-        ami:                 @remote[:aws_image_id],
-        size:                @remote[:remote_type],
-        keypair_name:        @remote[:keypair_name],
-        security_groups:     @remote[:group_ids],
-        remote_id:           @remote[:aws_instance_id],
-        dns:                 @remote[:dns_name],
-        ip:                  @remote[:aws_private_ip_address]
+      _box.update_attributes(
+        ami:                 _remote[:aws_image_id],
+        size:                _remote[:aws_instance_type],
+        keypair_name:        _remote[:ssh_key_name],
+        security_groups:     _remote[:aws_groups],
+        remote_id:           _remote[:aws_instance_id],
+        dns:                 _remote[:dns_name],
+        ip:                  _remote[:aws_private_ip_address]
       )
-      Logger.write           "synced box #{@box.id} with remote #{@box.remote_id}."
-      @box
+      Logger.write           "synced box #{_box.id} with remote #{_box.remote_id}."
+      _box
     end
 
     def terminate(session = nil)
-      #terminates the remote remote then
-      #deletes the local database remote
-      @box                          = self
-      @session                      = session || Box.session
-      #terminate remotes by name
-      @remotes                      = Box.remotes_by_name @box.name,nil, @session
+      #terminates the remote then
+      #deletes the local database version
+      _box                          = self
+      _session                      = session || Box.session
 
-      @remotes.each do |remote|
-
-        @session.terminate_instances  remote[:aws_instance_id].to_a
-
-        Logger.write                  "Terminated remote #{remote[:aws_instance_id]}"
-
+      if _box.remote_id
+        _session.terminate_instances  _box.remote_id
+        Logger.write                  "Terminated remote #{_box.remote_id} for #{_box.id}"
       end
 
-      @box.delete
-
-      Logger.write                    "Deleted #{@box.id} from DB"
+      _box.delete
+      Logger.write                    "Deleted #{_box.id} from DB"
 
       true
     end
 
     def launch(session = nil)
 
-      @box                         = self
+      _box, _session               = self, (session || Box.session)
 
-      @session                     = session || Box.session
+      _remote_params               = {key_name:      _box.keypair_name,
+                                      group_ids:     _box.security_groups,
+                                      instance_type:   _box.size}
 
-      @remote_params               = {key_name:      @box.keypair_name,
-                                      group_ids:     @box.security_groups,
-                                      instance_type:   @box.size}
+      _remotes                     = _session.launch_instances(_box.ami, _remote_params)
+      _remote                      = _remotes.first
 
-      @remotes                     = @session.launch_instances(@box.ami, @remote_params)
-      @remote                      = @remotes.first
-
-      @box.update_attributes         remote_id: @remote[:aws_instance_id]
-      @session.create_tag            @box.remote_id, "name", @box.name
-      @remote                      = @box.wait_for_running @session
-      @box.sync                      @remote
+      _box.update_attributes         remote_id: _remote[:aws_instance_id]
+      _session.create_tag            _box.remote_id, "name", _box.name
+      _remote                      = _box.wait_for_running _session
+      _box.sync                      _remote
     end
 
     def wait_for_running(session  = nil)
-      @box                        = self
-      @session                    = session || Box.session
-      @remote                     = @box.remote @session
-      while                         @remote[:aws_state] != "running"
-        Logger.write                "remote #{@box.remote_id} still at #{@remote[:aws_state]} -- waiting 10 sec"
+      _box, _session              = self, ( session || Box.session )
+      _remote                     = _box.remote _session
+      while                         _remote[:aws_state] != "running"
+        Logger.write                "remote #{_box.remote_id} still at #{_remote[:aws_state]} -- waiting 10 sec"
         sleep                       10
-        @remote                   = @box.remote @session
+        _remote                   = _box.remote _session
       end
-      @remote
+      _remote
     end
   end
 end

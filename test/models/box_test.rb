@@ -31,7 +31,7 @@ class BoxTest < MiniTest::Unit::TestCase
 
     #finally, Box.remotes_by_name.first should return
     #the same as simply remote
-    assert_equal                 @Box.remotes_by_name(@worker_name, nil, @box_session).first,
+    assert_equal                 @Box.remotes_by_name(@Config.box.name, nil, @box_session).first,
                                  @box.remote(@box_session)
   end
 
@@ -42,7 +42,7 @@ class BoxTest < MiniTest::Unit::TestCase
                                  "running"
     @box.terminate               @box_session
     #remotes array should be empty
-    @remotes                   = @Box.remotes_by_name @worker_name, nil, @box_session
+    @remotes                   = @Box.remotes_by_name @Config.box.name, nil, @box_session
     assert_equal                 @remotes, []
   end
 end
