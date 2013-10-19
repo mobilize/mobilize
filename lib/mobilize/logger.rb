@@ -1,34 +1,34 @@
 module Mobilize
   module Logger
     def Logger.trace_header(trace, level)
-      @trace, @level        = trace, level
-      @header               = @trace.first.split(Mobilize.root).last
-      @response             = "[#{Time.now.utc}]: #{@header}"
+      _trace, _level        = trace, level
+      _header               = _trace.first.split(Mobilize.root).last
+      _response             = "[#{Time.now.utc}]: #{_header}"
       begin
         if                    Mobilize.config.log.level == "info"
           #cut off time and root trace at the beginning
-          @header           = @header.split("/").last
-          @response         = @header
+          _header           = _header.split("/").last
+          _response         = _header
         end
       rescue
         #leave header as was; config not loaded yet
       end
       #pad the response according to config or 0 if not loaded yet
-      @ljust_length         = begin;Mobilize.config.log.ljust;rescue;0;end
-      @ljusted_response     = "[#{@level.ljust(5," ")}] #{@header}:".ljust(@ljust_length," ")
-      return                  @ljusted_response
+      _ljust_length         = begin;Mobilize.config.log.ljust;rescue;0;end
+      _ljusted_response     = "[#{_level.ljust(5," ")}] #{_header}:".ljust(_ljust_length," ")
+      _ljusted_response
     end
     def Logger.write(message, level = nil)
-      @trace, @message      = caller(1), message
-      @level                = level || "INFO"
-      @log                  = Logger.trace_header(@trace,@level) + @message
-      @file_path            = File.expand_path "#{Mobilize.log_dir}/#{Mobilize.env}.log"
-      @logger               = ::Logger.new @file_path, "daily"
-      @logger.info(@log)
+      _trace, _message      = caller(1), message
+      _level                = level || "INFO"
+      _log                  = Logger.trace_header(_trace,_level) + _message
+      _file_path            = File.expand_path "#{Mobilize.log_dir}/#{Mobilize.env}.log"
+      _logger               = ::Logger.new _file_path, "daily"
+      _logger.info            _log
       if level == "FATAL"
-        raise @log
+        raise _log
       else
-        puts  @log
+        puts  _log
       end
     end
   end

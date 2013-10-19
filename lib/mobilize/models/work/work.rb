@@ -16,22 +16,22 @@ module Mobilize
     end
 
     def update_status(status)
-      @work                     = self
-      @status_string            = status.to_s
-      @timestamp_string         = @status_string + "_at"
-      @current_time             = Time.now.utc
+      _work                     = self
+      _status_string            = status.to_s
+      _timestamp_string         = _status_string + "_at"
+      _current_time             = Time.now.utc
 
-      @work.update_attributes     @timestamp_string =>     @current_time,
-                                  status:                  @status_string,
-                                  status_at:               @current_time
+      _work.update_attributes     _timestamp_string =>     _current_time,
+                                  status:                  _status_string,
+                                  status_at:               _current_time
 
-      Logger.write                "#{@work.id} status: #{@work.status} " +
-                                  "at #{@work.send @timestamp_string}"
+      Logger.write                "#{_work.id} status: #{_work.status} " +
+                                  "at #{_work.send _timestamp_string}"
     end
 
     def complete?
-      @work                    = self
-      return                     @work.status == "completed"
+      _work                    = self
+      _work.status            == "completed"
     end
   end
 end

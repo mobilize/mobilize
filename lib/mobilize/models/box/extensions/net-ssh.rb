@@ -8,24 +8,24 @@ module Net
         #except=true means exception will be raised on exit_code != 0
         def run(command, except=true, streams = [ :stdout, :stderr ])
 
-          @ssh, @stdout_data, @stderr_data    = self, "", ""
+          _ssh, @stdout_data, @stderr_data    = self, "", ""
           @exit_code, @exit_signal, @streams  = nil, nil, streams
 
-          @command, @except                   = command, except
+          @command, _except                   = command, except
 
-          @ssh.open_channel                 do |channel|
-            @ssh.run_proc(channel)
+          _ssh.open_channel                 do |channel|
+            _ssh.run_proc(channel)
           end
-          @ssh.loop
+          _ssh.loop
 
-          if                                    @except and @exit_code!=0
+          if                                    _except and @exit_code!=0
             Mobilize::Logger.write              @stderr_data, "FATAL"
           else
-            @result                           = {  stdout:      @stdout_data,
+            _result                           = {  stdout:      @stdout_data,
                                                    stderr:      @stderr_data,
                                                    exit_code:   @exit_code,
                                                    exit_signal: @exit_signal  }
-            return                              @result
+            _result
           end
         end
         def run_proc(channel)

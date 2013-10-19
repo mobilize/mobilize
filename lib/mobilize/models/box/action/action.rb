@@ -18,74 +18,74 @@ module Mobilize
 
       def ssh_cmd
 
-        @box                      = self
-        @ssh_cmd                  = "ssh -i #{Box.private_key_path} " +
+        _box                      = self
+        _ssh_cmd                  = "ssh -i #{Box.private_key_path} " +
                                     "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
-                                    "#{@box.user_name}@#{@box.dns}"
-        puts                        @ssh_cmd
+                                    "#{_box.user_name}@#{_box.dns}"
+        puts                        _ssh_cmd
 
       end
 
       def sh(command,  except = true, streams = [:stdout, :stderr])
 
-        @box                                  = self
+        _box                                  = self
 
-        @ssh_args                             = {keys: [Box.private_key_path],
+        _ssh_args                             = {keys: [Box.private_key_path],
                                                  paranoid: false}
 
-        @command_file_path                    = "/tmp/" + "#{command}#{Time.now.utc.to_f.to_s}".to_md5
+        _command_file_path                    = "/tmp/" + "#{command}#{Time.now.utc.to_f.to_s}".to_md5
 
-        @box.write                              command, @command_file_path, false, false
+        _box.write                              command, _command_file_path, false, false
 
-        send_args                             = ["start", @box.dns, @box.user_name, @ssh_args]
+        send_args                             = ["start", _box.dns, _box.user_name, _ssh_args]
 
-        @result                               = Net::SSH.send_w_retries(*send_args) do |ssh|
-                                                  ssh.run("bash -l -c 'sh #{@command_file_path}'", except, streams)
+        _result                               = Net::SSH.send_w_retries(*send_args) do |ssh|
+                                                  ssh.run("bash -l -c 'sh #{_command_file_path}'", except, streams)
                                                 end
 
-        Net::SSH.send_w_retries(*send_args)   {|ssh| ssh.run "rm #{@command_file_path}"}
+        Net::SSH.send_w_retries(*send_args)   {|ssh| ssh.run "rm #{_command_file_path}"}
 
-        return                                 @result
+        _result
 
       end
 
       def cp(loc_path, rem_path, mkdir = true, log = true)
 
-        @box, @loc_path, @rem_path = self, loc_path, rem_path
+        _box, _loc_path, _rem_path = self, loc_path, rem_path
 
-        @box.sh(                     "mkdir -p " + File.dirname(@rem_path)) if mkdir
+        _box.sh(                     "mkdir -p " + File.dirname(_rem_path)) if mkdir
 
-        @ssh_args                  = {keys: [Box.private_key_path],
+        _ssh_args                  = {keys: [Box.private_key_path],
                                       paranoid: false}
 
-        send_args                  = ["start",@box.dns,@box.user_name,@ssh_args]
+        send_args                  = ["start", _box.dns, _box.user_name, _ssh_args]
 
-        @result                    = Net::SCP.send_w_retries(*send_args) do |scp|
-                                       scp.upload!(loc_path,rem_path, recursive: true) do |ch, name, sent, total|
+        _result                    = Net::SCP.send_w_retries(*send_args) do |scp|
+                                       scp.upload!(_loc_path, _rem_path, recursive: true) do |ch, name, sent, total|
                                          Logger.info("#{name}: #{sent}/#{total}") if log
                                        end
                                      end
 
-        return                       @result
+        _result
 
       end
 
       def write(string, rem_path, mkdir = true, log = true)
 
-        @box                      = self
+        _box                      = self
 
-        @string, @rem_path        = string, rem_path
+        _string, _rem_path        = string, rem_path
 
-        @temp_file_path           = "/tmp/" + "#{string}#{Time.now.utc.to_f.to_s}".to_md5
+        _temp_file_path           = "/tmp/" + "#{string}#{Time.now.utc.to_f.to_s}".to_md5
 
         begin
-          File.write                @temp_file_path, @string
-          @box.cp                   @temp_file_path, @rem_path, mkdir, false
+          File.write                _temp_file_path, _string
+          _box.cp                   _temp_file_path, _rem_path, mkdir, false
         ensure
-          FileUtils.rm              @temp_file_path, force: true
+          FileUtils.rm              _temp_file_path, force: true
         end
 
-        Logger.write                "Wrote: #{@string.ellipsize(25)} to #{@box.id}:#{@rem_path}" if log
+        Logger.write                "Wrote: #{_string.ellipsize(25)} to #{_box.id}:#{_rem_path}" if log
 
       end
     end

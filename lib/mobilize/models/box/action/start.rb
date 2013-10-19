@@ -4,27 +4,27 @@ module Mobilize
       module Start
         def start_engine
 
-          @box                           = self
+          _box                           = self
 
-          @box.install_mobilize
+          _box.install_mobilize
 
-          @box.write_resque_pool
+          _box.write_resque_pool
 
-          @box.upload_god_file
+          _box.upload_god_file
 
-          @box.start_god
+          _box.start_god
 
-          @box.load_god_file
+          _box.load_god_file
 
         end
 
         def start_god_file
 
-          @box                  = self
+          _box                  = self
 
-          @god_file_name        = "resque-pool-#{Mobilize.env}.rb"
+          _god_file_name        = "resque-pool-#{Mobilize.env}.rb"
 
-          @box.sh                 "god && god load #{@box.mobilize_config_dir}/#{@god_file_name}"
+          _box.sh                 "god && god load #{_box.mobilize_config_dir}/#{_god_file_name}"
 
         end
       end

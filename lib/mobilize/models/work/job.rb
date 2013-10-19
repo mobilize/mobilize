@@ -22,43 +22,43 @@ module Mobilize
     end
 
     def Job.perform(job_id)
-         @job                   = Job.find job_id
-      if @job.trigger.tripped?
-         @stage                 = @job.next_stage
-         Resque.enqueue_by        :mobilize, Stage, @stage.id
+         _job                   = Job.find job_id
+      if _job.trigger.tripped?
+         _stage                 = _job.next_stage
+         Resque.enqueue_by        :mobilize, Stage, _stage.id
       end
     end
 
     def working?
-      @job                       = self
-      @next_stage                = @job.next_stage
-      return                       @next_stage.working? if @next_stage
+      _job                       = self
+      _next_stage                = _job.next_stage
+      return                       _next_stage.working? if _next_stage
     end
 
     def parent
-      @job                       = self
-      @trigger                   = @job.trigger
-      if @trigger.parent_job_id
-        @parent_job              = Job.find(@trigger.parent_job_id)
-        return                     @parent_job
+      _job                       = self
+      _trigger                   = _job.trigger
+      if _trigger.parent_job_id
+        _parent_job              = Job.find(_trigger.parent_job_id)
+        return                     _parent_job
       end
     end
 
     def next_stage
-      @job                      = self
-      @stages                   = @job.stages.sort_by{|stage| stage.order}
-      @next_stage               = @stages.select{|stage| !stage.complete? }.first
-      return                      @next_stage
+      _job                      = self
+      _stages                   = _job.stages.sort_by{|stage| stage.order}
+      _next_stage               = _stages.select{|stage| !stage.complete? }.first
+      return                      _next_stage
     end
 
     def complete
-      @job                      = self
-      @job.update_status         :completed
+      _job                      = self
+      _job.update_status         :completed
     end
 
     def fail
-      @job                      = self
-      @job.update_status         :failed
+      _job                      = self
+      _job.update_status         :failed
     end
   end
 end

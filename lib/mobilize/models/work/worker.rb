@@ -9,13 +9,13 @@ module Mobilize
     belongs_to :task
 
     def pack
-      @worker                 = self
-      @task                   = task
-      @pack_cmd               = "cd #{@worker.parent_dir} && " +
-                                "tar -zcvf #{@worker.dir}.tar.gz " +
-                                "#{File.basename(@worker.dir)}"
-      @pack_cmd.popen4(true)
-      Logger.write              "Packed worker for #{@task.id} in #{@worker.dir}.tar.gz"
+      _worker                 = self
+      _task                   = task
+      _pack_cmd               = "cd #{_worker.parent_dir} && " +
+                                "tar -zcvf #{_worker.dir}.tar.gz " +
+                                "#{File.basename(_worker.dir)}"
+      _pack_cmd.popen4(true)
+      Logger.write              "Packed worker for #{_task.id} in #{_worker.dir}.tar.gz"
     end
   end
 end

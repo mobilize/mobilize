@@ -27,123 +27,123 @@ module Mobilize
 
     #gsubs keys in files with the replacement value given
     def gsub!
-      @task = self
-      return nil unless @task.subs
-      @task.subs.each do |k,v|
-        @string1                = Regexp.escape(k.to_s) # escape any special characters
-        @string2                = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
-        @replace_cmd            = "cd #{@task.dir} && " +
+      _task = self
+      return nil unless _task.subs
+      _task.subs.each do |k,v|
+        _string1                = Regexp.escape(k.to_s) # escape any special characters
+        _string2                = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
+        _replace_cmd            = "cd #{_task.dir} && " +
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
-                                  "xargs sed -ie 's/#{@string1}/#{@string2}/g')"
-        @replace_cmd.popen4
-        Logger.write              "Replaced #{@string1} with #{@string2} in #{@task.dir}"
+                                  "xargs sed -ie 's/#{_string1}/#{_string2}/g')"
+        _replace_cmd.popen4
+        Logger.write              "Replaced #{_string1} with #{_string2} in #{_task.dir}"
       end
     end
 
     def Task.perform(task_id)
-      @task                      = Task.find(task_id)
-      @path                      = @task.path
-      @session                   = @path.class.session
-      if                           @session
-        @task.start
+      _task                      = Task.find(task_id)
+      _path                      = _task.path
+      _session                   = _path.class.session
+      if                           _session
+        _task.start
         begin
-          @stage                 = @task.stage
-          @path.send               @stage.call, @task
-          @task.complete
-        rescue                  => @exc
-          if                       @task.retries < @@config.max_retries
-            @task.retry
+          _stage                 = _task.stage
+          _path.send               _stage.call, _task
+          _task.complete
+        rescue                  => _exc
+          if                       _task.retries < @@config.max_retries
+            _task.retry
           else
-            @task.fail
+            _task.fail
           end
         end
       else
-        Logger.write               "No session available for #{@task.id}"
+        Logger.write               "No session available for #{_task.id}"
       end
     end
 
     def working?
-      @task                  = self
-      @workers               = Resque.workers
-      @workers.index         {|worker|
-        @payload             = worker.job['payload']
-        if @payload
-          @work_id           = @payload['args'].first
-          @working           = true if @work_id == @task.id
+      _task                  = self
+      _workers               = Resque.workers
+      _workers.index         {|worker|
+        _payload             = worker.job['payload']
+        if _payload
+          _work_id           = _payload['args'].first
+          _working           = true if _work_id == _task.id
         end
-        @working
+        _working
                              }
-      @working
+      _working
     end
 
     def queued?
-      @task                  = self
-      @queued_jobs           = ::Resque.peek(Mobilize.queue,0,0).to_a
-      @queued_jobs.index     {|job|
-        @work_id             = job['args'].first
-        @queued              = true if @work_id == @task.id
+      _task                  = self
+      _queued_jobs           = ::Resque.peek(Mobilize.queue,0,0).to_a
+      _queued_jobs.index     {|job|
+        _work_id             = job['args'].first
+        _queued              = true if _work_id == _task.id
                               }
-      @queued
+      _queued
     end
 
     def retry
-      @task                  = self
-      @task.update_attributes  retries: @task.retries + 1
-      Resque.enqueue_to        Mobilize.queue, Task, @task.id
+      _task                  = self
+      _task.update_attributes  retries: _task.retries + 1
+      Resque.enqueue_to        Mobilize.queue, Task, _task.id
     end
 
     def start
-      @task                   = self
-      @task.update_status       :started
+      _task                   = self
+      _task.update_status       :started
     end
 
     def complete
-      @task                   = self
-      @task.update_status       :completed
+      _task                   = self
+      _task.update_status       :completed
     end
 
     def fail
-      @task                   = self
-      @task.update_status     = :failed
-      @stage                  = @task.stage
-      @stage.fail
+      _task                   = self
+      _task.update_status     = :failed
+      _stage                  = _task.stage
+      _stage.fail
     end
 
     def dir
-      @task                     = self
-      @path                     = @task.path
-      if @path.class == Script  #scripts use the alphanunderscrore name for the directory
-        @dir                    = "#{Job.dir}/#{@task.stage.id}/script/#{@path.name}"
+      _task                     = self
+      _path                     = _task.path
+      if _path.class == Script  #scripts use the alphanunderscrore name for the directory
+        _dir                    = "#{Job.dir}/#{_task.stage.id}/script/#{_path.name}"
       else
-        @dir                    = "#{Job.dir}/#{@task.id}"
+        _dir                    = "#{Job.dir}/#{_task.id}"
       end
-      return                    @dir
+      _dir
     end
 
     def path_dir
-      @task                     = self
-      @path_dir                 = File.dirname @task.dir
-      return                      @path_dir
+      _task                     = self
+      _path_dir                 = File.dirname _task.dir
+      return                      _path_dir
     end
 
     def refresh_dir
-      @task                     = self
-      FileUtils.rm_r              @task.dir, force: true
-      FileUtils.mkdir_p           @task.dir
-      Logger.write                "Refreshed task dir " + @task.dir
+      _task                     = self
+      FileUtils.rm_r              _task.dir, force: true
+      FileUtils.mkdir_p           _task.dir
+      Logger.write                "Refreshed task dir " + _task.dir
     end
 
     def purge_dir
-      @task                     = self
-      FileUtils.mkdir_p           @task.dir
-      FileUtils.rm_r              @task.dir, force: true
-      Logger.write                "Purged task dir "    + @task.dir
+      _task                     = self
+      FileUtils.mkdir_p           _task.dir
+      FileUtils.rm_r              _task.dir, force: true
+      Logger.write                "Purged task dir "    + _task.dir
     end
 
     def create_dir
-      @task                     = self
-      FileUtils.mkdir_p           @task.dir
-      Logger.write                "Created task dir "   + @task.dir
+      _task                     = self
+      FileUtils.mkdir_p           _task.dir
+      Logger.write                "Created task dir "   + _task.dir
     end
   end
 end
