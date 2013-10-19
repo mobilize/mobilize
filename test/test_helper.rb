@@ -7,10 +7,7 @@ require               'mobilize'
 #drop test database
 Mongoid.purge!
 #get fixtures
-require               "./test/fixtures/box"
 require               "./test/fixtures/github"
-require               "./test/fixtures/gfile"
-require               "./test/fixtures/script"
 require               "./test/fixtures/user"
 require               "./test/fixtures/job"
 require               "./test/fixtures/stage"

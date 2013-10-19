@@ -5,7 +5,7 @@ class TriggerTest < MiniTest::Unit::TestCase
     Mobilize::Job.purge!
     @worker_name               = Mobilize.config.fixture.box.worker_name
     @box                       = Mobilize::Fixture::Box.default       @worker_name
-    @box_session               = Mobilize::Box.find_or_create_remote_by_name @worker_name
+    @box_session               = Mobilize::Box.find_or_create_by_name @worker_name
     @user                      = Mobilize::Fixture::User.default
     @job                       = Mobilize::Fixture::Job.default     @user, @box
     @parent_job                = Mobilize::Fixture::Job.parent      @user, @box
