@@ -14,25 +14,25 @@ module Mobilize
     #generates a yml configuration file 
     #based on hash provided
     def Config.write_from_hash(file_name, hash)
-      @file                   = File.open File.expand_path(file_name), "w"
-      @file.print               hash.to_yaml
-      @file.close
+      _file                   = File.open File.expand_path(file_name), "w"
+      _file.print               hash.to_yaml
+      _file.close
       return true
     end
     #takes file from samples, copies to ~/.mobilize,
     #creates symlink in config/
     def Config.write_from_sample(file_name, force = nil)
-      @file_name              = file_name
-      @source_path            = "#{Mobilize.root}/samples/#{@file_name}"
-      @target_path            = "#{Config.dir}/#{@file_name}"
+      _file_name              = file_name
+      _source_path            = "#{Mobilize.root}/samples/#{_file_name}"
+      _target_path            = "#{Config.dir}/#{_file_name}"
 
-      FileUtils.mkdir_p         File.dirname @target_path
+      FileUtils.mkdir_p         File.dirname _target_path
 
-      @force_write            = (File.exists?(@target_path) and force == true)
-      if                        @force_write or !File.exists?(@target_path)
-        FileUtils.cp            @source_path, @target_path
-        Mobilize::Logger.write  "Wrote default to #{@target_path}, " +
-                                "please add environment variables accordingly"
+      _force_write            = (File.exists?(_target_path) and force == true)
+      if                        _force_write or !File.exists?(_target_path)
+        FileUtils.cp            _source_path, _target_path
+        Mobilize::Logger.write("Wrote default to #{_target_path}, " +
+                                "please add environment variables accordingly")
       end
     end
     #loads rc file from home directory if present
@@ -56,26 +56,26 @@ module Mobilize
       return true
     end
     def Config.write_box_file
-      @box_ssh_path           = "#{Config.key_dir}/box.ssh"
+      _box_ssh_path           = "#{Config.key_dir}/box.ssh"
       FileUtils.cp              Mobilize.config.box.private_key_path,
-                                @box_ssh_path
-      FileUtils.chmod           0700, @box_ssh_path
+                                _box_ssh_path
+      FileUtils.chmod           0700, _box_ssh_path
       Logger.write              "Wrote box ssh file"
     end
     def Config.write_git_files
-      @git_ssh_path           = "#{Config.key_dir}/git.ssh"
+      _git_ssh_path           = "#{Config.key_dir}/git.ssh"
       FileUtils.cp              Mobilize.config.github.owner_ssh_key_path,
-                                @git_ssh_path
+                                _git_ssh_path
 
       #set git to not check strict host
-      @git_sh_path           = "#{Config.key_dir}/git.sh"
-      @git_sh_cmd            = "#!/bin/sh\nexec /usr/bin/ssh " +
+      _git_sh_path           = "#{Config.key_dir}/git.sh"
+      _git_sh_cmd            = "#!/bin/sh\nexec /usr/bin/ssh " +
                                 "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
-                                "-i #{@git_ssh_path} \"$@\""
+                                "-i #{_git_ssh_path} \"$@\""
 
-      File.write                @git_sh_path, @git_sh_cmd
+      File.write                _git_sh_path, _git_sh_cmd
 
-      FileUtils.chmod           0700, [@git_sh_path, @git_ssh_path]
+      FileUtils.chmod           0700, [_git_sh_path, _git_ssh_path]
       Logger.write              "Wrote git ssh files"
       return                    true
     end
