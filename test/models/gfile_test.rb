@@ -7,11 +7,11 @@ class GfileTest < MiniTest::Unit::TestCase
     @Config                             = Mobilize.config.fixture
     @gfile_session, @script_session     = @Gfile.session, @Script.session
 
-    @gfile_owner, @gfile_name           = @Config.gfile.ie{|gfile| [gfile.owner, gfile.name] }
+    @gfile_owner, @gfile_name           = @Config.google.email, @Config.gfile.name
     @gfile                              = @Gfile.find_or_create_by_owner_and_name(
                                           @gfile_owner, @gfile_name, @gfile_session)
 
-    @box                                = Mobilize::Box.find_or_create_by_name @Config.box.worker_name
+    @box                                = Mobilize::Box.find_or_create_by_name @Config.box.name
 
     @script                             = @Script.find_or_create_by stdin: "print test_file_string"
 
@@ -29,25 +29,25 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def test_find_or_create_remote
     #remove all remotes for this file
-    @gfile.purge!                     @gfile_read_task
+    @gfile.terminate                  @gfile_read_task
     @gfile                          = @Fixture::Gfile.default
     @gfile.find_or_create_remote      @gfile_session
     #delete DB version, start over, should find existing instance
     #with same key
-    key                             = @gfile.key
+    _key                             = @gfile.key
     @gfile.delete
     @gfile                          = @Fixture::Gfile.default
     @gfile.find_or_create_remote      @gfile_session
-    assert_equal                      @gfile.key, key
+    assert_equal                      @gfile.key, _key
   end
 
   def test_write_and_read
     @script.run                       @script_task
-    @test_input_string              = File.read "#{@script_task.dir}/stdout"
+    _test_input_string              = File.read "#{@script_task.dir}/stdout"
     @gfile.write                      @gfile_write_task
     @gfile.read                       @gfile_read_task
-    @test_output_string             = File.read "#{@gfile_read_task.dir}/stdout"
+    _test_output_string             = File.read "#{@gfile_read_task.dir}/stdout"
 
-    assert_equal                      @test_input_string, @test_output_string
+    assert_equal                      _test_input_string, _test_output_string
   end
 end

@@ -4,11 +4,10 @@ class ScriptTest < MiniTest::Unit::TestCase
     Mongoid.purge!
     Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
-    @worker_name               = Mobilize.config.fixture.box.worker_name
-    @box                       = Mobilize::Box.find_or_create_by_name @worker_name
+    @box                       = Mobilize::Box.find_or_create_by_name Mobilize.config.fixture.box.name
     @user                      = @Fixture::User.default
     @stdin                     = "(echo 'log this to the log' > log) && cmd"
-    @script                    = @Fixture::Script.default(@stdin)
+    @script                    = Mobilize::Script.find_or_create_by stdin: @stdin
     @script_session            = Mobilize::Script.session
     @job                       = @Fixture::Job.default     @user, @box
     @stage                     = @Fixture::Stage.default   @job, 1, "run"
