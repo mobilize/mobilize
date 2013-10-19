@@ -8,13 +8,13 @@ module Mobilize
     field :_id,              type: String, default:->{"script/#{stdin.to_md5}"}
 
     def write(task)
-      @task              = task
-      @task.refresh_dir
-      @stdin_path        = @task.dir + "/stdin"
-      @file              = File.open @stdin_path, "w"
-      @file.print          @script.stdin
-      @file.close
-      Logger.info          "wrote stdin into task dir at #{@stdin_path}"
+      _script, _task       = self, task
+      _task.refresh_dir
+      _stdin_path          = _task.dir + "/stdin"
+      _file                = File.open _stdin_path, "w"
+      _file.print            _script.stdin
+      _file.close
+      Logger.write           "wrote stdin into task dir at #{_stdin_path}"
     end
 
     def Script.session
@@ -22,36 +22,36 @@ module Mobilize
     end
 
     def run(task)
-      @script                 =  self
-      @task                   =  task
-      @script.write              @task
-      @task.gsub!
+      _script                 =  self
+      _task                   =  task
+      _script.write              _task
+      _task.gsub!
       #cd to job dir and execute file from there
-      @run_cmd                = "(cd #{@task.dir}/ && sh stdin) > " +
-                                "#{@task.dir}/stdout 2> " +
-                                "#{@task.dir}/stderr; " +
-                                "touch #{@task.dir}/log; " +
-                                "echo $? > #{@task.dir}/exit_signal"
-      @run_cmd.popen4
+      _run_cmd                = "(cd #{_task.dir}/ && sh stdin) > " +
+                                "#{_task.dir}/stdout 2> " +
+                                "#{_task.dir}/stderr; " +
+                                "touch #{_task.dir}/log; " +
+                                "echo $? > #{_task.dir}/exit_signal"
+      _run_cmd.popen4
 
-      @streams                =  @script.streams @task
-      if                         @streams[:exit_signal].strip != "0"
-        Logger.error             @streams[:stderr]
+      _streams                =  _script.streams _task
+      if                         _streams[:exit_signal].strip != "0"
+        Logger.write             _streams[:stderr], "FATAL"
       end
     end
 
     def streams(task)
-      @script               = self
-      @task                 = task
-      @stream_array         = [:stdin, :stdout, :stderr, :exit_signal, :log]
+      _task                 = task
+      _stream_array         = [:stdin, :stdout, :stderr, :exit_signal, :log]
 
-      @result               = {}
-      @stream_array.each      {|stream|
-                                value           = File.read "#{@task.dir}/#{stream.to_s}"
-                                @result[stream] = value
+      _result               = {}
+      _stream_array.each      {|stream|
+                                _stream          = stream
+                                _value           = File.read "#{_task.dir}/#{_stream.to_s}"
+                                _result[stream]  = _value
                               }
 
-      return                  @result
+      _result
     end
   end
 end

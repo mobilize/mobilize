@@ -2,12 +2,9 @@ require "test_helper"
 class BoxTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
-    @Fixture                   = Mobilize::Fixture
-    @Box                       = Mobilize::Box
-    @worker_name               = Mobilize.config.fixture.box.worker_name
-    @box                       = @Fixture::Box.default @worker_name
-    #create session based off of definites
+    @Fixture, @Box, @Config    = Mobilize::Fixture, Mobilize::Box, Mobilize.config.fixture
     @box_session               = @Box.session
+    @box                       = @Box.find_or_create_by_name @Config.box.name, @box_session
   end
 
   #make sure defaults are working as expected
@@ -15,39 +12,37 @@ class BoxTest < MiniTest::Unit::TestCase
     assert_equal                 @box_session.class, Aws::Ec2
   end
 
-  def test_find_or_create_instance
+  def test_remote
     #make sure all instances with the test name are terminated
-    @box.purge!                  @box_session
+    @box.terminate               @box_session
     #create new instance
-    @box                       = @Fixture::Box.default @worker_name
-    @box.find_or_create_instance @box_session
+    @box                       = @Box.find_or_create_by_name @Config.box.name, @box_session
 
-    assert_equal                 @box.instance(@box_session)[:aws_state], 
+    assert_equal                 @box.remote(@box_session)[:aws_state],
                                  "running"
 
     #delete DB version, start over, should find existing instance
     #and assign to database object, making them equal
-    instance_id                = @box.instance_id
+    remote_id                  = @box.remote_id
     @box.delete
-    @box                       = @Fixture::Box.default(@worker_name)
-    @box.find_or_create_instance @box_session
+    @box                       = @Box.find_or_create_by_name @Config.box.name, @box_session
 
-    assert_equal                 @box.instance_id, instance_id
+    assert_equal                 @box.remote_id, remote_id
 
-    #finally, find_or_create_instance should return
-    #the same as simply instance
-    assert_equal                 @box.find_or_create_instance(@box_session),
-                                 @box.instance(@box_session)
+    #finally, Box.remotes_by_name.first should return
+    #the same as simply remote
+    assert_equal                 @Box.remotes_by_name(@Config.box.name, nil, @box_session).first,
+                                 @box.remote(@box_session)
   end
 
-  def test_purge!
+  def test_terminate
     #make sure the instance is up and running for latest @box
-    @box.find_or_create_instance @box_session
-    assert_equal                 @box.instance(@box_session)[:aws_state],
+    @box                       = @Box.find_or_create_by_name @Config.box.name, @box_session
+    assert_equal                 @box.remote(@box_session)[:aws_state],
                                  "running"
-    @box.purge!                  @box_session
-    #instances array should be empty
-    instances                    = @Box.instances_by_name(@worker_name, @box_session)
-    assert_equal                 instances, []
+    @box.terminate               @box_session
+    #remotes array should be empty
+    @remotes                   = @Box.remotes_by_name @Config.box.name, nil, @box_session
+    assert_equal                 @remotes, []
   end
 end

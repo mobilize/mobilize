@@ -14,97 +14,102 @@ module Mobilize
     def Github.sh_path;         Config.key_dir + "/git.sh"; end
 
     def Github.session
-      @session                = ::Github.new login:    @@config.owner_login,
+      _session                = ::Github.new login:    @@config.owner_login,
                                              password: @@config.owner_password
-      Logger.info               "Logged into Github."
-      return                    @session
+      Logger.write              "Logged into Github."
+      _session
     end
 
     def repo_call(task, action, category=nil)
-      @github                 = self
-      @task                   = task
+      _github                 = self
+      _task                   = task
       begin
-        @connection           = @task.session.repos
-        @connection           = category ? @connection.send(category) : @connection
-        @response             = @connection.send action,
-                                                 user: @github.owner_name,
-                                                 repo: @github.repo_name
-        @call                 = [action,category].compact.join(".")
-        @calls_left           = @response.headers.ratelimit_remaining
-        Logger.info             "#{@call} successful for #{@github._id} repo call; " +
-                                "#{@calls_left} calls left this hour"
+        _connection           = _task.session.repos
+        _connection           = category ? _connection.send(category) : _connection
+        _response             = _connection.send action,
+                                                 user: _github.owner_name,
+                                                 repo: _github.repo_name
+        _call                 = [action,category].compact.join(".")
+        _calls_left           = _response.headers.ratelimit_remaining
+        Logger.write            "#{_call} successful for #{_github._id} repo call; " +
+                                "#{_calls_left} calls left this hour"
       rescue
-        Logger.error            "Could not access #{@github._id}"
+        Logger.write            "Could not access #{_github._id}", "FATAL"
       end
-      return                    @response
+      _response
     end
 
     def collaborators(task)
-      @github                 = self
-      @task                   = task
-      @response               = @github.repo_call @task,"list","collaborators"
-      @collaborators          = @response.body.map{|b| b[:login]}
-      return                    @collaborators
+      _github                 = self
+      _task                   = task
+      _response               = _github.repo_call _task,"list","collaborators"
+      _collaborators          = _response.body.map{|b| b[:login]}
+      _collaborators
     end
 
     #clones repo into worker with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
     def read(task)
-      @github                = self
-      @task                  = task
-      @task.purge_dir
+      _github                = self
+      _task                  = task
+      _task.purge_dir
       begin
-        Logger.info            "attempting public read for #{@github.id}"
-        @github.read_public    @task
+        Logger.write           "attempting public read for #{_github.id}"
+        _github.read_public    _task
       rescue
-        Logger.info            "public read failed, attempting private read for #{@github.id}"
-        @github.read_private   @task
+        Logger.write           "public read failed, attempting private read for #{_github.id}"
+        _github.read_private   _task
       end
-      #get size of objects and log
-      @log_cmd               = "cd #{@task.dir} && git count-objects -v"
-      @size                  = @log_cmd.popen4
-      Logger.info              "Read #{@github.id} into #{@task.dir}: #{@size}"
+      #get size of objects and log, formatted for no line breaks
+      _log_cmd               = "cd #{_task.dir} && git count-objects -v"
+
+      _size                  = _log_cmd.popen4.split("\n").join(", ")
+
+      Logger.write             "Read #{_github.id} into #{_task.dir}"
+
+      _stat                  = _task.user.google_login + ": " + _size
+      Logger.write             _stat, "STAT"
       #deploy github repo
-      return                   true
+      true
     end
 
     def read_public(task)
-      @github                = self
-      @task                  = task
-      @cmd                   = "cd #{@task.path_dir} && " +
-                               "git clone -q https://u:p@#{@github.name}.git --depth=1"
-      @cmd.popen4(true)
-      Logger.info              "Read complete: #{@github._id}"
-      return true
+      _github                = self
+      _task                  = task
+      _cmd                   = "cd #{_task.path_dir} && " +
+                               "git clone -q https://u:p@#{_github.name}.git --depth=1"
+      _cmd.popen4(true)
+      Logger.write             "Read complete: #{_github._id}"
+      true
     end
 
     def verify_collaborator(task)
-      @github                = self
-      @task                  = task
-      @user                  = task.user
-      @is_collaborator       = @github.collaborators(@task).include?(@user.github_login)
+      _github                = self
+      _task                  = task
+      _user                  = task.user
+      _is_collaborator       = _github.collaborators(_task).include?(_user.github_login)
 
-      if @is_collaborator
-        Logger.info            "Verified user #{@user._id} has access to #{@github._id}"
-        return                 true
+      if _is_collaborator
+        Logger.write           "Verified user #{_user._id} has access to #{_github._id}"
+        true
       else
-        Logger.error           "User #{@user._id} does not have access to #{@github._id}"
+        Logger.write           "User #{_user._id} does not have access to #{_github._id}", "FATAL"
       end
     end
 
     def read_private(task)
-      @github                     = self
-      @task                       = task
+      _github                     = self
+      _task                       = task
       #determine if the user in question is a collaborator on the repo
-      @github.verify_collaborator   @task
+      _github.verify_collaborator   _task
       #add key, clone repo, go to specific revision, execute command
-      @cmd                        = "export GIT_SSH=#{Github.sh_path} && " +
-                                    "cd #{@task.path_dir} && " +
-                                    "git clone -q git@#{@github.name.sub("/",":")}.git --depth=1"
-      @cmd.popen4(true)
-      Logger.info                   "Read private git repo #{@github._id}"
-      return                        true
+      _cmd                        = "export GIT_SSH=#{Github.sh_path} && " +
+                                    "cd #{_task.path_dir} && " +
+                                    "git clone -q git@#{_github.name.sub("/",":")}.git --depth=1"
+      _cmd.popen4(true)
+      Logger.write                  "Read private git repo #{_github._id}"
+      true
     end
   end
 end

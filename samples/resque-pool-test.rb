@@ -10,9 +10,10 @@ God.watch do |w|
             'TERM_CHILD'     => 1}
   w.dir = File.expand_path(File.join(File.dirname(__FILE__),'..'))
   w.start = "resque-pool -d -E #{Mobilize.env} " +
-            "-o ~/.mobilize/log/resque-pool-#{Mobilize.env}.log " +
-            "-e ~/.mobilize/log/resque-pool-#{Mobilize.env}.err " +
-            "-p #{Mobilize.config.resque.pid_dir}/resque-pool-#{Mobilize.env}.pid"
+            "-c #{Mobilize.home_dir}/config/resque-pool.yml " +
+            "-o #{Mobilize.home_dir}/log/resque-pool-#{Mobilize.env}.log " +
+            "-e #{Mobilize.home_dir}/log/resque-pool-#{Mobilize.env}.err " +
+            "-p #{Mobilize.home_dir}/pid/resque-pool-#{Mobilize.env}.pid"
   w.start_grace = 10.seconds
  
   # restart if memory gets too high

@@ -1,174 +1,174 @@
 module Mobilize
-  #a Box resolves to an ec2 instance
+  #a Box resolves to an ec2 remote
   class Box
     include Mongoid::Document
     include Mongoid::Timestamps
-    include Mobilize::Ssh
-    include Mobilize::Recipe
+    include Mobilize::Box::Action
     field    :name,             type: String
     field    :ami,              type: String, default:->{@@config.ami}
     field    :size,             type: String, default:->{@@config.size}
     field    :keypair_name,     type: String, default:->{@@config.keypair_name}
     field    :security_groups,  type: Array,  default:->{@@config.security_groups}
-    field    :instance_id,      type: String
+    field    :remote_id,        type: String
     field    :dns,              type: String #public dns
     field    :ip,               type: String #private ip
     field    :_id,              type: String, default:->{ name }
     has_many :jobs
-
-    index({dns: 1}, {unique: true, name: "dns_index"})
 
     @@config = Mobilize.config("box")
 
     def Box.private_key_path;     "#{Config.key_dir}/box.ssh"; end #created during configuration    
 
     def Box.session
-      access_key_id     = Mobilize.config.aws.access_key_id
-      secret_access_key = Mobilize.config.aws.secret_access_key
-      region            = @@config.region
-      @session          = Aws::Ec2.new(access_key_id,secret_access_key,region: region)
-      Logger.info         "Got ec2 session for region #{region}"
-      return              @session
+
+      _access_key_id     = Mobilize.config.aws.access_key_id
+      _secret_access_key = Mobilize.config.aws.secret_access_key
+      _region            = @@config.region
+      _session           = Aws::Ec2.new _access_key_id, _secret_access_key, region: _region
+
+      Logger.write         "Got ec2 session for region #{_region}"
+
+      _session
     end
 
-    def Box.instances(session, params=nil)
-      params          ||= {aws_state: ['running','pending']}
-      @session          = session
-      all_insts         = @session.describe_instances.map{|i| i.with_indifferent_access}
-      filtered_insts    = Box.filter_instances(all_insts,params)
-      Logger.info         "got #{filtered_insts.length.to_s} " +
-                          "instances for #{@session.params[:region]}, " +
-                          "params: #{params.to_s}"
-      return              filtered_insts
+    def Box.remotes(params = nil, session = nil)
+
+      _params            = params  || {aws_state: ['running','pending']}
+      _session           = session ||  Box.session
+
+      _remotes           = _session.describe_instances.map{|remote| remote.with_indifferent_access }
+      #check for params that match inside the selected remotes
+      _remotes           = _remotes.select do  |remote|
+                             _remote          = remote
+                             _matches         = _params.map{|key, value|
+                                                                 _key, _value = key, value
+                                                                 _value.to_a.include? _remote[_key]
+                                                               }.uniq
+                             #return remotes that match
+                             _matches.length == 1 and
+                             _matches.first  == true
+      end
+
+      Logger.write        "#{_remotes.length.to_s} " +
+                          "remotes for #{_session.params[:region]}, " +
+                          "params: #{_params.to_s}"
+      _remotes
     end
 
-    def Box.filter_instances(all_insts,params=nil)
-      params         ||= {aws_state: ['running','pending']}
-      #check for params that match inside the selected instances
-      all_insts.select do |i|
-        match_array         = params.map{|k,v| v.to_a.include?(i[k])}.uniq
-        match_array.length == 1 and match_array.first == true
+    def Box.remotes_by_name(name, params = nil, session = Box.session)
+
+      _name                    = name
+      _params                  = params  || {aws_state: ['running','pending']}
+      _session                 = session || Box.session
+
+      _remotes                 = Box.remotes(_params, _session).select{|remote| remote[:tags][:name] == _name}
+
+      Logger.write               "#{_remotes.length.to_s} remotes by name #{_name}"
+
+      _remotes
+    end
+
+    #creates both DB box and its remote
+    def Box.find_or_create_by_name(name, session = nil)
+
+      _name, _session       = name, (session || Box.session)
+
+      _box                  = Box.find_or_create_by name: _name
+
+      _remote               = _box.remote(_session) if _box.remote_id
+      _remotes              = if _remote.nil?
+                                Box.remotes_by_name   _name, nil, _session
+                              end
+      unless                  _remotes.blank?
+        _remote             = _remotes.first
+
+        if                    _remotes.length > 1
+          Logger.write       "TOO MANY REMOTES: #{_remotes.length} remotes named #{_name}", "WARN"
+        end
+      end
+
+      if                      _remote
+        _box.sync             _remote
+      else
+        _box.launch           _session
       end
     end
 
-    def Box.instances_by_name(name,session,params=nil)
-      params         ||= {aws_state: ['running','pending']}
-      @session         = session
-      insts            = Box.instances(@session).select{|i| i[:tags][:name] == name}
-      Logger.info        "found #{insts.length.to_s} instances by name #{name}"
-      return             insts
+    def remote(session = nil)
+      _box             = self
+      _session         = session || Box.session
+
+      Logger.write(     "Box has no remote_id", "FATAL") unless _box.remote_id
+
+      _remotes         = Box.remotes_by_name _box.name,
+                                             {aws_state:       ['running','pending'],
+                                              aws_instance_id: _box.remote_id},
+                                             _session
+      _remote          = _remotes.first
+      Logger.write(      "Found remote #{_box.remote_id} for #{_box.id}," +
+                         " currently #{_remote[:aws_state]}") if _remote
+      _remote
     end
 
-    def find_or_create_instance(session)
-      @box             = self
-      @session         = session
-      begin
-        #check for an instance_id assigned, so verify and
-        #update w any changes
-        return           @box.instance(@session) if @box.instance_id
-      rescue
-        #go ahead and create an instance if it turns out this ID is wrong
-      end
-      #create an instance based on current parameters
-      return             @box.create_instance(@session)
-    end
+    def sync(remote)
+      _box, _remote        = self, remote
 
-    #find instance by ID, update DB record with latest from AWS
-    def instance(session)
-      @box             = self
-      @session         = session
-      params           = {aws_instance_id: @box.instance_id,
-                          aws_state:       ['running','pending']
-                         }
-      inst             = Box.instances(@session,params).first
-      inst             = @box.create_instance(@session) if inst.nil?
-      @box.sync          inst
-      return             inst
-    end
-
-    def sync(instance)
-      @instance            = instance
-      @box                 = self
-      @box.update_attributes(
-        ami:                 @instance[:aws_image_id],
-        size:                @instance[:instance_type],
-        keypair_name:        @instance[:keypair_name],
-        security_groups:     @instance[:group_ids],
-        instance_id:         @instance[:aws_instance_id],
-        dns:                 @instance[:dns_name],
-        ip:                  @instance[:aws_private_ip_address]
+      _box.update_attributes(
+        ami:                 _remote[:aws_image_id],
+        size:                _remote[:aws_instance_type],
+        keypair_name:        _remote[:ssh_key_name],
+        security_groups:     _remote[:aws_groups],
+        remote_id:           _remote[:aws_instance_id],
+        dns:                 _remote[:dns_name],
+        ip:                  _remote[:aws_private_ip_address]
       )
-      Logger.info            "synced instance #{@box.instance_id} with remote."
-      return                 @box
+      Logger.write           "synced box #{_box.id} with remote #{_box.remote_id}."
+      _box
     end
 
-    def purge!(session)
-      #terminates the remote instance then
-      #deletes the local database instance
-      @box                         = self
-      @session                     = session
-      #terminate instances by name
-      insts                        = Box.instances_by_name(@box.name,@session)
+    def terminate(session = nil)
+      #terminates the remote then
+      #deletes the local database version
+      _box                          = self
+      _session                      = session || Box.session
 
-      insts.each do |i|
-        @session.terminate_instances [i[:aws_instance_id]]
-        Logger.info                  "Terminated instance #{i[:aws_instance_id]}"
+      if _box.remote_id
+        _session.terminate_instances  _box.remote_id
+        Logger.write                  "Terminated remote #{_box.remote_id} for #{_box.id}"
       end
 
-      @box.delete
-      Logger.info                    "Purged #{@box.id} from DB"
-      return                         true
+      _box.delete
+      Logger.write                    "Deleted #{_box.id} from DB"
+
+      true
     end
 
-    def launch(session)
-      @box                        = self
-      @session                    = session
-      inst_params = {key_name:      @box.keypair_name,
-                     group_ids:     @box.security_groups,
-                     instance_type: @box.size}
+    def launch(session = nil)
 
-      inst                        = @session.launch_instances(@box.ami, inst_params).first
-      @session.create_tag           inst[:aws_instance_id], "name", @box.name
-      return                        inst
+      _box, _session               = self, (session || Box.session)
+
+      _remote_params               = {key_name:      _box.keypair_name,
+                                      group_ids:     _box.security_groups,
+                                      instance_type:   _box.size}
+
+      _remotes                     = _session.launch_instances(_box.ami, _remote_params)
+      _remote                      = _remotes.first
+
+      _box.update_attributes         remote_id: _remote[:aws_instance_id]
+      _session.create_tag            _box.remote_id, "name", _box.name
+      _remote                      = _box.wait_for_running _session
+      _box.sync                      _remote
     end
 
-    def resolve_instance(session)
-      @box                        = self
-      @session                    = session
-      insts                       = Box.instances_by_name(@box.name,@session)
-
-      if                            insts.length>1
-        Logger.error                "You have more than 1 running instance named " +
-                                    "#{@box.name} -- please investigate your configuration"
-      elsif                         insts.length == 1
-        inst                      = insts.first
-        Logger.info                 "Instance #{inst[:aws_instance_id]} found, assigning to #{@box.name}"
-      elsif                         insts.empty?
-        inst                      = nil
-      end
-
-      return                        inst
-    end
-
-    def wait_for_instance(session)
-      @box                        = self
-      @session                    = session
-      state                       = @box.instance(@session)[:aws_state]
-      while                         state != "running"
-        Logger.info                 "Instance #{@box.instance_id} still at #{state} -- waiting 10 sec"
+    def wait_for_running(session  = nil)
+      _box, _session              = self, ( session || Box.session )
+      _remote                     = _box.remote _session
+      while                         _remote[:aws_state] != "running"
+        Logger.write                "remote #{_box.remote_id} still at #{_remote[:aws_state]} -- waiting 10 sec"
         sleep                       10
-        state                     = @box.instance(@session)[:aws_state]
+        _remote                   = _box.remote _session
       end
-    end
-
-    def create_instance(session)
-      @box                        = self
-      @session                    = session
-      inst                        = @box.resolve_instance(@session) || @box.launch(@session)
-      @box.sync                     inst
-      #wait around until the instance is running
-      @box.wait_for_instance        @session
-      return                        @box.instance(@session)
+      _remote
     end
   end
 end

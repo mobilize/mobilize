@@ -31,10 +31,11 @@ Mobilize::Config.load_rc
 Mobilize::Config.write_from_sample "config.yml"
 
 module Mobilize
-  def Mobilize.config(model=nil)
+  def Mobilize.config(model = nil)
+    @model     = model
     @@config ||= Mobilize::Config.new
     if @@config
-      model ? @@config.send(model) : @@config
+      @model ? @@config.send(@model) : @@config
     end
   end
   #force Mobilize context when running `bundle console`
@@ -74,7 +75,7 @@ Mobilize::Config.write_from_hash    @mongoid_config_path, @mongoid_config_hash
 Mongoid.load!                       @mongoid_config_path, Mobilize.env
 FileUtils.rm                        @mongoid_config_path
 rescue                           => exc
-  puts "Unable to load Mongoid with current configs: #{exc.to_s}"
+  Mobilize::Logger.write            "Unable to load Mongoid with current configs: #{exc.to_s}"
 end
 
 test_dir = "#{Mobilize.root}/test"
@@ -107,14 +108,17 @@ require "resque"
 require "popen4"
 require "#{path_dir}/script"
 
-require "aws"
-require "net/ssh"
-require "net/scp"
-box_dir = "#{models_dir}/box"
-require "#{box_dir}/recipe"
-require "#{box_dir}/ssh"
-require "#{box_dir}/box"
-require "#{box_dir}/extensions/net-ssh.rb"
+require      "aws"
+require      "net/ssh"
+require      "net/scp"
+box_dir    = "#{models_dir}/box"
+action_dir = "#{box_dir}/action"
+require      "#{action_dir}/install"
+require      "#{action_dir}/write"
+require      "#{action_dir}/start"
+require      "#{action_dir}/action"
+require      "#{box_dir}/box"
+require      "#{box_dir}/extensions/net-ssh.rb"
 
 unless File.exists? Mobilize::Github.sh_path and
        File.exists? Mobilize::Box.private_key_path

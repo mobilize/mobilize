@@ -21,15 +21,15 @@ class Object
         success               = true
       rescue => @exc
         current_retries      += 1
-        Mobilize::Logger.info "Failed #{identifier} with #{@exc.to_s}; Sleeping for #{sleep_time.to_s}"
+        Mobilize::Logger.write"Failed #{identifier} with #{@exc.to_s}; Sleeping for #{sleep_time.to_s}"
         sleep                 sleep_time
-        Mobilize::Logger.info "Retrying #{identifier}; #{current_retries.to_s} of #{total_retries.to_s} time(s)"
+        Mobilize::Logger.write"Retrying #{identifier}; #{current_retries.to_s} of #{total_retries.to_s} time(s)"
       end
 
     end
 
     if success==false
-      Mobilize::Logger.error  "Unable to #{identifier} with: #{@exc.to_s}"
+      Mobilize::Logger.write  "Unable to #{identifier} with: #{@exc.to_s}", "FATAL"
     end
 
     return @result

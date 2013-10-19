@@ -11,9 +11,8 @@ test:
     password: <%= ENV['MOB_TEST_MONGODB_PASSWORD'] %>
     database:     mobilize_test
     hosts:    <%= ENV['MOB_TEST_MONGODB_HOSTS'] %>
-  resque:
+  engine:
     workers: 5
-    nodes:   1
   master:
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
@@ -27,15 +26,15 @@ test:
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
-    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
+    access_key_id:     <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
   box:
-    user_name: 'ubuntu'
+    user_name:        'ubuntu'
     private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
-    keypair_name: mobilize
-    region: 'us-west-1'
-    ami: 'ami-fe002cbb'
-    size: 't1.micro'
+    keypair_name:     mobilize
+    region:           'us-west-1'
+    ami:              'ami-fe002cbb'
+    size:             't1.micro'
     security_groups:
     - 'default'
   google:
@@ -44,32 +43,34 @@ test:
       sleep_time: 1
       timeout: 600
     owner:
-      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
+      email:    <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
       password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
   github:
     owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
-    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
-    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
+    owner_login:        <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
+    owner_password:     <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
   fixture:
     google:
       email: <%=ENV['MOB_FIXTURE_GOOGLE_EMAIL']%>
+    gfile:
+      name:  "mobilize_gfile_test"
     box:
-      worker_name: <%=ENV['MOB_FIXTURE_BOX_WORKER_NAME']%>
-      user_name: <%=ENV['MOB_FIXTURE_BOX_USER_NAME']%>
+      name:             <%=ENV['MOB_FIXTURE_BOX_NAME']%>
+      user_name:        <%=ENV['MOB_FIXTURE_BOX_USER_NAME']%>
       private_key_path: <%=ENV['MOB_FIXTURE_BOX_PRIVATE_KEY_PATH']%>
     github:
-      login: <%=ENV['MOB_FIXTURE_GITHUB_LOGIN']%>
+      login:            <%=ENV['MOB_FIXTURE_GITHUB_LOGIN']%>
       public:
-        domain: github.com
-        owner_name: mobilize
-        repo_name: mobilize
+        domain:         github.com
+        owner_name:     mobilize
+        repo_name:      mobilize
       private:
-        domain: github.com
-        owner_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_OWNER']%>
-        repo_name: <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
+        domain:         github.com
+        owner_name:     <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_OWNER']%>
+        repo_name:      <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
 development:
   master:
-  resque:
+  engine:
     workers: 5
     nodes:   1
   redis:

@@ -31,7 +31,7 @@ module Mobilize
       @force_write            = (File.exists?(@target_path) and force == true)
       if                        @force_write or !File.exists?(@target_path)
         FileUtils.cp            @source_path, @target_path
-        Mobilize::Logger.info   "Wrote default to #{@target_path}, " +
+        Mobilize::Logger.write  "Wrote default to #{@target_path}, " +
                                 "please add environment variables accordingly"
       end
     end
@@ -60,7 +60,7 @@ module Mobilize
       FileUtils.cp              Mobilize.config.box.private_key_path,
                                 @box_ssh_path
       FileUtils.chmod           0700, @box_ssh_path
-      Logger.info               "Wrote box ssh file"
+      Logger.write              "Wrote box ssh file"
     end
     def Config.write_git_files
       @git_ssh_path           = "#{Config.key_dir}/git.ssh"
@@ -76,7 +76,7 @@ module Mobilize
       File.write                @git_sh_path, @git_sh_cmd
 
       FileUtils.chmod           0700, [@git_sh_path, @git_ssh_path]
-      Logger.info               "Wrote git ssh files"
+      Logger.write              "Wrote git ssh files"
       return                    true
     end
   end

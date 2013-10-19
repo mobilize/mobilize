@@ -36,7 +36,7 @@ module Mobilize
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{@string1}/#{@string2}/g')"
         @replace_cmd.popen4
-        Logger.info               "Replaced #{@string1} with #{@string2} in #{@task.dir}"
+        Logger.write              "Replaced #{@string1} with #{@string2} in #{@task.dir}"
       end
     end
 
@@ -58,7 +58,7 @@ module Mobilize
           end
         end
       else
-        Logger.info                "No session available for #{@task.id}"
+        Logger.write               "No session available for #{@task.id}"
       end
     end
 
@@ -130,20 +130,20 @@ module Mobilize
       @task                     = self
       FileUtils.rm_r              @task.dir, force: true
       FileUtils.mkdir_p           @task.dir
-      Logger.info                 "Refreshed task dir " + @task.dir
+      Logger.write                "Refreshed task dir " + @task.dir
     end
 
     def purge_dir
       @task                     = self
       FileUtils.mkdir_p           @task.dir
       FileUtils.rm_r              @task.dir, force: true
-      Logger.info                 "Purged task dir "    + @task.dir
+      Logger.write                "Purged task dir "    + @task.dir
     end
 
     def create_dir
       @task                     = self
       FileUtils.mkdir_p           @task.dir
-      Logger.info                 "Created task dir "   + @task.dir
+      Logger.write                "Created task dir "   + @task.dir
     end
   end
 end
