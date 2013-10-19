@@ -6,22 +6,22 @@ module Mobilize
     def Master.start_workers
 
       #stop and restart resque workers
-      @args                       = []
-      Mobilize::Cli.resque          @args, stop: true
-      Mobilize::Cli.resque          @args
+      _args                       = []
+      Mobilize::Cli.resque          _args, stop: true
+      Mobilize::Cli.resque          _args
       sleep 5
-      @test_workers               = Resque.workers.select {|worker|
+      _test_workers               = Resque.workers.select {|worker|
                                                             true if worker.queues.first == Mobilize.queue
                                                           }.compact
 
-      @resque_pool_yml            = File.expand_path(Mobilize.home_dir) +
+      _resque_pool_yml            = File.expand_path(Mobilize.home_dir) +
                                     "/resque-pool.yml"
 
-      @resque_pool_config         = YAML.load_file @resque_pool_yml
+      _resque_pool_config         = YAML.load_file _resque_pool_yml
 
-      @num_workers                = @resque_pool_config[Mobilize.env][Mobilize.queue]
+      _num_workers                = _resque_pool_config[Mobilize.env][Mobilize.queue]
 
-      Mobilize::Logger.write(       "Could not start resque workers", "FATAL") unless @test_workers.length == @num_workers
+      Mobilize::Logger.write(       "Could not start resque workers", "FATAL") unless _test_workers.length == _num_workers
     end
 
     def Master.stop

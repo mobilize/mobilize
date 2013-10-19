@@ -20,8 +20,8 @@ module Mobilize
 end
 
 #create log folder if not exists
-@abs_log_dir                  = File.expand_path Mobilize.log_dir
-FileUtils.mkdir_p               @abs_log_dir unless File.exists? @abs_log_dir
+_abs_log_dir                  = File.expand_path Mobilize.log_dir
+FileUtils.mkdir_p               _abs_log_dir unless File.exists? _abs_log_dir
 require "logger"
 require "mobilize/logger"
 
@@ -32,10 +32,10 @@ Mobilize::Config.write_from_sample "config.yml"
 
 module Mobilize
   def Mobilize.config(model = nil)
-    @model     = model
+    _model     = model
     @@config ||= Mobilize::Config.new
     if @@config
-      @model ? @@config.send(@model) : @@config
+      _model ? @@config.send(_model) : @@config
     end
   end
   #force Mobilize context when running `bundle console`
@@ -54,26 +54,26 @@ require "#{cli_dir}/cli"
 require 'pry'
 
 require 'mongoid'
-@mongoid_config_path     = "#{Mobilize::Config.dir}/mongoid.yml"
+_mongoid_config_path     = "#{Mobilize::Config.dir}/mongoid.yml"
 begin
-  @Mongodb               = Mobilize.config.mongodb
+  _Mongodb               = Mobilize.config.mongodb
 
-  @mongoid_config_hash   = { Mobilize.env => {
+  _mongoid_config_hash   = { Mobilize.env => {
                              'sessions'   =>
                            { 'default'    =>
                            {
-                             'username'             => @Mongodb.username,
-                             'password'             => @Mongodb.password,
-                             'database'             => @Mongodb.database,
+                             'username'             => _Mongodb.username,
+                             'password'             => _Mongodb.password,
+                             'database'             => _Mongodb.database,
                              'persist_in_safe_mode' => true,
-                             'hosts'                => @Mongodb.hosts.split(",")
+                             'hosts'                => _Mongodb.hosts.split(",")
                            }
                            }
                            }}
 
-Mobilize::Config.write_from_hash    @mongoid_config_path, @mongoid_config_hash
-Mongoid.load!                       @mongoid_config_path, Mobilize.env
-FileUtils.rm                        @mongoid_config_path
+Mobilize::Config.write_from_hash    _mongoid_config_path, _mongoid_config_hash
+Mongoid.load!                       _mongoid_config_path, Mobilize.env
+FileUtils.rm                        _mongoid_config_path
 rescue                           => exc
   Mobilize::Logger.write            "Unable to load Mongoid with current configs: #{exc.to_s}"
 end

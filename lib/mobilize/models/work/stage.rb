@@ -13,18 +13,18 @@ module Mobilize
     has_many :tasks
 
     def working?
-      @stage              = self
-      @tasks              = @stage.tasks
-      if                    @tasks.index{|task| task.working?}
+      _stage              = self
+      _tasks              = _stage.tasks
+      if                    _tasks.index{|task| task.working?}
         return              true
       end
     end
 
     def Stage.perform(stage_id)
-      @stage                     = Stage.find stage_id
-      @stage.update_status        :started
-      @tasks                     = @stage.tasks
-      @tasks.each              do |task|
+      _stage                     = Stage.find stage_id
+      _stage.update_status        :started
+      _tasks                     = _stage.tasks
+      _tasks.each              do |task|
         unless                     task.working?  or
                                    task.queued?   or
                                    task.complete?
@@ -34,26 +34,26 @@ module Mobilize
     end
 
     def last?
-      @stage                = self
-      @job                  = @stage.job
-      @max_order            = @job.stages.map{|stage| stage.order}.max
-      return true          if @stage.order == @max_order
+      _stage                = self
+      _job                  = _stage.job
+      _max_order            = _job.stages.map{|stage| stage.order}.max
+      return true          if _stage.order == _max_order
     end
 
     def complete
-      @stage                 = self
-      @stage.update_status    :completed
-      if                       @stage.last?
-        @job                 = @stage.job
-        @job.complete
+      _stage                 = self
+      _stage.update_status    :completed
+      if                       _stage.last?
+        _job                 = _stage.job
+        _job.complete
       end
     end
 
     def fail
-      @stage                 = self
-      @stage.update_status    :failed
-      @job                   = @stage.job
-      @job.fail
+      _stage                 = self
+      _stage.update_status    :failed
+      _job                   = _stage.job
+      _job.fail
     end
   end
 end

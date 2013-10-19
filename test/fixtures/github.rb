@@ -7,15 +7,16 @@ module Mobilize
                                                      repo_name:   Mobilize.config.fixture.github.public.repo_name
       end
       def Github.private
-        @domain                                    = Mobilize.config.fixture.github.private.domain
-        @owner_name                                = Mobilize.config.fixture.github.private.owner_name
-        @repo_name                                 = Mobilize.config.fixture.github.private.repo_name
-        if @domain and @owner_name and @repo_name
-          return Mobilize::Github.find_or_create_by  domain:     @domain,
-                                                     owner_name: @owner_name,
-                                                     repo_name:  @repo_name
+        _domain                                    = Mobilize.config.fixture.github.private.domain
+        _owner_name                                = Mobilize.config.fixture.github.private.owner_name
+        _repo_name                                 = Mobilize.config.fixture.github.private.repo_name
+        if _domain and _owner_name and _repo_name
+          return Mobilize::Github.find_or_create_by  domain:     _domain,
+                                                     owner_name: _owner_name,
+                                                     repo_name:  _repo_name
         else
-          Logger.info("missing private github params, returning nil for @github_private")
+          Logger.write                               "missing private github params, " +
+                                                     "returning nil for _github_private"
           return nil
         end
       end
