@@ -48,7 +48,8 @@ module Mobilize
       def Trigger._1h_after_15_completed_this_15_mark(job)
         _job                 = job
         _current_time        = Time.now.utc
-        _job.create_trigger(   job_id:       _job.id,
+        _trigger             = _job.create_trigger(
+                               job_id:       _job.id,
                                number:       1,
                                unit:         "hour",
                                hour_due:     nil,
@@ -61,7 +62,8 @@ module Mobilize
       def Trigger._1d_after_0135_completed_2_0135_marks_ago(job)
         _job                 = job
         _current_time        = Time.now.utc
-        _job.create_trigger(   job_id:       _job.id,
+        _trigger             = _job.create_trigger(
+                               job_id:       _job.id,
                                number:       1,
                                unit:         "day",
                                hour_due:     (_current_time - 1.hour).hour,
@@ -173,7 +175,7 @@ module Mobilize
       def Trigger._day_of_month_after_0100_completed_0115(job)
         _job                 = job
         _current_time        = Time.now.utc
-        _job.create_trigger(
+        _trigger             = _job.create_trigger(
                                job_id:       _job.id,
                                number:       _current_time.day,
                                unit:         "day_of_month",

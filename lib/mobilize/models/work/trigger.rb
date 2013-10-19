@@ -158,6 +158,7 @@ module Mobilize
     def due_at
       _trigger                 = self
       _current_time            = Time.now.utc
+      _number, _unit           = _trigger.number, _trigger.unit
       _due_time_format         = _trigger.due_time_format
       _base_due_at             = Time.parse(_current_time.strftime(_due_time_format))
       _time_ago                = if unit == "day_of_month"

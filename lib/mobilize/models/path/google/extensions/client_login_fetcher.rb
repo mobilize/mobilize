@@ -11,7 +11,7 @@ module GoogleDrive
       _success                    = false
       while                         _success == false
         #instantiate http object, set params
-        _http                     = _proxy.new _uri.host, _uri.port
+        _http                     = @proxy.new _uri.host, _uri.port
         _http.use_ssl             = true
         _http.verify_mode         = OpenSSL::SSL::VERIFY_NONE
         #set 600  to allow for large downloads
