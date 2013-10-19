@@ -3,9 +3,7 @@ class TriggerTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     Mobilize::Job.purge!
-    @worker_name               = Mobilize.config.fixture.box.worker_name
-    @box                       = Mobilize::Fixture::Box.default       @worker_name
-    @box_session               = Mobilize::Box.find_or_create_by_name @worker_name
+    @box                       = Mobilize::Box.find_or_create_by_name Mobilize.config.fixture.box.name
     @user                      = Mobilize::Fixture::User.default
     @job                       = Mobilize::Fixture::Job.default     @user, @box
     @parent_job                = Mobilize::Fixture::Job.parent      @user, @box
@@ -26,7 +24,7 @@ class TriggerTest < MiniTest::Unit::TestCase
         @job                   = Mobilize::Fixture::Job.default @user, @box
         @expected              = Mobilize::Fixture::Trigger.send(trip_method, @job)
       end
-      Mobilize::Logger.info      "Checking Trigger #{trip_method.to_s}"
+      Mobilize::Logger.write     "Checking Trigger #{trip_method.to_s}"
       assert_equal               @expected, @job.trigger.tripped?
                               }
   end
