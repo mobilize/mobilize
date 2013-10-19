@@ -159,7 +159,8 @@ module Mobilize
                                       group_ids:     @box.security_groups,
                                       instance_type:   @box.size}
 
-      @remote                      = @session.launch_instances(@box.ami, @remote_params).first
+      @remotes                     = @session.launch_instances(@box.ami, @remote_params)
+      @remote                      = @remotes.first
 
       @box.update_attributes         remote_id: @remote[:aws_instance_id]
       @session.create_tag            @box.remote_id, "name", @box.name

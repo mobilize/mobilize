@@ -43,8 +43,8 @@ module Mobilize
     def sync(remote, session)
       @gfile, @remote, @session       = self, remote, session
 
-      @remote                = @gfile.remote @session
-      @roles                 = @gfile.roles @remote
+      @remote                         = @gfile.remote @session
+      @roles                          = @gfile.roles @remote
 
       @gfile.update_attributes name:    @remote.title,
                                key:     @remote.resource_id,
@@ -55,7 +55,7 @@ module Mobilize
     end
 
     #delete remote and local db object
-    def purge!(session)
+    def terminate(session)
       @gfile, @session      = self, session
       @remote               = @gfile.remote
       Logger.write            "Deleting remote #{@remote.resource_id} for #{@gfile.id}"
@@ -65,6 +65,13 @@ module Mobilize
       Logger.write            "Purged #{@gfile.id} from DB"
 
       true
+    end
+
+    def launch(session)
+      @gfile, @session            = self, session
+      @remote                     = @session.upload_from_string "", @gfile.name
+      Logger.write                  "Lauched remote #{@remote.resource_id} for #{@gfile.id}"
+      @gfile.sync                   @remote, @session
     end
 
     def is_reader?(user)
@@ -92,14 +99,14 @@ module Mobilize
         Logger.write               "Downloaded #{@gfile.id} to #{@task.dir}/stdout"
         Logger.write               "#{@user.google_login}: #{File.size(@task.input).to_s} bytes", "STAT"
       else
-        Logger.write                "User #{@user.id} does not have read access to #{@gfile.id}", "FATAL"
+        Logger.write               "User #{@user.id} does not have read access to #{@gfile.id}", "FATAL"
       end
     end
 
     def write(task)
       @gfile, @task, @user         = self, task, task.user
 
-      @remote                      = @gfile.find_or_create_remote @task.session
+      @remote                      = @gfile.remote @task.session
 
       if @gfile.is_writer?           @user
 
@@ -112,7 +119,7 @@ module Mobilize
       true
     end
 
-    def Gfile.remotes_by(session,params={})
+    def Gfile.remotes_by(session, params = {})
       @session                             = session
 
       if params[:title]
@@ -128,10 +135,6 @@ module Mobilize
                         @publish_timestamp
                         }
     end
-
-      @remote                     = @gfile.remote(@session) || @session.upload_from_string("", @gfile.name)
-      @gfile.sync                   @session
-
 
     #creates both file and its remote
     def Gfile.find_or_create_by_owner_and_name(owner, name, session)
@@ -154,19 +157,19 @@ module Mobilize
         end
       end
 
-      if                      @remote
-        @gfile.sync           @remote
+      if                            @remote
+        @gfile.sync                 @remote
       else
-        @gfile.launch         @session
+        @gfile.launch               @session
       end
     end
 
     def remote(session)
-      @gfile, @session    =  self, session
+      @gfile, @session    = self, session
 
-      Logger.write(         "Gfile has no remote_id", "FATAL") unless @gfile.remote_id
+      Logger.write(        "Gfile has no remote_id", "FATAL") unless @gfile.remote_id
 
-      @remotes            =  Gfile.remotes_by(@session,owner: @gfile.owner, title: @gfile.title)
+      @remotes            = Gfile.remotes_by(@session,owner: @gfile.owner, title: @gfile.title)
 
       @remotes            = @remotes.select{|remote|
                                             @remote              = remote
