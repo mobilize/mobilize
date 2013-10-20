@@ -100,32 +100,12 @@ module Mobilize
         action_args                   = ["-a", "--action ACTION", "execute ACTION on given node"]
         _opts.on(*action_args)        { |action| _options[:action] = action }
 
-        purge_args                    = ["-p", "--purge", "purge instance if existing"]
-        _opts.on(*purge_args)         { |purge| _options[:purge] = true }
-
-        create_args                   = ["-c", "--create", "create instance"]
-        _opts.on(*create_args)        { |create| _options[:create] = true }
-
       end
       _opt_parser.parse!                _args
 
-      [:purge, :create, :action].each { |cmd| Cli.send("box_#{cmd.to_s}", _options) if _options[cmd]}
-
-    end
-
-    def Cli.box_purge(options)
-      _box                            = Mobilize::Box.find_or_create_by name: options[:name]
-      _box.purge!                       Box.session
-    end
-
-    def Cli.box_create(options)
-      _box                            = Mobilize::Box.find_or_create_by name: options[:name]
-      _box.find_or_create_instance      Box.session
-    end
-
-    def Cli.box_action(options)
-      _box                            = Mobilize::Box.find_or_create_by name: options[:name]
+      _box                            = Mobilize::Box.find_or_create_by_name _options[:name]
       _box.send options[:action]
+
     end
   end
 end

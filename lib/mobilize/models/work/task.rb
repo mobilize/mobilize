@@ -52,6 +52,7 @@ module Mobilize
           _task.complete
         rescue                  => _exc
           if                       _task.retries < @@config.max_retries
+            Logger.write           "Failed #{_task.id} with #{_exc.to_s}", "ERROR"
             _task.retry
           else
             _task.fail
@@ -81,9 +82,9 @@ module Mobilize
       _queued_jobs           = ::Resque.peek(Mobilize.queue,0,0).to_a
       _queued_jobs.index     {|job|
         _work_id             = job['args'].first
-        _queued              = true if _work_id == _task.id
+        @queued              = true if _work_id == _task.id
                               }
-      _queued
+      @queued
     end
 
     def retry

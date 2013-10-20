@@ -3,18 +3,17 @@ module Mobilize
     module Action
       include Mobilize::Box::Action::Install
       include Mobilize::Box::Action::Write
-      include Mobilize::Box::Action::Start
       extend ActiveSupport::Concern
       included do
         field      :user_name,        type: String, default:->{Mobilize.config.box.user_name}
         field      :home_dir,         type: String, default:->{"/home/#{user_name}"}
       end
 
-      def mobilize_dir;             "#{self.home_dir}/.mobilize";end
+      def mobilize_home_dir;        "#{self.home_dir}/.mobilize";end
 
-      def mobilize_config_dir;      "#{self.mobilize_dir}/config";end
+      def mobilize_config_dir;      "#{self.mobilize_home_dir}/config";end
 
-      def key_dir;                  "#{self.mobilize_dir}/keys";end
+      def key_dir;                  "#{self.mobilize_home_dir}/keys";end
 
       def ssh_cmd
 
@@ -62,7 +61,7 @@ module Mobilize
 
         _result                    = Net::SCP.send_w_retries(*send_args) do |scp|
                                        scp.upload!(_loc_path, _rem_path, recursive: true) do |ch, name, sent, total|
-                                         Logger.info("#{name}: #{sent}/#{total}") if log
+                                         Logger.write("#{name}: #{sent}/#{total}") if log
                                        end
                                      end
 
@@ -86,6 +85,27 @@ module Mobilize
         end
 
         Logger.write                "Wrote: #{_string.ellipsize(25)} to #{_box.id}:#{_rem_path}" if log
+
+      end
+
+      def start_engine
+
+        _box                  = self
+
+        _god_file_name        = "resque-pool-#{Mobilize.env}.rb"
+
+        _box.sh                 "god && god load #{_box.mobilize_config_dir}/#{_god_file_name}"
+
+      end
+
+      def stop_engine
+        _box                  = self
+
+        _box.sh                 "god stop resque-pool-#{Mobilize.env}"
+
+        _pid_path             = "#{_box.mobilize_home_dir}/pid/resque-pool-#{Mobilize.env}.pid"
+
+        _box.sh                 "kill -2 `cat #{_pid_path}"
 
       end
     end

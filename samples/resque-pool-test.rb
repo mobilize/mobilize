@@ -9,7 +9,7 @@ God.watch do |w|
             'REDIS_PASSWORD' => Mobilize.config.redis.password,
             'TERM_CHILD'     => 1}
   w.dir = File.expand_path(File.join(File.dirname(__FILE__),'..'))
-  w.start = "resque-pool -d -E #{Mobilize.env} " +
+  w.start = "cd #{Mobilize.root} && resque-pool -d -E #{Mobilize.env} " +
             "-c #{Mobilize.home_dir}/config/resque-pool.yml " +
             "-o #{Mobilize.home_dir}/log/resque-pool-#{Mobilize.env}.log " +
             "-e #{Mobilize.home_dir}/log/resque-pool-#{Mobilize.env}.err " +

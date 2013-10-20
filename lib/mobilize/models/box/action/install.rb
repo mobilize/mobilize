@@ -7,7 +7,7 @@ module Mobilize
 
           _box, _message, _script   = self, message, script
 
-          Logger.info(_message)    if _message
+          Logger.write(_message)   if _message
 
           _box.sh                     _script
 
@@ -53,17 +53,36 @@ module Mobilize
 
           _box                   = self
 
-          _install_cmd           = "gem install god"
+          _box.install            "gem install god", "Installing god on #{_box.id}"
 
-          _box.sh                  _install_cmd
+        end
+
+        def install_resque_pool
+          _box                   = self
+
+          _box.install             "gem install resque && gem install resque-pool",
+                                   "Installing resque && resque-pool on #{_box.id}"
+        end
+
+        def install_engine
+
+          _box                           = self
+
+          _box.install_mobilize
+
+          _box.install_resque_pool
+
+          _box.write_resque_pool_file
+
+          _box.write_god_file
+
+          _box.install_god
 
         end
 
         def install_mobilize
 
           _box                       = self
-
-          _box.find_or_create_instance Box.session
 
           _box.install_rvm
 
