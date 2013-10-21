@@ -61,7 +61,7 @@ module Mobilize
       _params                  = params  || {aws_state: ['running','pending']}
       _session                 = session || Box.session
 
-      _remotes                 = Box.remotes(_params, _session).select{|remote| remote[:tags][:name] == _name}
+      _remotes                 = Box.remotes(_params, _session).select{|remote| remote[:tags][:Name] == _name}
 
       Logger.write               "#{_remotes.length.to_s} remotes by name #{_name}"
 
@@ -155,7 +155,7 @@ module Mobilize
       _remote                      = _remotes.first
 
       _box.update_attributes         remote_id: _remote[:aws_instance_id]
-      _session.create_tag            _box.remote_id, "name", _box.name
+      _session.create_tag            _box.remote_id, "Name", _box.name
       _remote                      = _box.wait_for_running _session
       _box.sync                      _remote
     end

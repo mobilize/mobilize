@@ -20,7 +20,7 @@ module Mobilize
 
           return true
         end
-        def write_resque_pool
+        def write_resque_pool_file
 
           _box                  = self
 
