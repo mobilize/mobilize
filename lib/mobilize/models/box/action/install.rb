@@ -35,7 +35,7 @@ module Mobilize
 
         end
 
-        def install_mobilize_gem(path = "c4ssio/mobilize")
+        def install_mobilize_gem(path = "mobilize/mobilize")
 
           _box                   = self
 
