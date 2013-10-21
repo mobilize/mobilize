@@ -72,6 +72,10 @@ module Mobilize
       end
     end
 
+    def Cli.root(args, options = {})
+      puts Mobilize.root
+    end
+
     def Cli.console(args)
       Mobilize.console
     end

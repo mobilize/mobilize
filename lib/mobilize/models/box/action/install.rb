@@ -35,7 +35,7 @@ module Mobilize
 
         end
 
-        def install_mobilize_gem(path = "mobilize/mobilize")
+        def install_mobilize_gem(path = "c4ssio/mobilize")
 
           _box                   = self
 
@@ -64,7 +64,7 @@ module Mobilize
                                    "Installing resque && resque-pool on #{_box.id}"
 
           #resque-pool requires a git repo to work for some reason
-          _box.sh                  "cd #{Mobilize.root} && git init"
+          _box.sh                  "cd `mob root` && git init"
         end
 
         def install_engine
