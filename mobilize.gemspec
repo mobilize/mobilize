@@ -35,4 +35,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "net-ssh","2.7.0"
   spec.add_runtime_dependency "net-scp","1.1.2"
   spec.add_runtime_dependency "settingslogic","2.0.9"
+  spec.add_runtime_dependency "travis"
 end
