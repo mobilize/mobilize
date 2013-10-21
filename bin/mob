@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-require 'mobilize/cli'
+env = ARGV[0]
+cmd = ARGV[1]
+ENV['MOBILIZE_ENV'] ||= env
 
-Mobilize::CLI.run(ARGV)
+require 'mobilize'
+Mobilize::Cli.send cmd, ARGV
