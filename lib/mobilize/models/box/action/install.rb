@@ -62,6 +62,9 @@ module Mobilize
 
           _box.install             "gem install resque && gem install resque-pool",
                                    "Installing resque && resque-pool on #{_box.id}"
+
+          #resque-pool requires a git repo to work for some reason
+          _box.sh                  "cd #{Mobilize.root} && git init"
         end
 
         def install_engine

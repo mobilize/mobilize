@@ -94,7 +94,13 @@ module Mobilize
 
         _god_file_name        = "resque-pool-#{Mobilize.env}.rb"
 
-        _box.sh                 "god && god load #{_box.mobilize_config_dir}/#{_god_file_name}"
+        _start_cmd            = "god && god load #{_box.mobilize_config_dir}/#{_god_file_name}"
+
+        _box.sh                 _start_cmd
+
+        Logger.write            _start_cmd
+
+        true
 
       end
 
@@ -105,7 +111,7 @@ module Mobilize
 
         _pid_path             = "#{_box.mobilize_home_dir}/pid/resque-pool-#{Mobilize.env}.pid"
 
-        _box.sh                 "kill -2 `cat #{_pid_path}"
+        _box.sh                 "kill -2 `cat #{_pid_path}`", false
 
       end
     end

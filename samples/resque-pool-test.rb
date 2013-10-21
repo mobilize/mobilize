@@ -8,14 +8,17 @@ God.watch do |w|
             'REDIS_PORT'     => Mobilize.config.redis.port,
             'REDIS_PASSWORD' => Mobilize.config.redis.password,
             'TERM_CHILD'     => 1}
-  w.dir = File.expand_path(File.join(File.dirname(__FILE__),'..'))
-  w.start = "cd #{Mobilize.root} && resque-pool -d -E #{Mobilize.env} " +
+
+  w.dir   = Mobilize.root
+
+  w.start = "resque-pool -d -E #{Mobilize.env} " +
             "-c #{Mobilize.home_dir}/config/resque-pool.yml " +
             "-o #{Mobilize.home_dir}/log/resque-pool-#{Mobilize.env}.log " +
             "-e #{Mobilize.home_dir}/log/resque-pool-#{Mobilize.env}.err " +
             "-p #{Mobilize.home_dir}/pid/resque-pool-#{Mobilize.env}.pid"
+
   w.start_grace = 10.seconds
- 
+
   # restart if memory gets too high
   w.transition(:up, :restart) do |on|
     on.condition(:memory_usage) do |c|
