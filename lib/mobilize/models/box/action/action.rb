@@ -92,9 +92,10 @@ module Mobilize
 
         _box                  = self
 
-        _god_file_name        = "resque-pool-#{Mobilize.env}.rb"
+        _god_script_name      = "resque-pool-#{Mobilize.env}"
 
-        _start_cmd            = "god && god load #{_box.mobilize_config_dir}/#{_god_file_name}"
+        _start_cmd            = "god && god load #{_box.mobilize_config_dir}/#{_god_script_name}.rb && " +
+                                "god start #{_god_script_name}"
 
         _box.sh                 _start_cmd
 

@@ -64,7 +64,7 @@ module Mobilize
                                    "Installing resque && resque-pool on #{_box.id}"
 
           #resque-pool requires a git repo to work for some reason
-          _box.sh                  "cd `mob root` && git init"
+          _box.sh                  "cd `mob test root` && git init"
         end
 
         def install_engine
