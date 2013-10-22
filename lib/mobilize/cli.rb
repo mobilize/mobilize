@@ -1,20 +1,31 @@
 # encoding: UTF-8
 require 'optparse'
+require 'mobilize/extensions/string'
+require 'mobilize/logger'
 module Mobilize
+  #Mobilize base constants
+  def Mobilize.root
+    File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/.."
+  end
+  def Mobilize.env
+    ENV['MOBILIZE_ENV'] || "test"
+  end
+  def Mobilize.home_dir
+    File.expand_path "~/.mobilize"
+  end
+  def Mobilize.log_dir
+    "#{Mobilize.home_dir}/log"
+  end
+  def Mobilize.queue
+    "mobilize-#{Mobilize.env}"
+  end
+
   # holds all cli methods
   module Cli
-    # decode base64 encoded strings that have been encrypted in travis
-    def Cli.decode(_args, _options = {})
-      _opt_parser                     = OptionParser.new do |_opts|
-        _opts.banner                  = 'Usage: mob decode prefix'
-      end
-      _opt_parser.parse!                _args
+    autoload :Ci,        'mobilize/cli/ci'
+    autoload :Box,       'mobilize/cli/box'
 
-      Mobilize::Travis.base64_decode    _options[:prefix],
-                                        _options[:length],
-                                        _options[:file_path]
-    end
-    # copy configuration to home folder if it's not already there
+    # decode base64 encoded strings that have been encrypted in travis
     def Cli.configure(_args, _options = {})
       _opt_parser                     = OptionParser.new do |_opts|
         _opts.banner                  = 'Usage: mob configure NAME [-f --force]'
@@ -40,8 +51,9 @@ module Mobilize
       _args, _opts        = Cli.preparse(_args)
       _name               = _args.shift
       _command            = _args.shift
-      _module             = "Mobilize::Cli::#{_name.capitalize}".constantize
-      _module.send          _command, _opts
+      _target             = _args.shift
+      _module             = Cli.const_get _name.capitalize
+      _module.send          _command, _target, _opts
     end
 
     def Cli.preparse(_unparsed, _args = [], _opts = {})

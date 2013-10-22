@@ -1,29 +1,9 @@
 require "mobilize/version"
-
-module Mobilize
-  #folder where project is installed
-  def Mobilize.root
-    File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/.."
-  end
-  def Mobilize.env
-    ENV['MOBILIZE_ENV'] || "development"
-  end
-  def Mobilize.home_dir
-    File.expand_path "~/.mobilize"
-  end
-  def Mobilize.log_dir
-    "#{Mobilize.home_dir}/log"
-  end
-  def Mobilize.queue
-    "mobilize-#{Mobilize.env}"
-  end
-end
+require "mobilize/cli"
 
 #create log folder if not exists
 _abs_log_dir                  = File.expand_path Mobilize.log_dir
 FileUtils.mkdir_p               _abs_log_dir unless File.exists? _abs_log_dir
-require "logger"
-require "mobilize/logger"
 
 #write sample config files if not available
 require "mobilize/config"
@@ -76,9 +56,6 @@ FileUtils.rm                        _mongoid_config_path
 rescue                           => exc
   Mobilize::Logger.write            "Unable to load Mongoid with current configs: #{exc.to_s}"
 end
-
-test_dir = "#{Mobilize.root}/test"
-require "#{test_dir}/travis"
 
 extensions_dir = "mobilize/extensions"
 require "#{extensions_dir}/object"

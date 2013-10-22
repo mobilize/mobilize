@@ -25,9 +25,9 @@ module Mobilize
         Base64.strict_encode64 _file_str
       end
 
-      def Ci.encrypt_file(_file_path,
-                          _prefix        =  File.basename(_file_path),
-                          _repo          = "mobilize/mobilize")
+      def Ci.encrypt_file(_file_path, _opts = {})
+        _prefix                          =  File.basename(_file_path)
+        _repo                            = "mobilize/mobilize"
         _base64_file_str                 =  Ci.base64_encode _file_path
         _base64_chars                    = _base64_file_str.chars.to_a
         _base64_slices                   = _base64_chars.each_slice(100).to_a #100 char chunks
@@ -37,7 +37,7 @@ module Mobilize
           _chunk_pad_i                   = "%02d" % _chunk_i
           _chunk_name                    = "#{_prefix}_#{_chunk_pad_i}"
           _cmd                           = "travis encrypt -r #{_repo} #{_chunk_name}=#{_chunk}"
-          Mobilize::Logger.write           "##{_chunk_name}\n  - secure: " + `#{_cmd}`
+          puts                             "##{_chunk_name}\n  - secure: " + `#{_cmd}`
         end
       end
 

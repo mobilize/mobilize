@@ -1,3 +1,4 @@
+require 'logger'
 module Mobilize
   module Logger
     def Logger.trace_header(trace, level)
