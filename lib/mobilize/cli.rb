@@ -7,7 +7,7 @@ require 'pry'
 module Mobilize
   #Mobilize base methods
   def Mobilize.root
-    File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/.."
+    File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/../.."
   end
   def Mobilize.env
     ENV['MOBILIZE_ENV'] || "test"
