@@ -6,21 +6,22 @@ module Mobilize
       #the home folder with <prefix>_<env>.ssh
       def Ci.decode(_file_name, _opts = {})
       #gather all of these prefixes from ENV
-        _base64_chunks                 = ENV.select do |_key, _value|
-                                           _key_start            = _key[0.._file_name.length-1]
-                                           if _key_start        == _file_name
-                                             _encoded_envs[_key] = _value
-                                           end
-                                         end
+        _base64_chunks                 = {}
+        ENV.each do |_key, _value|
+          _key_start                   = _key[0.._file_name.length-1]
+          if _key_start               == _file_name
+            _base64_chunks[_key]       = _value
+          end
+        end
 
-        _base64_file_str            = _base64_chunks.sort_by{|_base64_chunk|
-                                                              _base64_chunk.first #key
-                                                       }.map{|_base64_chunk|
-                                                              _base64_chunk.last  #value
-                                                       }.join
+        _base64_file_str               = _base64_chunks.sort_by{|_base64_chunk|
+                                                                 _base64_chunk.first #key
+                                                          }.map{|_base64_chunk|
+                                                                 _base64_chunk.last  #value
+                                                          }.join
 
-        _file_string                = Base64.strict_decode64 _base64_file_str
-        File.write                    _file_name, _file_string
+        _file_string                   = Base64.strict_decode64 _base64_file_str
+        File.write                       _file_name, _file_string
       end
 
       def Ci.encode(_file_path, _opts = {})
