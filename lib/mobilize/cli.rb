@@ -56,7 +56,7 @@ module Mobilize
     def Cli.perform(_args)
       _args, _opts        = Cli.preparse(_args)
       _name               = _args.shift
-      return Cli.send _name if defined?(Cli.send _name)
+      begin;                return Cli.send _name;rescue;end
       _command            = _args.shift
       _target             = _args.shift
       _module             = Cli.const_get _name.capitalize
