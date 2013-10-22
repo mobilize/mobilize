@@ -48,8 +48,7 @@ module Mobilize
 end
 Mobilize.config
 
-cli_dir = "mobilize/cli"
-require "#{cli_dir}/cli"
+require "mobilize/cli"
 
 require 'pry'
 

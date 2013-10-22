@@ -9,11 +9,11 @@ module Mobilize
 
           _mobrc_path           = _box.mobilize_config_dir + "/mobrc"
 
-          _mob_envs             = ENV.select{|key,value|
-                                              key.starts_with? "MOB"}
+          _mob_envs             = ENV.select{|_key, _value|
+                                              _key.starts_with? "MOB"}
 
-          _mobrc_string         = _mob_envs.map{|key,value|
-                                                %{export #{key}=#{value}}
+          _mobrc_string         = _mob_envs.map{|_key, _value|
+                                                %{export #{_key}=#{_value}}
                                                }.join("\n")
 
           _box.write              _mobrc_string, _mobrc_path

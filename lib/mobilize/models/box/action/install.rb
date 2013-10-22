@@ -29,9 +29,7 @@ module Mobilize
 
           _box            = self
 
-          _box.install      "sudo apt-get install -y git",
-
-            "Installing git on #{_box.id}"
+          _box.install      "sudo apt-get install -y git", "Installing git on #{_box.id}"
 
         end
 
