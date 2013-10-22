@@ -1,8 +1,3 @@
 #!/usr/bin/env ruby
-
-env = ARGV[0]
-cmd = ARGV[1]
-ENV['MOBILIZE_ENV'] ||= env
-
-require 'mobilize'
-Mobilize::Cli.send cmd, ARGV
+require 'mobilize/cli'
+Mobilize::Cli.perform ARGV
