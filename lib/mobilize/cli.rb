@@ -2,8 +2,10 @@
 require 'optparse'
 require 'mobilize/extensions/string'
 require 'mobilize/logger'
+require 'pry'
+
 module Mobilize
-  #Mobilize base constants
+  #Mobilize base methods
   def Mobilize.root
     File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/.."
   end
@@ -18,6 +20,10 @@ module Mobilize
   end
   def Mobilize.queue
     "mobilize-#{Mobilize.env}"
+  end
+  def Mobilize.console
+    require 'mobilize'
+    Mobilize.pry
   end
 
   # holds all cli methods
@@ -38,11 +44,11 @@ module Mobilize
       Mobilize::Config.write_sample     _options[:name], _options[:force]
     end
 
-    def Cli.root(_args)
+    def Cli.root
       puts Mobilize.root
     end
 
-    def Cli.console(_args)
+    def Cli.console
       Mobilize.console
     end
 
@@ -50,6 +56,7 @@ module Mobilize
     def Cli.perform(_args)
       _args, _opts        = Cli.preparse(_args)
       _name               = _args.shift
+      return Cli.send _name if defined?(Cli.send _name)
       _command            = _args.shift
       _target             = _args.shift
       _module             = Cli.const_get _name.capitalize

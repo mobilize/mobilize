@@ -18,10 +18,6 @@ module Mobilize
       _model ? @@config.send(_model) : @@config
     end
   end
-  #force Mobilize context when running `bundle console`
-  def Mobilize.console
-    Mobilize.pry
-  end
   def Mobilize.db
     Mongoid.session(:default)[:database].database
   end
@@ -29,8 +25,6 @@ end
 Mobilize.config
 
 require "mobilize/cli"
-
-require 'pry'
 
 require 'mongoid'
 _mongoid_config_path     = "#{Mobilize::Config.dir}/mongoid.yml"
