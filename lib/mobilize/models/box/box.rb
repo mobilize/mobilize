@@ -31,17 +31,14 @@ module Mobilize
       _session
     end
 
-    def Box.remotes(params = nil, session = nil)
+    def Box.remotes(_params = nil, _session = Box.session)
 
-      _params            = params  || {aws_state: ['running','pending']}
-      _session           = session ||  Box.session
+      _params            ||= {aws_state: ['running','pending']}
 
-      _remotes           = _session.describe_instances.map{|remote| remote.with_indifferent_access }
+      _remotes           = _session.describe_instances.map{|_remote| _remote.with_indifferent_access }
       #check for params that match inside the selected remotes
-      _remotes           = _remotes.select do  |remote|
-                             _remote          = remote
-                             _matches         = _params.map{|key, value|
-                                                                 _key, _value = key, value
+      _remotes           = _remotes.select do  |_remote|
+                             _matches         = _params.map{|_key, _value|
                                                                  _value.to_a.include? _remote[_key]
                                                                }.uniq
                              #return remotes that match
@@ -55,13 +52,11 @@ module Mobilize
       _remotes
     end
 
-    def Box.remotes_by_name(name, params = nil, session = Box.session)
+    def Box.remotes_by_name(_name, _params = nil, _session = Box.session)
 
-      _name                    = name
-      _params                  = params  || {aws_state: ['running','pending']}
-      _session                 = session || Box.session
+      _params                  ||= {aws_state: ['running','pending']}
 
-      _remotes                 = Box.remotes(_params, _session).select{|remote| remote[:tags][:Name] == _name}
+      _remotes                 = Box.remotes(_params, _session).select{|_remote| _remote[:tags][:Name] == _name}
 
       Logger.write               "#{_remotes.length.to_s} remotes by name #{_name}"
 
@@ -69,9 +64,7 @@ module Mobilize
     end
 
     #creates both DB box and its remote
-    def Box.find_or_create_by_name(name, session = nil)
-
-      _name, _session       = name, (session || Box.session)
+    def Box.find_or_create_by_name(_name, _session = Box.session)
 
       _box                  = Box.find_or_create_by name: _name
 
@@ -94,9 +87,8 @@ module Mobilize
       end
     end
 
-    def remote(session = nil)
+    def remote(_session = Box.session)
       _box             = self
-      _session         = session || Box.session
 
       Logger.write(     "Box has no remote_id", "FATAL") unless _box.remote_id
 
@@ -110,8 +102,8 @@ module Mobilize
       _remote
     end
 
-    def sync(remote)
-      _box, _remote        = self, remote
+    def sync(_remote)
+      _box                 = self
 
       _box.update_attributes(
         ami:                 _remote[:aws_image_id],
@@ -126,11 +118,10 @@ module Mobilize
       _box
     end
 
-    def terminate(session = nil)
+    def terminate(_session = Box.session)
       #terminates the remote then
       #deletes the local database version
       _box                          = self
-      _session                      = session || Box.session
 
       if _box.remote_id
         _session.terminate_instances  _box.remote_id
@@ -143,9 +134,9 @@ module Mobilize
       true
     end
 
-    def launch(session = nil)
+    def launch(_session = Box.session)
 
-      _box, _session               = self, (session || Box.session)
+      _box                         = self
 
       _remote_params               = {key_name:      _box.keypair_name,
                                       group_ids:     _box.security_groups,
@@ -160,9 +151,9 @@ module Mobilize
       _box.sync                      _remote
     end
 
-    def wait_for_running(session  = nil)
-      _box, _session              = self, ( session || Box.session )
-      _remote                     = _box.remote _session
+    def wait_for_running(_session  = Box.session)
+      _box                         = self
+      _remote                      = _box.remote _session
       while                         _remote[:aws_state] != "running"
         Logger.write                "remote #{_box.remote_id} still at #{_remote[:aws_state]} -- waiting 10 sec"
         sleep                       10

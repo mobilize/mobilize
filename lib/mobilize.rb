@@ -11,8 +11,7 @@ Mobilize::Config.load_rc
 Mobilize::Config.write_from_sample "config.yml"
 
 module Mobilize
-  def Mobilize.config(model = nil)
-    _model     = model
+  def Mobilize.config(_model = nil)
     @@config ||= Mobilize::Config.new
     if @@config
       _model ? @@config.send(_model) : @@config
@@ -47,47 +46,47 @@ begin
 Mobilize::Config.write_from_hash    _mongoid_config_path, _mongoid_config_hash
 Mongoid.load!                       _mongoid_config_path, Mobilize.env
 FileUtils.rm                        _mongoid_config_path
-rescue                           => exc
-  Mobilize::Logger.write            "Unable to load Mongoid with current configs: #{exc.to_s}"
+rescue                           => _exc
+  Mobilize::Logger.write            "Unable to load Mongoid with current configs: #{_exc.to_s}"
 end
 
-extensions_dir = "mobilize/extensions"
-require "#{extensions_dir}/object"
-require "#{extensions_dir}/string"
-require "#{extensions_dir}/yaml"
+_extensions_dir = "mobilize/extensions"
+require "#{_extensions_dir}/object"
+require "#{_extensions_dir}/string"
+require "#{_extensions_dir}/yaml"
 
-models_dir = "mobilize/models"
+_models_dir = "mobilize/models"
 
-require "#{models_dir}/master"
-require "#{models_dir}/user"
+require "#{_models_dir}/master"
+require "#{_models_dir}/user"
 
-work_dir = "#{models_dir}/work"
-require "#{work_dir}/work"
-require "#{work_dir}/job"
-require "#{work_dir}/trigger"
-require "#{work_dir}/stage"
-require "#{work_dir}/task"
-require "#{work_dir}/worker"
+_work_dir = "#{_models_dir}/work"
+require "#{_work_dir}/work"
+require "#{_work_dir}/job"
+require "#{_work_dir}/trigger"
+require "#{_work_dir}/stage"
+require "#{_work_dir}/task"
+require "#{_work_dir}/worker"
 
-path_dir = "#{models_dir}/path"
-require "#{path_dir}/path"
+_path_dir = "#{_models_dir}/path"
+require "#{_path_dir}/path"
 require 'github_api'
-require "#{path_dir}/github"
+require "#{_path_dir}/github"
 require "resque"
 
 require "popen4"
-require "#{path_dir}/script"
+require "#{_path_dir}/script"
 
 require      "aws"
 require      "net/ssh"
 require      "net/scp"
-box_dir    = "#{models_dir}/box"
-action_dir = "#{box_dir}/action"
-require      "#{action_dir}/install"
-require      "#{action_dir}/write"
-require      "#{action_dir}/action"
-require      "#{box_dir}/box"
-require      "#{box_dir}/extensions/net-ssh.rb"
+_box_dir    = "#{_models_dir}/box"
+_action_dir = "#{_box_dir}/action"
+require      "#{_action_dir}/install"
+require      "#{_action_dir}/write"
+require      "#{_action_dir}/action"
+require      "#{_box_dir}/box"
+require      "#{_box_dir}/extensions/net-ssh.rb"
 
 unless File.exists? Mobilize::Github.sh_path and
        File.exists? Mobilize::Box.private_key_path
@@ -96,14 +95,14 @@ unless File.exists? Mobilize::Github.sh_path and
 end
 
 require "gmail"
-google_dir = "#{path_dir}/google"
-gbook_dir = "#{google_dir}/gbook"
-require "#{google_dir}/gmail"
+_google_dir = "#{_path_dir}/google"
+_gbook_dir  = "#{_google_dir}/gbook"
+require       "#{_google_dir}/gmail"
 
 require "google_drive"
-require "#{google_dir}/gfile"
-require "#{gbook_dir}/gbook"
-require "#{gbook_dir}/gtab"
-require "#{gbook_dir}/grange"
+require "#{_google_dir}/gfile"
+require "#{_gbook_dir}/gbook"
+require "#{_gbook_dir}/gtab"
+require "#{_gbook_dir}/grange"
 #patched from google-drive-ruby
-require "#{google_dir}/extensions/client_login_fetcher"
+require "#{_google_dir}/extensions/client_login_fetcher"

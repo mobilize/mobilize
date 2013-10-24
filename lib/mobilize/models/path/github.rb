@@ -20,16 +20,15 @@ module Mobilize
       _session
     end
 
-    def repo_call(task, action, category=nil)
+    def repo_call(_task, _action, _category = nil)
       _github                 = self
-      _task                   = task
       begin
         _connection           = _task.session.repos
-        _connection           = category ? _connection.send(category) : _connection
-        _response             = _connection.send action,
+        _connection           = _category ? _connection.send(_category) : _connection
+        _response             = _connection.send _action,
                                                  user: _github.owner_name,
                                                  repo: _github.repo_name
-        _call                 = [action,category].compact.join(".")
+        _call                 = [_action, _category].compact.join(".")
         _calls_left           = _response.headers.ratelimit_remaining
         Logger.write            "#{_call} successful for #{_github.id} repo call; " +
                                 "#{_calls_left} calls left this hour"
@@ -39,20 +38,18 @@ module Mobilize
       _response
     end
 
-    def collaborators(task)
+    def collaborators(_task)
       _github                 = self
-      _task                   = task
       _response               = _github.repo_call _task,"list","collaborators"
-      _collaborators          = _response.body.map{|b| b[:login]}
+      _collaborators          = _response.body.map{|_section| _section[:login]}
       _collaborators
     end
 
     #clones repo into worker with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
-    def read(task)
+    def read(_task)
       _github                = self
-      _task                  = task
       _task.purge_dir
       begin
         Logger.write           "attempting public read for #{_github.id}"
@@ -74,9 +71,8 @@ module Mobilize
       true
     end
 
-    def read_public(task)
+    def read_public(_task)
       _github                = self
-      _task                  = task
       _cmd                   = "cd #{_task.path_dir} && " +
                                "git clone -q https://u:p@#{_github.name}.git --depth=1"
       _cmd.popen4(true)
@@ -84,10 +80,9 @@ module Mobilize
       true
     end
 
-    def verify_collaborator(task)
+    def verify_collaborator(_task)
       _github                = self
-      _task                  = task
-      _user                  = task.user
+      _user                  = _task.user
       _is_collaborator       = _github.collaborators(_task).include?(_user.github_login)
 
       if _is_collaborator
@@ -98,9 +93,8 @@ module Mobilize
       end
     end
 
-    def read_private(task)
+    def read_private(_task)
       _github                     = self
-      _task                       = task
       #determine if the user in question is a collaborator on the repo
       _github.verify_collaborator   _task
       #add key, clone repo, go to specific revision, execute command

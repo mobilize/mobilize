@@ -43,11 +43,9 @@ module Mobilize
 
           _box                  = self
 
-          _samples_dir          = "#{Mobilize.root}/samples"
-
           _god_file_name        = "resque-pool-#{Mobilize.env}.rb"
 
-          _box.cp                 "#{_samples_dir}/#{_god_file_name}", "#{_box.mobilize_config_dir}/#{_god_file_name}"
+          _box.cp                 "#{Mobilize.config_dir}/#{_god_file_name}", "#{_box.mobilize_config_dir}/#{_god_file_name}"
         end
       end
     end

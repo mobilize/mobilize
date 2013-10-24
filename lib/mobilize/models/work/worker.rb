@@ -10,7 +10,6 @@ module Mobilize
 
     def pack
       _worker                 = self
-      _task                   = task
       _pack_cmd               = "cd #{_worker.parent_dir} && " +
                                 "tar -zcvf #{_worker.dir}.tar.gz " +
                                 "#{File.basename(_worker.dir)}"

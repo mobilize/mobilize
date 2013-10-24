@@ -4,7 +4,8 @@ module Mobilize
     module Ci
       #takes the given prefix, decodes it, decrypts it, writes it to
       #the home folder with <prefix>_<env>.ssh
-      def Ci.decode(_file_name, _opts = {})
+      def Ci.decode(_args)
+      _file_name                       = _args[2]
       #gather all of these prefixes from ENV
         _base64_chunks                 = {}
         ENV.each do |_key, _value|
@@ -24,7 +25,8 @@ module Mobilize
         File.write                       _file_name, _file_string
       end
 
-      def Ci.encode(_file_path, _opts = {})
+      def Ci.encode(_args)
+        _file_path                       = _args[2]
         _prefix                          =  File.basename(_file_path)
         _repo                            = "mobilize/mobilize"
         _file_str                        = File.read( File.expand_path _file_path)

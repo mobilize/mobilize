@@ -10,8 +10,8 @@ module Mobilize
       Mobilize::Cli.resque          _args, stop: true
       Mobilize::Cli.resque          _args
       sleep 5
-      _test_workers               = Resque.workers.select {|worker|
-                                                            true if worker.queues.first == Mobilize.queue
+      _test_workers               = Resque.workers.select {|_worker|
+                                                            true if _worker.queues.first == Mobilize.queue
                                                           }.compact
 
       _resque_pool_yml            = File.expand_path(Mobilize.home_dir) +

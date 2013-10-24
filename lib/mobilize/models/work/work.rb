@@ -15,9 +15,9 @@ module Mobilize
       field :retry_delay,         type: Fixnum, default:->{Mobilize.config.work.retry_delay}
     end
 
-    def update_status(status)
+    def update_status(_status)
       _work                     = self
-      _status_string            = status.to_s
+      _status_string            = _status.to_s
       _timestamp_string         = _status_string + "_at"
       _current_time             = Time.now.utc
 
