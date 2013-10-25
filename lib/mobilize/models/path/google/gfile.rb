@@ -84,6 +84,7 @@ module Mobilize
 
     def read(_task)
       _gfile                       = self
+      _user                        = _task.user
 
       _remote                      = _gfile.remote _task.session
 

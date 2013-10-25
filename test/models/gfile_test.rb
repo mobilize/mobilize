@@ -7,11 +7,11 @@ class GfileTest < MiniTest::Unit::TestCase
     @Config                             = Mobilize.config.fixture
     @gfile_session, @script_session     = @Gfile.session, @Script.session
 
-    @gfile_owner, @gfile_name           = @Config.google.email, @Config.gfile.name
+    @gfile_owner, @gfile_name           = Mobilize.config.google.owner.email, "test_gfile"
     @gfile                              = @Gfile.find_or_create_by_owner_and_name(
                                           @gfile_owner, @gfile_name, @gfile_session)
 
-    @box                                = Mobilize::Box.find_or_create_by_name @Config.box.name
+    @box                                = Mobilize::Box.find_or_create_by_name "mobilize-box-test"
 
     @script                             = @Script.find_or_create_by stdin: "echo test_file_string"
 

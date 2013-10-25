@@ -3,7 +3,7 @@ module GoogleDrive
     #this is patched to handle server errors due to http chaos
     def request_raw(_method, _url, _data, _extra_header, _auth)
       _fetcher                    = self
-      _uri                        = URI.parse(url)
+      _uri                        = URI.parse(_url)
       _timeout                    = Mobilize.config.google.api.timeout
       _response                   = nil
       _current_retries            = 0
@@ -24,13 +24,12 @@ module GoogleDrive
     end
 
     def http_call(_http, _method, _uri, _data, _extra_header, _auth)
-      _fetcher                    = self
       _timeout                    = Mobilize.config.google.api.timeout
       _http.read_timeout          = _timeout
 
       _http.start do
         _path                     = _uri.path + (_uri.query ? "?#{_uri.query}" : "")
-        _header                   = _fetcher.auth_header(_auth).merge(_extra_header)
+        _header                   = auth_header(_auth).merge(_extra_header)
 
         if                          _method == :delete || _method == :get
                                     _http.__send__(_method, _path, _header)
@@ -52,7 +51,7 @@ module GoogleDrive
         _success                  = true
       end
 
-      if                            _successo == false and _current_retries >= _total_retries
+      if                            _success == false and _current_retries >= _total_retries
         _fetcher.mobilize_log       _identifier, _response, "fatal", _current_retries, 0
       end
 
