@@ -25,20 +25,12 @@ env:
   - "MOB_GOOGLE_OWNER_EMAIL=mobilize.server@gmail.com"
 #mob_github_owner_login
   - "MOB_GITHUB_OWNER_LOGIN=mobilize"
-#mob_fixture_google_login
-  - "MOB_FIXTURE_GOOGLE_EMAIL=mobilize.server@gmail.com"
-#mob_fixture_github_login
-  - "MOB_FIXTURE_GITHUB_LOGIN=mobilize"
 #mob_fixture_github_private_domain
   - "MOB_FIXTURE_GITHUB_PRIVATE_DOMAIN='github.com'"
 #mob_fixture_github_private_owner
   - "MOB_FIXTURE_GITHUB_PRIVATE_OWNER='mobilize'"
-#mob_fixture_ec2_worker_name
-  - "MOB_FIXTURE_BOX_NAME='mobilize-box-test'"
 #mob_ssh_user_name
   - "MOB_BOX_USER_NAME=ubuntu"
-#mob_minitest_ssh_user_name
-  - "MOB_FIXTURE_BOX_USER_NAME=ubuntu"
 #mobilize_env
   - "MOBILIZE_ENV=test"
 #mob_google_owner_password
@@ -51,18 +43,18 @@ env:
   - secure: "VLjn4AjouXlxkgTY0yEtjkRRRsNZyEhJn/FR1/b2inCig+9ZvFUVP30Y3adjWThnkvZV1gmaNuE9SByDQCoSqvId0g/i0T5TD2GR0xT0Xvbra31LS9w2ktAuYXEVPQJnnPngiJs5C/o+qsIPofr82UjhSjgDsZLp5krGK9efWrY="
 #mob_aws_secret_access_key
   - secure: "lPNQr6aVfS+DOXr0QPaFEe9aFQrpTlkwR4ajH29YM9yG4RUySK0N4+rbJkiinFUDxiWgbNcA9xkpb9xB1W8LIcsUQI7MLl76F0OjEHo6svvPZ34QX7kcO0+O5cIqhkRcqUtp5dounGjzVR0SgTOYGvevPNlRlArzHA9sn/n+Mvs="
-#mob_test_redis_host
-  - secure: "gAMqIQBMX4L3Mu0YYGCH2otaLcONa9IVKVIWFZvQWjNyOeF0pdCJLAjiDAAdh0omvdpdGNyLMlKOoUz6gpIZulbVLMhxELD38OJRSoYhrs0d3TRlaUCsCO8su10k9oext2cKlg5aY54xO0bcd8MTFF+4Jfn3T2gvY4zuHee+ra8="
-#mob_test_redis_port
-  - secure: "bE6v+z101jkhCgdQMzTwHJ2YgZUhCNIRPc362DTD9nIDxnNG63eWo7b87BFNaW3lMGT7xMFPwmuMOlqmhfFBamRjQGHryecKwYYb5QDBnAVk1oHk9GGkqR3QYBJEog3YvJKBhRXiuMSuSGsesFA495x541B5+ZdMqS/WLxlnFDc="
-#mob_test_redis_password
-  - secure: "DDiWRRboocshVeso9FY8vKJFLRXDGy/xBKebnNpTI2Ht+OXAU+0W0LBdR22HoKETvQNolODFR86PUtZa/1yJ6ZgFe958kmYEBRHGIaZmU54ht5nj3MHhZxlM4XeIEvUhRlRK4dzzEDPB4+fovYEK+Ce7rK62ICimWWdl1QwNpnc="
-#mob_test_mongodb_hosts
-  - secure: "lXiodgIkcKzOJPh7VOh5TAbkBc4lQrcWPh2Y6DTyN5FgxO4/6G/icwyAdhpUKhpj//PM1LynybEXKYzR8hsRIUypPGzVL7bUSkhPdzEMX0jCIy1rWqdZVHvUzrgHhi3IAkecZyXfq65XIm1X+gcD6hsWBANdTqTQP4rj18bwNrk="
-#mob_test_mongodb_username
-  - secure: "Oe8gDRtTX2LL0LEqtyao2XEUk1AxdZlsQ1fA52o17iw2DXK3HjaTgy5NiHYyncYkU9x6T7tN82lwijj4HXyP9cWD1ftpUqbWSdGL4YlHRRRp5dpherGyJovwNXQXcoC9rXHk9Pa4aCjATKzpxHTQYvNnpcVqjuxtbtAT5pQqKp8="
-#mob_test_mongodb_password
-  - secure: "ggnGEH5syRZeIUS1rEoawYQDZtxvxSd7A84HjnA7/4Y6XAxCZnA+aVqoUgi/taq+SksIPF0JKj5/FuWdNMlG6da8gLvvsA4/hb3o2Dyzzp665kwqdnJrXanMH8iDbhVs0zRFYam0l4tLfYcgoISu7OEqDp8GP+j/DN+gTo81dDY="
+#mob_redis_host
+  - secure: "E5O2v2H+c7lNF7LqeoXDfPnJyh5KfC3iO4H6Cf1ou9WLLett3cezksFog3MVA4Tax8wBoO8wws8dNDBzfmWdOfYcweYpw3vSYO8GRKvjnMOzJjBqtFE94g/W1jFWLXG26qzRsVThCxooeKt1qzLo4svbXo+Vdmo8wx17k1kfzWM="
+#mob_redis_port
+  - secure: "I7+O8MdBExa8fEkwja5MBiC9DAM1tqE3XujCirXUNICxuglvGjWz1643P4UYhTolVNbUsg36LHZNRl8zTRJRqpLF90CkVhAlbzP8sjIH0eCv8fYwSY47QVJUKrPnWiMFdojAg6xpniOznK+NOz0pj2WAxe+CU9iB5ibQeW3eEK0="
+#mob_mongodb_hosts
+  - secure: "ilU9Ksk33oWbmPdtLrJonGxezAo9WxMu4yPMA+PxtmNF4PL6RofJi3qIPu1NBTb8Eda2EIDnuOL7tPiE21qhNYQU9GZmILls9lbBLlEQFLDBmluHvcL3z0SYvwpekKwvZmDAd7+15fZtpAfm/w3pmGM/9xE4veyLGdxkj9C9I2I="
+#mob_mongodb_username
+  - secure: "njvTTygcoOacr4IcDKRrAkE+kJ02+/tqicSBTQlyHUwZ4xzlsV9qN9Bg66IC4hfHeiUFyQ5P08SBfIlLvGok5JPbanq9d6xQGXWI0sG15W8Dx9H2X8KPwHr5JYq6g4XldBR7kZ+vZeQ7Txisg2i3n7jnJyiTwMl1E73iBxA/BgI="
+#mob_mongodb_password
+  - secure: "GQlGqecOh1IMZKABM0DRxxfnbdHmtAS6eUZ9yIxig7W+Xm8q0rxYf5V8+D+YFfjI3X2txUGcYyPG8ddRJzTG/Ap4TbcOOeF4X+bJsQhvEpy+g55g1nyHhwWf24xBwbvnHH46tyAUl2GAThrKp3eWj/FL8dmHo7LsTsjyizZFTFk="
+#mob_mongodb_database
+  - secure: "kMUiYAFeyX0hjMhcDVFwMaOzWwdoWnYMt3iGpWmrdLZV+2V1dEdz3w1ywBnrztklhs65e3DJMCJnWZTJ0/TGDS7oFoioBjfhCt3vsjQv4bbtfBRixmZLPu1KiRwNiJNsWjum8moh6fmJfS1c2y+8ycvjRudBw+95aOP3dCrNW0k="
 #git_ssh_00
   - secure: "FnoCpSbl9IhtgmxKBO7iYK8vOtKEr+NJN3F9Pt0up/Ln634VrKM8UvB0jz0uolo5b0idNNHkahry7z5xc3RIUINdbn2lEeshgyph8M+RHg8s/kEtM7XyLP+i932qkCHfaCmZkRBer2pZOKFzav1WrMoF+qGaINudZuq1Hx5EWJ4="
 #git_ssh_01

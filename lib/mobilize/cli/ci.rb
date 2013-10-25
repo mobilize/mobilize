@@ -2,6 +2,10 @@ require 'base64'
 module Mobilize
   module Cli
     module Ci
+      def Ci.perform(_args)
+        _operator                       = _args[1]
+        Ci.send                           _operator, _args
+      end
       #takes the given prefix, decodes it, decrypts it, writes it to
       #the home folder with <prefix>_<env>.ssh
       def Ci.decode(_args)
