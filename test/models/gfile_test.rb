@@ -11,7 +11,7 @@ class GfileTest < MiniTest::Unit::TestCase
     @gfile                              = @Gfile.find_or_create_by_owner_and_name(
                                           @gfile_owner, @gfile_name, @gfile_session)
 
-    @box                                = Mobilize::Box.find_or_create_by_name "mobilize-box-test"
+    @box                                = Mobilize::Box.find_or_create_by_name "mobilize-gfile-test"
 
     @script                             = @Script.find_or_create_by stdin: "echo test_file_string"
 
@@ -51,5 +51,9 @@ class GfileTest < MiniTest::Unit::TestCase
     _test_output_string             = File.read "#{@gfile_read_task.dir}/stdout"
 
     assert_equal                      _test_input_string, _test_output_string
+  end
+
+  def teardown
+    @box.terminate
   end
 end

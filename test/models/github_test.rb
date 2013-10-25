@@ -27,4 +27,8 @@ class GithubTest < MiniTest::Unit::TestCase
       assert_in_delta            _status_cmd.popen4.length, 1, 1000
     end
   end
+
+  def teardown
+    @box.terminate
+  end
 end

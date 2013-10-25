@@ -4,7 +4,7 @@ class ScriptTest < MiniTest::Unit::TestCase
     Mongoid.purge!
     Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
-    @box                       = Mobilize::Box.find_or_create_by_name "mobilize-github-test"
+    @box                       = Mobilize::Box.find_or_create_by_name "mobilize-script-test"
     @user                      = @Fixture::User.default
     @stdin                     = "(echo 'log this to the log' > log) && cmd"
     @script                    = Mobilize::Script.find_or_create_by stdin: @stdin

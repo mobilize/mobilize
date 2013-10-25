@@ -3,7 +3,7 @@ class TriggerTest < MiniTest::Unit::TestCase
   def setup
     Mongoid.purge!
     Mobilize::Job.purge!
-    @box                       = Mobilize::Box.find_or_create_by_name Mobilize.config.fixture.box.name
+    @box                       = Mobilize::Box.find_or_create_by_name "mobilize-trigger-test"
     @user                      = Mobilize::Fixture::User.default
     @job                       = Mobilize::Fixture::Job.default     @user, @box
     @parent_job                = Mobilize::Fixture::Job.parent      @user, @box
@@ -29,4 +29,7 @@ class TriggerTest < MiniTest::Unit::TestCase
                               }
   end
 
+  def teardown
+    @box.terminate
+  end
 end
