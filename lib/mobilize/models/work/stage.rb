@@ -15,20 +15,20 @@ module Mobilize
     def working?
       _stage              = self
       _tasks              = _stage.tasks
-      if                    _tasks.index{|task| task.working?}
+      if                    _tasks.index{|_task| _task.working?}
         return              true
       end
     end
 
-    def Stage.perform(stage_id)
-      _stage                     = Stage.find stage_id
+    def Stage.perform(_stage_id)
+      _stage                     = Stage.find _stage_id
       _stage.update_status        :started
       _tasks                     = _stage.tasks
-      _tasks.each              do |task|
-        unless                     task.working?  or
-                                   task.queued?   or
-                                   task.complete?
-          Resque.enqueue_by       "mobilize-#{Mobilize.env}", Task, task.id
+      _tasks.each              do |_task|
+        unless                     _task.working?  or
+                                   _task.queued?   or
+                                   _task.complete?
+          Resque.enqueue_by       "mobilize-#{Mobilize.env}", Task, _task.id
         end
       end
     end
@@ -36,7 +36,7 @@ module Mobilize
     def last?
       _stage                = self
       _job                  = _stage.job
-      _max_order            = _job.stages.map{|stage| stage.order}.max
+      _max_order            = _job.stages.map{|_job_stage| _job_stage.order}.max
       return true          if _stage.order == _max_order
     end
 

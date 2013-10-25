@@ -21,8 +21,8 @@ module Mobilize
       FileUtils.rm_r Job.dir, force: true
     end
 
-    def Job.perform(job_id)
-         _job                   = Job.find job_id
+    def Job.perform(_job_id)
+         _job                   = Job.find _job_id
       if _job.trigger.tripped?
          _stage                 = _job.next_stage
          Resque.enqueue_by        :mobilize, Stage, _stage.id

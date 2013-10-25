@@ -7,8 +7,8 @@ module Mobilize
     field :name,             type: String, default:->{ stdin.alphanunderscore[0..254] }
     field :_id,              type: String, default:->{"script/#{stdin.to_md5}"}
 
-    def write(task)
-      _script, _task       = self, task
+    def write(_task)
+      _script              = self
       _task.refresh_dir
       _stdin_path          = _task.dir + "/stdin"
       _file                = File.open _stdin_path, "w"
@@ -21,9 +21,8 @@ module Mobilize
       "session"#placeholder
     end
 
-    def run(task)
+    def run(_task)
       _script                 =  self
-      _task                   =  task
       _script.write              _task
       _task.gsub!
       #cd to job dir and execute file from there
@@ -40,15 +39,13 @@ module Mobilize
       end
     end
 
-    def streams(task)
-      _task                 = task
+    def streams(_task)
       _stream_array         = [:stdin, :stdout, :stderr, :exit_signal, :log]
 
       _result               = {}
-      _stream_array.each      {|stream|
-                                _stream          = stream
+      _stream_array.each      {|_stream|
                                 _value           = File.read "#{_task.dir}/#{_stream.to_s}"
-                                _result[stream]  = _value
+                                _result[_stream]  = _value
                               }
 
       _result

@@ -5,16 +5,25 @@
 # Mobilize
 
 Mobilize allows you to create job schedules in Google Spreadsheets,
-which are then used to deploy code from Github to EC2 instances and run
-EMR jobs, RDS queries, or run generic SSH scripts.
+which are then used to deploy code from Github to EC2 instances. The
+outputs from these scripts can be written to any endpoint, but this API
+will prioritize access to RDS, Google Spreadsheets, Google Files, and
+S3.
 
-## Deployment
+### Configuration Directory
 
-Please refer to the
-[mobilize-deploy](https://github.com/mobilize/mobilize-deploy) repo for
-deployment and configuration instructions.
+* Mobilize stores its crucial components under ~/.mobilize, with its
+configuration files under ~/.mobilize/config
 
-## Usage
+### Environment Variables and Key Files
+
+* Mobilize needs to know some credentials from your system in order to
+install and operate itself. They are listed below.
+
+
+## Installation
+
+### Initial Configuration
 
 ### Console
 

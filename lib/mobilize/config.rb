@@ -9,26 +9,25 @@ module Mobilize
     #load settingslogic
     source Config.path
 
-    namespace ENV['MOBILIZE_ENV'] || "development"
+    namespace Mobilize.env
 
     #generates a yml configuration file 
     #based on hash provided
-    def Config.write_from_hash(file_name, hash)
-      _file                   = File.open File.expand_path(file_name), "w"
-      _file.print               hash.to_yaml
+    def Config.write_from_hash(_file_name, _hash)
+      _file                   = File.open File.expand_path(_file_name), "w"
+      _file.print               _hash.to_yaml
       _file.close
       return true
     end
     #takes file from samples, copies to ~/.mobilize,
     #creates symlink in config/
-    def Config.write_from_sample(file_name, force = nil)
-      _file_name              = file_name
+    def Config.write_from_sample(_file_name, _force = nil)
       _source_path            = "#{Mobilize.root}/samples/#{_file_name}"
       _target_path            = "#{Config.dir}/#{_file_name}"
 
       FileUtils.mkdir_p         File.dirname _target_path
 
-      _force_write            = (File.exists?(_target_path) and force == true)
+      _force_write            = (File.exists?(_target_path) and _force == true)
       if                        _force_write or !File.exists?(_target_path)
         FileUtils.cp            _source_path, _target_path
         Mobilize::Logger.write("Wrote default to #{_target_path}, " +
@@ -37,14 +36,14 @@ module Mobilize
     end
     #loads rc file from home directory if present
     def Config.load_rc
-      env_file                    = "#{Config.dir}/mobrc"
-      if File.exists?               env_file
-        env_vars                  = File.readlines env_file
-        env_vars.each             do |env_var|
-          export_key,value          = env_var.split("=")
-          if export_key[0..5]      == "export"
-            key                     = export_key.split(" ").last
-            ENV[key]                = value.strip
+      _env_file                    = "#{Config.dir}/mobrc"
+      if File.exists?               _env_file
+        _env_vars                  = File.readlines _env_file
+        _env_vars.each             do |_env_var|
+          _export_key, _value       =  _env_var.split("=")
+          if _export_key[0..5]     ==  "export"
+            _key                    = _export_key.split(" ").last
+            ENV[_key]               = _value.strip
           end
         end
       end

@@ -29,9 +29,9 @@ module Mobilize
     def gsub!
       _task = self
       return nil unless _task.subs
-      _task.subs.each do |k,v|
-        _string1                = Regexp.escape(k.to_s) # escape any special characters
-        _string2                = Regexp.escape(v.to_s).gsub("/","\\/") #also need to manually escape forward slash
+      _task.subs.each do |_search, _replace|
+        _string1                = Regexp.escape(_search.to_s) # escape any special characters
+        _string2                = Regexp.escape(_replace.to_s).gsub("/","\\/") #also need to manually escape forward slash
         _replace_cmd            = "cd #{_task.dir} && " +
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{_string1}/#{_string2}/g')"
@@ -40,8 +40,8 @@ module Mobilize
       end
     end
 
-    def Task.perform(task_id)
-      _task                      = Task.find(task_id)
+    def Task.perform(_task_id)
+      _task                      = Task.find _task_id
       _path                      = _task.path
       _session                   = _path.class.session
       if                           _session

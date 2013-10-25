@@ -11,9 +11,7 @@ module Mobilize
 
     @@config             = Mobilize.config("google")
 
-    def Gfile.get_password(email)
-
-      _email             = email
+    def Gfile.get_password(_email)
 
       if _email         == @@config.owner.email
         _password        = @@config.owner.password
@@ -29,9 +27,8 @@ module Mobilize
       _password
     end
 
-    def Gfile.session(email = nil)
+    def Gfile.session(_email = @@config.owner.email)
 
-      _email          = @@config.owner.email
       _password       = Gfile.get_password _email
 
       _session        = ::GoogleDrive.login _email, _password
@@ -40,8 +37,8 @@ module Mobilize
       _session
     end
 
-    def sync(remote)
-      _gfile, _remote                 = self, remote
+    def sync(_remote)
+      _gfile                          = self
 
       _roles                          = _gfile.roles(_remote)
 
@@ -54,9 +51,9 @@ module Mobilize
     end
 
     #delete remote and local db object
-    def terminate(session)
-      _gfile, _session      = self, session
-      _remote               = _gfile.remote(_session)
+    def terminate(_session)
+      _gfile, _session      = self, _session
+      _remote               = _gfile.remote _session
       Logger.write            "Deleting remote #{_remote.resource_id} for #{_gfile.id}"
 
       _remote.delete
@@ -66,31 +63,32 @@ module Mobilize
       true
     end
 
-    def launch(session)
-      _gfile, _session            = self, session
+    def launch(_session)
+      _gfile                      = self
       _remote                     = _session.upload_from_string("", _gfile.name)
       Logger.write                  "Lauched remote #{_remote.resource_id} for #{_gfile.id}"
       _gfile.sync                   _remote
     end
 
-    def is_reader?(user)
-      _gfile, _user               = self, user
-      _user.google_login == _gfile.owner or
-      _gfile.readers.include? _user.google_login
+    def is_reader?(_user)
+      _gfile                       = self
+      _user.google_login          == _gfile.owner or
+      _gfile.readers.include?        _user.google_login
     end
 
-    def is_writer?(user)
-      _user, _gfile                = user, self
-      _user.google_login == _gfile.owner or
-      _gfile.writers.include? _user.google_login
+    def is_writer?(_user)
+      _gfile                       = self
+      _user.google_login          == _gfile.owner or
+      _gfile.writers.include?        _user.google_login
     end
 
-    def read(task)
-      _gfile, _task, _user        = self, task, task.user
+    def read(_task)
+      _gfile                       = self
+      _user                        = _task.user
 
-      _remote                     = _gfile.remote _task.session
+      _remote                      = _gfile.remote _task.session
 
-      if _gfile.is_reader?          _user
+      if _gfile.is_reader?           _user
         #make sure path exists but dir does not
         _task.refresh_dir
 
@@ -102,8 +100,8 @@ module Mobilize
       end
     end
 
-    def write(task)
-      _gfile, _task, _user         = self, task, task.user
+    def write(_task)
+      _gfile, _user                = self, _task.user
 
       _remote                      = _gfile.remote _task.session
 
@@ -118,8 +116,7 @@ module Mobilize
       true
     end
 
-    def Gfile.remotes_by(session, params = {})
-      _session, _params                    = session, params
+    def Gfile.remotes_by(_session, _params = {})
 
       if _params[:title]
         _params["title-exact"]              = true
@@ -136,8 +133,7 @@ module Mobilize
     end
 
     #creates both file and its remote
-    def Gfile.find_or_create_by_owner_and_name(owner, name, session)
-      _owner, _name, _session     = owner, name, session
+    def Gfile.find_or_create_by_owner_and_name(_owner, _name, _session)
 
       _gfile                      = Gfile.find_or_create_by owner: _owner, name: _name
 
@@ -162,22 +158,18 @@ module Mobilize
       end
     end
 
-    def remote(session)
-      _gfile, _session    = self, session
+    def remote(_session)
+      _gfile              = self
 
       Logger.write(        "Gfile has no remote_id", "FATAL") unless _gfile.remote_id
 
       _remotes            = Gfile.remotes_by _session, owner: _gfile.owner, title: _gfile.name
 
-      _remotes            = _remotes.select{|remote|
-                                            _remote              = remote
-                                            _remote.resource_id == _gfile.remote_id
-                                           }
+      _remotes            = _remotes.select{|_remote| _remote.resource_id == _gfile.remote_id}
       _remotes.first
     end
 
-    def roles(remote)
-      _remote                    = remote
+    def roles(_remote)
       _acls                      = _remote.acl.to_enum.to_a
       _roles                     = {owner: [], reader: [], writer: []}
       _acls.each                do |acl|

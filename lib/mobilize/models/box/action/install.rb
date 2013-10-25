@@ -3,10 +3,9 @@ module Mobilize
     module Action
       module Install
 
-        def install(script, message = nil)
+        def install(_script, _message = nil)
 
-          _box, _message, _script   = self, message, script
-
+          _box                      = self
           Logger.write(_message)   if _message
 
           _box.sh                     _script
@@ -33,12 +32,12 @@ module Mobilize
 
         end
 
-        def install_mobilize_gem(path = "mobilize/mobilize")
+        def install_mobilize_gem(_path = "mobilize/mobilize")
 
           _box                   = self
 
           _install_script        = "rm -rf mobilize && " +
-                                   "git clone http://u:p@github.com/#{path}.git --depth=1 && " +
+                                   "git clone http://u:p@github.com/#{_path}.git --depth=1 && " +
                                    "cd mobilize && bundle install && rake install"
 
           _box.install             _install_script, "Installing Mobilize on #{_box.id}"

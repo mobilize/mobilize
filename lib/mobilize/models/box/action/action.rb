@@ -15,7 +15,7 @@ module Mobilize
 
       def key_dir;                  "#{self.mobilize_home_dir}/keys";end
 
-      def ssh_cmd
+      def view_ssh_cmd
 
         _box                      = self
         _ssh_cmd                  = "ssh -i #{Box.private_key_path} " +
@@ -25,43 +25,42 @@ module Mobilize
 
       end
 
-      def sh(command,  except = true, streams = [:stdout, :stderr])
+      def sh(_command,  _except = true, _streams = [:stdout, :stderr])
 
         _box                                  = self
 
         _ssh_args                             = {keys: [Box.private_key_path],
                                                  paranoid: false}
+        _command_file_path                    = "/tmp/" + "#{_command}#{Time.now.utc.to_f.to_s}".to_md5
 
-        _command_file_path                    = "/tmp/" + "#{command}#{Time.now.utc.to_f.to_s}".to_md5
+        _box.write                              _command, _command_file_path, false, false
 
-        _box.write                              command, _command_file_path, false, false
+        _send_args                             = ["start", _box.dns, _box.user_name, _ssh_args]
 
-        send_args                             = ["start", _box.dns, _box.user_name, _ssh_args]
-
-        _result                               = Net::SSH.send_w_retries(*send_args) do |ssh|
-                                                  ssh.run("bash -l -c 'sh #{_command_file_path}'", except, streams)
+        _result                               = Net::SSH.send_w_retries(*_send_args) do |_ssh|
+                                                  _ssh.run("bash -l -c 'sh #{_command_file_path}'", _except, _streams)
                                                 end
 
-        Net::SSH.send_w_retries(*send_args)   {|ssh| ssh.run "rm #{_command_file_path}"}
+        Net::SSH.send_w_retries(*_send_args)   {|_ssh| _ssh.run "rm #{_command_file_path}"}
 
         _result
 
       end
 
-      def cp(loc_path, rem_path, mkdir = true, log = true)
+      def cp(_loc_path, _rem_path, _mkdir = true, _log = true)
 
-        _box, _loc_path, _rem_path = self, loc_path, rem_path
+        _box                       = self
 
-        _box.sh(                     "mkdir -p " + File.dirname(_rem_path)) if mkdir
+        _box.sh(                     "mkdir -p " + File.dirname(_rem_path)) if _mkdir
 
         _ssh_args                  = {keys: [Box.private_key_path],
                                       paranoid: false}
 
-        send_args                  = ["start", _box.dns, _box.user_name, _ssh_args]
+        _send_args                 = ["start", _box.dns, _box.user_name, _ssh_args]
 
-        _result                    = Net::SCP.send_w_retries(*send_args) do |scp|
-                                       scp.upload!(_loc_path, _rem_path, recursive: true) do |ch, name, sent, total|
-                                         Logger.write("#{name}: #{sent}/#{total}") if log
+        _result                    = Net::SCP.send_w_retries(*_send_args) do |scp|
+                                       scp.upload!(_loc_path, _rem_path, recursive: true) do |_ch, _name, _sent, _total|
+                                         Logger.write("#{_name}: #{_sent}/#{_total}") if _log
                                        end
                                      end
 
@@ -69,22 +68,20 @@ module Mobilize
 
       end
 
-      def write(string, rem_path, mkdir = true, log = true)
+      def write(_string, _rem_path, _mkdir = true, _log = true)
 
         _box                      = self
 
-        _string, _rem_path        = string, rem_path
-
-        _temp_file_path           = "/tmp/" + "#{string}#{Time.now.utc.to_f.to_s}".to_md5
+        _temp_file_path           = "/tmp/" + "#{_string}#{Time.now.utc.to_f.to_s}".to_md5
 
         begin
           File.write                _temp_file_path, _string
-          _box.cp                   _temp_file_path, _rem_path, mkdir, false
+          _box.cp                   _temp_file_path, _rem_path, _mkdir, false
         ensure
           FileUtils.rm              _temp_file_path, force: true
         end
 
-        Logger.write                "Wrote: #{_string.ellipsize(25)} to #{_box.id}:#{_rem_path}" if log
+        Logger.write                "Wrote: #{_string.ellipsize(25)} to #{_box.id}:#{_rem_path}" if _log
 
       end
 

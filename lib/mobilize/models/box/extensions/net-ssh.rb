@@ -6,15 +6,15 @@ module Net
     module Connection
       class Session
         #except=true means exception will be raised on exit_code != 0
-        def run(command, except=true, streams = [ :stdout, :stderr ])
+        def run(_command, _except = true, _streams = [ :stdout, :stderr ])
 
           _ssh, @stdout_data, @stderr_data    = self, "", ""
-          @exit_code, @exit_signal, @streams  = nil, nil, streams
+          @exit_code, @exit_signal, @streams  = nil, nil, _streams
 
-          @command, _except                   = command, except
+          @command                            = _command
 
-          _ssh.open_channel                 do |channel|
-            _ssh.run_proc(channel)
+          _ssh.open_channel                 do |_channel|
+            _ssh.run_proc _channel
           end
           _ssh.loop
 
@@ -28,33 +28,33 @@ module Net
             _result
           end
         end
-        def run_proc(channel)
-          @ssh                     = self
-          channel.exec(@command) do |ch, success|
-            unless                            success
+        def run_proc(_channel)
+          _ssh                     = self
+          _channel.exec(@command) do |_ch, _success|
+            unless                            _success
               Mobilize::Logger.write          "FAILED: couldn't execute command (ssh.channel.exec)", "FATAL"
             end
-            channel.on_data                   do |ch_d,data|
-              @stdout_data                    += data
-              @ssh.log_stream                    :stdout, data
+            _channel.on_data                  do |_ch_d, _data|
+              @stdout_data                    +=  _data
+              _ssh.log_stream                     :stdout, _data
             end
 
-            channel.on_extended_data          do |ch_ed,type,data|
-              @stderr_data                    += data
-              @ssh.log_stream                    :stderr, data
+            _channel.on_extended_data         do |_ch_ed, _type, _data|
+              @stderr_data                    +=  _data
+              _ssh.log_stream                     :stderr, _data
             end
 
-            channel.on_request("exit-status") do |ch_exst,data|
-              @exit_code                       = data.read_long
+            _channel.on_request("exit-status") do |_ch_exst, _data|
+              @exit_code                        = _data.read_long
             end
 
-            channel.on_request("exit-signal") do |ch_exsig, data|
-              @exit_signal                     = data.read_long
+            _channel.on_request("exit-signal") do |_ch_exsig, _data|
+              @exit_signal                     = _data.read_long
             end
           end
         end
-        def log_stream(stream,data)
-          Mobilize::Logger.write("#{stream.to_s}: #{data}")  if @streams.include?(stream)
+        def log_stream(_stream, _data)
+          Mobilize::Logger.write("#{_stream.to_s}: #{_data}")  if @streams.include?(_stream)
         end
       end
     end

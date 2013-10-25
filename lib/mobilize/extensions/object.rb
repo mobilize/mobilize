@@ -1,37 +1,40 @@
 class Object
   #abbreviate instance_eval
   def ie(&blk)
-    obj = self
-    obj.instance_eval(&blk)
+    _obj = self
+    _obj.instance_eval(&blk)
   end
-  def send_w_retries(method_name, *args,&blk)
-    @obj            = self
-    total_retries   = Mobilize.config.object.send_total_retries
-    sleep_time      = Mobilize.config.object.send_sleep_time
-    @result         = nil
-    @exc            = nil
-    current_retries = 0
-    identifier      = "#{@obj.to_s} #{method_name.to_s}"
-    success         = false
+  def send_w_retries(_method_name, *_args, &blk)
+    _obj            = self
+    _total_retries   = Mobilize.config.object.send_total_retries
+    _sleep_time      = Mobilize.config.object.send_sleep_time
+    _result         = nil
+    _exc            = nil
+    _current_retries = 0
+    _identifier      = "#{_obj.to_s} #{_method_name.to_s}"
+    _success         = false
 
-    while current_retries < total_retries and success == false
+    while _current_retries < _total_retries and _success == false
 
       begin
-        @result               = @obj.send(method_name,*args,&blk)
-        success               = true
-      rescue => @exc
-        current_retries      += 1
-        Mobilize::Logger.write"Failed #{identifier} with #{@exc.to_s}; Sleeping for #{sleep_time.to_s}"
-        sleep                 sleep_time
-        Mobilize::Logger.write"Retrying #{identifier}; #{current_retries.to_s} of #{total_retries.to_s} time(s)"
+        _result               = _obj.send(_method_name, *_args, &blk)
+        _success               = true
+      rescue => _exc
+        _current_retries      += 1
+        Mobilize::Logger.write "Failed #{_identifier} with #{_exc.to_s}; " + 
+                               "Sleeping for #{_sleep_time.to_s}"
+        
+        sleep                  _sleep_time
+        Mobilize::Logger.write "Retrying #{_identifier}; " + 
+                               "#{_current_retries.to_s} of #{_total_retries.to_s} time(s)"
       end
 
     end
 
-    if success==false
+    if _success==false
       Mobilize::Logger.write  "Unable to #{identifier} with: #{@exc.to_s}", "FATAL"
     end
 
-    return @result
+    return _result
   end
 end
