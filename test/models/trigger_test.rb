@@ -24,7 +24,7 @@ class TriggerTest < MiniTest::Unit::TestCase
         _job                   = Mobilize::Fixture::Job.default @user, @box
         _expected              = Mobilize::Fixture::Trigger.send(_trip_method, _job)
       end
-      Mobilize::Logger.write     "Checking Trigger #{_trip_method.to_s}"
+      Mobilize::Log.write        "Checking Trigger #{_trip_method.to_s}"
       assert_equal               _expected, _job.trigger.tripped?
                               }
   end

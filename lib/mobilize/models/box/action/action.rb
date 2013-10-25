@@ -60,7 +60,7 @@ module Mobilize
 
         _result                    = Net::SCP.send_w_retries(*_send_args) do |scp|
                                        scp.upload!(_loc_path, _rem_path, recursive: true) do |_ch, _name, _sent, _total|
-                                         Logger.write("#{_name}: #{_sent}/#{_total}") if _log
+                                         Log.write("#{_name}: #{_sent}/#{_total}") if _log
                                        end
                                      end
 
@@ -81,7 +81,7 @@ module Mobilize
           FileUtils.rm              _temp_file_path, force: true
         end
 
-        Logger.write                "Wrote: #{_string.ellipsize(25)} to #{_box.id}:#{_rem_path}" if _log
+        Log.write                   "Wrote: #{_string.ellipsize(25)} to #{_box.id}:#{_rem_path}" if _log
 
       end
 
@@ -96,7 +96,7 @@ module Mobilize
 
         _box.sh                 _start_cmd
 
-        Logger.write            _start_cmd
+        Log.write               _start_cmd
 
         true
 

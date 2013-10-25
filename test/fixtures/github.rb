@@ -15,7 +15,7 @@ module Mobilize
                                                      owner_name: _owner_name,
                                                      repo_name:  _repo_name
         else
-          Logger.write                               "missing private github params, " +
+          Log.write                                  "missing private github params, " +
                                                      "returning nil for _github_private"
           return nil
         end

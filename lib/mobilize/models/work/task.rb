@@ -36,7 +36,7 @@ module Mobilize
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{_string1}/#{_string2}/g')"
         _replace_cmd.popen4
-        Logger.write              "Replaced #{_string1} with #{_string2} in #{_task.dir}"
+        Log.write                 "Replaced #{_string1} with #{_string2} in #{_task.dir}"
       end
     end
 
@@ -52,14 +52,14 @@ module Mobilize
           _task.complete
         rescue                  => _exc
           if                       _task.retries < @@config.max_retries
-            Logger.write           "Failed #{_task.id} with #{_exc.to_s}", "ERROR"
+            Log.write              "Failed #{_task.id} with #{_exc.to_s}", "ERROR"
             _task.retry
           else
             _task.fail
           end
         end
       else
-        Logger.write               "No session available for #{_task.id}"
+        Log.write                  "No session available for #{_task.id}"
       end
     end
 
@@ -131,20 +131,20 @@ module Mobilize
       _task                     = self
       FileUtils.rm_r              _task.dir, force: true
       FileUtils.mkdir_p           _task.dir
-      Logger.write                "Refreshed task dir " + _task.dir
+      Log.write                   "Refreshed task dir " + _task.dir
     end
 
     def purge_dir
       _task                     = self
       FileUtils.mkdir_p           _task.dir
       FileUtils.rm_r              _task.dir, force: true
-      Logger.write                "Purged task dir "    + _task.dir
+      Log.write                   "Purged task dir "    + _task.dir
     end
 
     def create_dir
       _task                     = self
       FileUtils.mkdir_p           _task.dir
-      Logger.write                "Created task dir "   + _task.dir
+      Log.write                   "Created task dir "   + _task.dir
     end
   end
 end

@@ -26,7 +26,7 @@ module Mobilize
       _region            = @@config.region
       _session           = Aws::Ec2.new _access_key_id, _secret_access_key, region: _region
 
-      Logger.write         "Got ec2 session for region #{_region}"
+      Log.write            "Got ec2 session for region #{_region}"
 
       _session
     end
@@ -46,7 +46,7 @@ module Mobilize
                              _matches.first  == true
       end
 
-      Logger.write        "#{_remotes.length.to_s} " +
+      Log.write           "#{_remotes.length.to_s} " +
                           "remotes for #{_session.params[:region]}, " +
                           "params: #{_params.to_s}"
       _remotes
@@ -58,7 +58,7 @@ module Mobilize
 
       _remotes                 = Box.remotes(_params, _session).select{|_remote| _remote[:tags][:Name] == _name}
 
-      Logger.write               "#{_remotes.length.to_s} remotes by name #{_name}"
+      Log.write                  "#{_remotes.length.to_s} remotes by name #{_name}"
 
       _remotes
     end
@@ -76,7 +76,7 @@ module Mobilize
         _remote             = _remotes.first
 
         if                    _remotes.length > 1
-          Logger.write       "TOO MANY REMOTES: #{_remotes.length} remotes named #{_name}", "WARN"
+          Log.write          "TOO MANY REMOTES: #{_remotes.length} remotes named #{_name}", "WARN"
         end
       end
 
@@ -90,14 +90,14 @@ module Mobilize
     def remote(_session = Box.session)
       _box             = self
 
-      Logger.write(     "Box has no remote_id", "FATAL") unless _box.remote_id
+      Log.write(        "Box has no remote_id", "FATAL") unless _box.remote_id
 
       _remotes         = Box.remotes_by_name _box.name,
                                              {aws_state:       ['running','pending'],
                                               aws_instance_id: _box.remote_id},
                                              _session
       _remote          = _remotes.first
-      Logger.write(      "Found remote #{_box.remote_id} for #{_box.id}," +
+      Log.write(         "Found remote #{_box.remote_id} for #{_box.id}," +
                          " currently #{_remote[:aws_state]}") if _remote
       _remote
     end
@@ -114,7 +114,7 @@ module Mobilize
         dns:                 _remote[:dns_name],
         ip:                  _remote[:aws_private_ip_address]
       )
-      Logger.write           "synced box #{_box.id} with remote #{_box.remote_id}."
+      Log.write              "synced box #{_box.id} with remote #{_box.remote_id}."
       _box
     end
 
@@ -125,11 +125,11 @@ module Mobilize
 
       if _box.remote_id
         _session.terminate_instances  _box.remote_id
-        Logger.write                  "Terminated remote #{_box.remote_id} for #{_box.id}"
+        Log.write                     "Terminated remote #{_box.remote_id} for #{_box.id}"
       end
 
       _box.delete
-      Logger.write                    "Deleted #{_box.id} from DB"
+      Log.write                       "Deleted #{_box.id} from DB"
 
       true
     end
@@ -155,7 +155,7 @@ module Mobilize
       _box                         = self
       _remote                      = _box.remote _session
       while                         _remote[:aws_state] != "running"
-        Logger.write                "remote #{_box.remote_id} still at #{_remote[:aws_state]} -- waiting 10 sec"
+        Log.write                   "remote #{_box.remote_id} still at #{_remote[:aws_state]} -- waiting 10 sec"
         sleep                       10
         _remote                   = _box.remote _session
       end
