@@ -1,6 +1,9 @@
 require "settingslogic"
 require 'fileutils'
 module Mobilize
+  def Mobilize.db
+    Mongoid.session(:default)[:database].database
+  end
   def Mobilize.root
     File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/../.."
   end

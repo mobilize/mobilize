@@ -8,7 +8,7 @@ module Mobilize
     field :call,      type: String
     field :message,   type: String
     field :host,      type: String
-    field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}/#{file}/#{method}/#{line.to_s}" }
+    field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}/#{path}/#{call}/#{line.to_s}" }
 
     def Log.write(_message, _level = "INFO")
       _trace                = caller(1)
@@ -23,30 +23,41 @@ module Mobilize
         raise                 _log.message
       end
     end
-    def Log.tail(_fields = [:level, :time,  :line, :method, :message])
+    def Log.tail(_fields = [:level, :time,  :file, :call, :message])
       _last_log, _tail_logs  = Log.last, nil
       while 1 == 1
-        _tail_logs           = _tail_logs ? Log.where(:_id.gt => _last_log.id) : Log.desc(:_id).limit(10)
+        _tail_logs           = if _tail_logs
+
+                                 Log.where(:_id.gt => _last_log.id)
+
+                               else
+
+                                 Log.desc(:_id).limit(10)
+
+                               end.order_by(:_id.asc)
+
         _tail_logs.each     { |_tail_log| _tail_log.pp _fields }
+
         _last_log            = _tail_logs.last || _last_log
+
+        sleep 1
       end
     end
-    def pp(_fields)
+    def pp(_fields = [:level, :time,  :path, :call, :message])
       _log, _result          = self, ""
       _fields.each  do     |_field|
-                            _value   = _log.send _field
                       if    _field  == :level
-                            _result += "[#{ _value.ljust 5, " " }] "
+                            _result += "[#{ _log.level}] ".ljust(5, " ")
                       elsif _field  == :time
-                            _result += "[#{ _value.strftime "%Y-%m-%d %H:%M:%S" }] "
+                            _result += "[#{ _log.time.strftime "%Y-%m-%d %H:%M:%S" }] "
                       elsif _field  == :path
-                            _result += "#{_value.ljust 25, " " }, "
-                      elsif _field  == :line
-                            _result += "line #{_value.to_s.ljust 3, " " }, "
-                      elsif _field  == :method
-                            _result += "in #{_value.ljust 15, " "}; "
+                            _result += "#{_log.path}:#{_log.line.to_s}".ljust(40, " ") + " "
+                      elsif _field  == :file
+                            _result += "#{File.basename _log.path}:#{_log.line.to_s}".ljust(20, " ") + " "
+                      elsif _field  == :call
+                            _result += "in '#{_log.call}'; ".ljust(30, " ") + " "
                       elsif _field  == :message
-                            _result += _field
+                            _result += _log.message
                       end
                     end
       puts _result

@@ -16,9 +16,6 @@ module Mobilize
       _model ? @@config.send(_model) : @@config
     end
   end
-  def Mobilize.db
-    Mongoid.session(:default)[:database].database
-  end
 end
 Mobilize.config
 
@@ -44,9 +41,9 @@ Mobilize::Config.write_from_hash    _mongoid_config_path, _mongoid_config_hash
 Mongoid.load!                       _mongoid_config_path, Mobilize.env
 FileUtils.rm                        _mongoid_config_path
 rescue                           => _exc
-  Mobilize::Log.write               "Unable to load Mongoid with current configs: #{_exc.to_s}"
+  puts                      "Unable to load Mongoid with current configs: #{_exc.to_s}"
 end
-
+require 'mobilize/log'
 require "mobilize/cli"
 
 _extensions_dir = "mobilize/extensions"

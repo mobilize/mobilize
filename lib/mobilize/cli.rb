@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'optparse'
 require 'mobilize/extensions/string'
-require 'mobilize/log'
 require 'pry'
 
 module Mobilize
@@ -29,6 +28,10 @@ module Mobilize
 
     def Cli.console
       Mobilize.console
+    end
+
+    def Cli.tail
+      Log.tail
     end
 
     #adapted from travis CLI code: https://github.com/travis-ci/travis/blob/master/lib/travis/cli.rb
