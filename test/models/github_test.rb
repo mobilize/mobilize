@@ -5,7 +5,7 @@ class GithubTest < MiniTest::Unit::TestCase
     Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
     @github_public             = @Fixture::Github.public
-    @box                       = Mobilize::Box.find_or_create_by_name Mobilize.config.fixture.box.name
+    @box                       = Mobilize::Box.find_or_create_by_name "mobilize-github-test"    
     @user                      = @Fixture::User.default
     @github_private            = @Fixture::Github.private
     @job                       = @Fixture::Job.default      @user, @box
