@@ -6,7 +6,7 @@ module Mobilize
         def install(_script, _message = nil)
 
           _box                      = self
-          Logger.write(_message)   if _message
+          Log.write(_message)      if _message
 
           _box.sh                     _script
 

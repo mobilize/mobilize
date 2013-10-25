@@ -1,14 +1,13 @@
 require "mobilize/version"
-require "mobilize/cli"
-
-#create log folder if not exists
-_abs_log_dir                  = File.expand_path Mobilize.log_dir
-FileUtils.mkdir_p               _abs_log_dir unless File.exists? _abs_log_dir
 
 #write sample config files if not available
 require "mobilize/config"
 Mobilize::Config.load_rc
 Mobilize::Config.write_from_sample "config.yml"
+
+#create log folder if not exists
+_abs_log_dir                  = File.expand_path Mobilize.log_dir
+FileUtils.mkdir_p               _abs_log_dir unless File.exists? _abs_log_dir
 
 module Mobilize
   def Mobilize.config(_model = nil)
@@ -17,13 +16,8 @@ module Mobilize
       _model ? @@config.send(_model) : @@config
     end
   end
-  def Mobilize.db
-    Mongoid.session(:default)[:database].database
-  end
 end
 Mobilize.config
-
-require "mobilize/cli"
 
 require 'mongoid'
 _mongoid_config_path     = "#{Mobilize::Config.dir}/mongoid.yml"
@@ -47,8 +41,10 @@ Mobilize::Config.write_from_hash    _mongoid_config_path, _mongoid_config_hash
 Mongoid.load!                       _mongoid_config_path, Mobilize.env
 FileUtils.rm                        _mongoid_config_path
 rescue                           => _exc
-  Mobilize::Logger.write            "Unable to load Mongoid with current configs: #{_exc.to_s}"
+  puts                      "Unable to load Mongoid with current configs: #{_exc.to_s}"
 end
+require 'mobilize/log'
+require "mobilize/cli"
 
 _extensions_dir = "mobilize/extensions"
 require "#{_extensions_dir}/object"

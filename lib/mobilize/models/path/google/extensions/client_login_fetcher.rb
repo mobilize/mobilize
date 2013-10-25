@@ -16,7 +16,7 @@ module GoogleDrive
         _http.verify_mode         = OpenSSL::SSL::VERIFY_NONE
         #set 600  to allow for large downloads
         _http.read_timeout        = _timeout
-        Mobilize::Logger.write      _identifier
+        Mobilize::Log.write         _identifier
         _response                 = _fetcher.http_call _http, _method, _uri, _data, _extra_header, _auth
         _current_retries,_success = _fetcher.resolve_response _identifier, _response, _current_retries
       end
@@ -69,9 +69,9 @@ module GoogleDrive
                                             ""
                                           end
       if                                  _status == "fatal"
-        Mobilize::Logger.write            _message, "FATAL"
+        Mobilize::Log.write               _message, "FATAL"
       else
-        Mobilize::Logger.write            _message
+        Mobilize::Log.write               _message
       end
     end
 

@@ -1,31 +1,9 @@
 # encoding: UTF-8
 require 'optparse'
 require 'mobilize/extensions/string'
-require 'mobilize/logger'
 require 'pry'
 
 module Mobilize
-  #Mobilize base methods
-  def Mobilize.root
-    File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/../.."
-  end
-  def Mobilize.env
-    ENV['MOBILIZE_ENV'] || "test"
-  end
-  def Mobilize.home_dir
-    File.expand_path "~/.mobilize"
-  end
-  def Mobilize.log_dir
-    "#{Mobilize.home_dir}/log"
-  end
-  def Mobilize.queue
-    "mobilize-#{Mobilize.env}"
-  end
-  def Mobilize.console
-    require 'mobilize'
-    Mobilize.pry
-  end
-
   # holds all cli methods
   module Cli
     autoload :Ci,        'mobilize/cli/ci'
@@ -50,6 +28,10 @@ module Mobilize
 
     def Cli.console
       Mobilize.console
+    end
+
+    def Cli.tail
+      Log.tail
     end
 
     #adapted from travis CLI code: https://github.com/travis-ci/travis/blob/master/lib/travis/cli.rb

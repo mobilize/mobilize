@@ -15,13 +15,13 @@ module Mobilize
 
       if _email         == @@config.owner.email
         _password        = @@config.owner.password
-        Logger.write       "Got password for google owner email #{_email}"
+        Log.write          "Got password for google owner email #{_email}"
       else
         _password        = @@config.worker.accounts.select{|w| w.email == _email}.first
         if _password
-          Logger.write     "Got password for google worker email #{_email}"
+          Log.write        "Got password for google worker email #{_email}"
         else
-          Logger.write     "Could not find password for email #{_email}", "FATAL"
+          Log.write        "Could not find password for email #{_email}", "FATAL"
         end
       end
       _password
@@ -33,7 +33,7 @@ module Mobilize
 
       _session        = ::GoogleDrive.login _email, _password
 
-      Logger.write      "Logged into Google Drive."
+      Log.write         "Logged into Google Drive."
       _session
     end
 
@@ -54,11 +54,11 @@ module Mobilize
     def terminate(_session)
       _gfile, _session      = self, _session
       _remote               = _gfile.remote _session
-      Logger.write            "Deleting remote #{_remote.resource_id} for #{_gfile.id}"
+      Log.write               "Deleting remote #{_remote.resource_id} for #{_gfile.id}"
 
       _remote.delete
       _gfile.delete
-      Logger.write            "Purged #{_gfile.id} from DB"
+      Log.write               "Purged #{_gfile.id} from DB"
 
       true
     end
@@ -66,7 +66,7 @@ module Mobilize
     def launch(_session)
       _gfile                      = self
       _remote                     = _session.upload_from_string("", _gfile.name)
-      Logger.write                  "Lauched remote #{_remote.resource_id} for #{_gfile.id}"
+      Log.write                     "Lauched remote #{_remote.resource_id} for #{_gfile.id}"
       _gfile.sync                   _remote
     end
 
@@ -93,10 +93,10 @@ module Mobilize
         _task.refresh_dir
 
         _remote.download_to_file   "#{_task.dir}/stdout"
-        Logger.write               "Downloaded #{_gfile.id} to #{_task.dir}/stdout"
-        Logger.write               "#{_user.google_login}: #{File.size("#{_task.dir}/stdout").to_s} bytes", "STAT"
+        Log.write                  "Downloaded #{_gfile.id} to #{_task.dir}/stdout"
+        Log.write                  "#{_user.google_login}: #{File.size("#{_task.dir}/stdout").to_s} bytes", "STAT"
       else
-        Logger.write               "User #{_user.id} does not have read access to #{_gfile.id}", "FATAL"
+        Log.write                  "User #{_user.id} does not have read access to #{_gfile.id}", "FATAL"
       end
     end
 
@@ -108,10 +108,10 @@ module Mobilize
       if _gfile.is_writer?           _user
 
         _remote.update_from_file     _task.input
-        Logger.write                 "Uploaded #{_task.input} from #{_gfile.id}"
-        Logger.write                 "#{_user.google_login}: #{File.size(_task.input).to_s} bytes", "STAT"
+        Log.write                    "Uploaded #{_task.input} from #{_gfile.id}"
+        Log.write                    "#{_user.google_login}: #{File.size(_task.input).to_s} bytes", "STAT"
       else
-        Logger.write                 "#{_user.google_login} does not have write access to #{_gfile.id}", "FATAL"
+        Log.write                    "#{_user.google_login} does not have write access to #{_gfile.id}", "FATAL"
       end
       true
     end
@@ -146,7 +146,7 @@ module Mobilize
         _remote                   = _remotes.first
 
         if                          _remotes.length > 1
-        Logger.write(               "TOO MANY REMOTES: #{_remotes.length} remotes " +
+        Log.write(                  "TOO MANY REMOTES: #{_remotes.length} remotes " +
                                     "by #{_gfile.owner} with name #{_gfile.name}", "WARN")
         end
       end
@@ -161,7 +161,7 @@ module Mobilize
     def remote(_session)
       _gfile              = self
 
-      Logger.write(        "Gfile has no remote_id", "FATAL") unless _gfile.remote_id
+      Log.write(           "Gfile has no remote_id", "FATAL") unless _gfile.remote_id
 
       _remotes            = Gfile.remotes_by _session, owner: _gfile.owner, title: _gfile.name
 

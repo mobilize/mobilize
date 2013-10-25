@@ -25,12 +25,12 @@ module Mobilize
         return false     if _parent.working? or _parent.completed_at.nil?
         #child is triggered if it's never completed and parent has
         if                  _job.completed_at.nil?
-          Logger.write      "#{_job.id} triggered by completed parent, never completed child"
+          Log.write         "#{_job.id} triggered by completed parent, never completed child"
           return true
         end
         #child is triggered if parent completed more recently
         if                  _parent.completed_at > _job.completed_at
-          Logger.write      "#{_job.id} triggered by more recently completed parent"
+          Log.write         "#{_job.id} triggered by more recently completed parent"
           return true
         end
       end
@@ -41,11 +41,11 @@ module Mobilize
       _trigger        = self
       _job            = _trigger.job
       if                _job.completed_at.nil?
-        Logger.write    "#{_job.id} triggered by once, " +
+        Log.write       "#{_job.id} triggered by once, " +
                         "job never completed"
         return true
       elsif             _job.completed_at < _job.touched_at
-        Logger.write    "#{_job.id} triggered by once, " +
+        Log.write       "#{_job.id} triggered by once, " +
                         "touched since last completion"
         return true
       else
@@ -114,7 +114,7 @@ module Mobilize
                                 else
                                   "job never completed"
                                 end
-      Logger.write              "#{_trigger.id} from #{_call_method} #{_due_time_msg}; #{_job_msg}"
+      Log.write                 "#{_trigger.id} from #{_call_method} #{_due_time_msg}; #{_job_msg}"
       return true
     end
 

@@ -33,7 +33,7 @@ class String
     if _exit_status != 0 and
        _except      == true
 
-       Mobilize::Logger.write _err_str, "FATAL"
+       Mobilize::Log.write    _err_str, "FATAL"
 
     elsif _all_streams == false
 

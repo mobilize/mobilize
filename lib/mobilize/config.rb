@@ -1,6 +1,35 @@
 require "settingslogic"
 require 'fileutils'
 module Mobilize
+  def Mobilize.db
+    Mongoid.session(:default)[:database].database
+  end
+  def Mobilize.root
+    File.expand_path "#{File.dirname(File.expand_path(__FILE__))}/../.."
+  end
+  def Mobilize.env
+    ENV['MOBILIZE_ENV'] || "test"
+  end
+  def Mobilize.home_dir
+    File.expand_path "~/.mobilize"
+  end
+  def Mobilize.config_dir
+    "#{Mobilize.home_dir}/config"
+  end
+  def Mobilize.log_dir
+    "#{Mobilize.home_dir}/log"
+  end
+  def Mobilize.queue
+    "mobilize-#{Mobilize.env}"
+  end
+  def Mobilize.console
+    require 'mobilize'
+    Mobilize.pry
+  end
+  def Mobilize.revision
+    puts File.read(Mobilize.root + "REVISION")
+  end
+
   class Config < Settingslogic
     def Config.dir;                "#{Mobilize.home_dir}/config";end
     def Config.path;               "#{Config.dir}/config.yml";end
@@ -30,8 +59,8 @@ module Mobilize
       _force_write            = (File.exists?(_target_path) and _force == true)
       if                        _force_write or !File.exists?(_target_path)
         FileUtils.cp            _source_path, _target_path
-        Mobilize::Logger.write("Wrote default to #{_target_path}, " +
-                                "please add environment variables accordingly")
+        puts                    "Wrote default to #{_target_path}, " +
+                                "please add environment variables accordingly"
       end
     end
     #loads rc file from home directory if present
@@ -59,7 +88,7 @@ module Mobilize
       FileUtils.cp              Mobilize.config.box.private_key_path,
                                 _box_ssh_path
       FileUtils.chmod           0700, _box_ssh_path
-      Logger.write              "Wrote box ssh file"
+      puts                      "Wrote box ssh file"
     end
     def Config.write_git_files
       _git_ssh_path           = "#{Config.key_dir}/git.ssh"
@@ -75,7 +104,7 @@ module Mobilize
       File.write                _git_sh_path, _git_sh_cmd
 
       FileUtils.chmod           0700, [_git_sh_path, _git_ssh_path]
-      Logger.write              "Wrote git ssh files"
+      puts                      "Wrote git ssh files"
       return                    true
     end
   end
