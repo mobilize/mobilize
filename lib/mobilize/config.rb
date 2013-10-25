@@ -59,8 +59,8 @@ module Mobilize
       _force_write            = (File.exists?(_target_path) and _force == true)
       if                        _force_write or !File.exists?(_target_path)
         FileUtils.cp            _source_path, _target_path
-        Mobilize::Log.write(   "Wrote default to #{_target_path}, " +
-                                "please add environment variables accordingly")
+        puts                    "Wrote default to #{_target_path}, " +
+                                "please add environment variables accordingly"
       end
     end
     #loads rc file from home directory if present
