@@ -4,8 +4,8 @@ module Mobilize
       def User.default
         Mobilize::User.find_or_create_by(
           active: true,
-          google_login: Mobilize.config.fixture.google.email,
-          github_login: Mobilize.config.fixture.github.login,
+          google_login: Mobilize.config.google.owner.email,
+          github_login: Mobilize.config.github.owner_login,
         )
       end
     end

@@ -45,7 +45,7 @@ module Mobilize
       _result               = {}
       _stream_array.each      {|_stream|
                                 _value           = File.read "#{_task.dir}/#{_stream.to_s}"
-                                _result[stream]  = _value
+                                _result[_stream]  = _value
                               }
 
       _result

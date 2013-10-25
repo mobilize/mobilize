@@ -9,7 +9,7 @@ test:
   mongodb:
     username: <%= ENV['MOB_MONGODB_USERNAME'] %>
     password: <%= ENV['MOB_MONGODB_PASSWORD'] %>
-    database:     mobilize_test
+    database: <%= ENV['MOB_MONGODB_DATABASE'] %>
     hosts:    <%= ENV['MOB_MONGODB_HOSTS'] %>
   engine:
     workers: 5

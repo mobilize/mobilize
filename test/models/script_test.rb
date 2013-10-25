@@ -4,7 +4,7 @@ class ScriptTest < MiniTest::Unit::TestCase
     Mongoid.purge!
     Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
-    @box                       = Mobilize::Box.find_or_create_by_name Mobilize.config.fixture.box.name
+    @box                       = Mobilize::Box.find_or_create_by_name "mobilize-github-test"
     @user                      = @Fixture::User.default
     @stdin                     = "(echo 'log this to the log' > log) && cmd"
     @script                    = Mobilize::Script.find_or_create_by stdin: @stdin
@@ -25,5 +25,9 @@ class ScriptTest < MiniTest::Unit::TestCase
     assert_equal                 @result[:stderr].strip,        ""
     assert_equal                 @result[:exit_signal].strip,   "0"
     assert_equal                 @result[:log].strip,           "log this to the log"
+  end
+
+  def teardown
+    @box.terminate
   end
 end
