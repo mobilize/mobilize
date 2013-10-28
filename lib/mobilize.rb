@@ -5,6 +5,10 @@ require "mobilize/config"
 Mobilize::Config.load_rc
 Mobilize::Config.write_from_sample "config.yml"
 
+Mobilize::Config.write_from_sample "resque-pool-test.rb"
+
+
+
 #create log folder if not exists
 _abs_log_dir                  = File.expand_path Mobilize.log_dir
 FileUtils.mkdir_p               _abs_log_dir unless File.exists? _abs_log_dir
