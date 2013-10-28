@@ -27,7 +27,8 @@ module Mobilize
     Mobilize.pry
   end
   def Mobilize.revision
-    puts File.read(Mobilize.root + "REVISION")
+    _revision_path = "#{Mobilize.root}/REVISION"
+    File.exists?(_revision_path) ? File.read(_revision_path) : "HEAD"
   end
 
   class Config < Settingslogic
