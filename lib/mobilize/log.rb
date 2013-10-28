@@ -7,6 +7,7 @@ module Mobilize
     field :line,      type: Fixnum
     field :call,      type: String
     field :message,   type: String
+    field :revision,  type: String
     field :host,      type: String
     field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}/#{path}/#{call}/#{line.to_s}" }
 
@@ -17,8 +18,9 @@ module Mobilize
       _line                 = _header.split(":")[-2].to_i
       _path                 = _header.split(":").first
       _host                 = Socket.gethostname
+      _revision             = Mobilize.revision
       _log                  = Log.create(level: _level, path:    _path,    line: _line,
-                                         call:  _call,  message: _message, host: _host)
+                                         call:  _call,  message: _message, host: _host, revision: _revision)
       if _level            == "FATAL"
         raise                 _log.message
       end
