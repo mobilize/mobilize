@@ -29,7 +29,7 @@ module Mobilize
           if   _launch or _args[2] == "launch"
                _box                  = _Box.find_or_create_by_name _name
           else
-               Log.write               "Box #{_name} not found; specify --launch to launch new"
+               puts                   "Box #{_name} not found; specify --launch to launch new"
                return false
           end
         end
