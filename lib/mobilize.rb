@@ -90,15 +90,9 @@ unless File.exists? Mobilize::Github.sh_path and
        Mobilize::Config.write_key_files
 end
 
-require "gmail"
 _google_dir = "#{_path_dir}/google"
-_gbook_dir  = "#{_google_dir}/gbook"
-require       "#{_google_dir}/gmail"
 
 require "google_drive"
 require "#{_google_dir}/gfile"
-require "#{_gbook_dir}/gbook"
-require "#{_gbook_dir}/gtab"
-require "#{_gbook_dir}/grange"
 #patched from google-drive-ruby
 require "#{_google_dir}/extensions/client_login_fetcher"
