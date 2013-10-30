@@ -26,11 +26,13 @@ module Mobilize
           _clone_script                = "rm -rf mobilize && " +
                                          "git clone http://u:p@github.com/#{_path}.git --depth=1"
           _box.sh                        _clone_script
-          _repo_revision               = "cd mobilize && git log -1 --pretty=format:%H"
+          _repo_revision               = _box.sh "cd mobilize && git log -1 --pretty=format:%H"
           _installed_revision          = begin; _box.sh "mob revision";rescue;nil;end
           if _installed_revision      != _repo_revision
              _install_script           = "cd mobilize && bundle install && rake install"
-             _box.install                _install_script, "Installing Mobilize on #{_box.id}"
+             _box.install                _install_script, "Installing Mobilize on #{_box.id}; " +
+                                                          "installed revision: #{_installed_revision.to_s}" +
+                                                          "repo revision: #{_repo_revision}"
           else
              Log.write                   "mobilize revision #{_installed_revision} already installed on #{_box.id}"
           end
