@@ -30,7 +30,7 @@ module Mobilize
       while 1 == 1
         _tail_logs           = if _tail_logs
 
-                                 Log.where(:_id.gt => _last_log.id)
+                                 Log.where(:_id.gt => _last_log.id).to_a
 
                                else
 
