@@ -34,6 +34,10 @@ module Mobilize
       Log.tail
     end
 
+    def Cli.revision
+      puts Mobilize.revision
+    end
+
     #adapted from travis CLI code: https://github.com/travis-ci/travis/blob/master/lib/travis/cli.rb
     def Cli.perform(_args)
       _name                    = _args[0]

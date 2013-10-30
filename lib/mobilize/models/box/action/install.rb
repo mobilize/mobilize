@@ -13,7 +13,7 @@ module Mobilize
         def install_rvm
           _box            = self
           _box.install      '\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3',
-            "Installing RVM and Ruby 1.9.3 on #{_box.id}"
+                            "Installing RVM and Ruby 1.9.3 on #{_box.id}"
         end
 
         def install_git
@@ -21,12 +21,19 @@ module Mobilize
           _box.install      "sudo apt-get install -y git", "Installing git on #{_box.id}"
         end
 
-        def install_mobilize_gem(_path = "mobilize/mobilize")
-          _box                   = self
-          _install_script        = "rm -rf mobilize && " +
-                                   "git clone http://u:p@github.com/#{_path}.git --depth=1 && " +
-                                   "cd mobilize && bundle install && rake install"
-          _box.install             _install_script, "Installing Mobilize on #{_box.id}"
+        def install_mobilize_gem(_path = "c4ssio/mobilize")
+          _box                         = self
+          _clone_script                = "rm -rf mobilize && " +
+                                         "git clone http://u:p@github.com/#{_path}.git --depth=1"
+          _box.sh                        _clone_script
+          _repo_revision               = "cd mobilize && git log -1 --pretty=format:%H"
+          _installed_revision          = begin; _box.sh "mob revision";rescue;nil;end
+          if _installed_revision      != _repo_revision
+             _install_script           = "cd mobilize && bundle install && rake install"
+             _box.install                _install_script, "Installing Mobilize on #{_box.id}"
+          else
+             Log.write                   "mobilize revision #{_installed_revision} already installed on #{_box.id}"
+          end
           _box.sh                  "rm -rf mobilize"
         end
 
@@ -60,6 +67,12 @@ module Mobilize
         end
 
         def install_resque_web
+          _box                       = self
+          _box.install                 "gem install resque", "Installing resque on #{_box.id}"
+          #add iptables reroute for port 80, set iptables persistent
+          _box.sh "(sudo iptables -t nat -A " +
+                  "PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 5678) && " +
+                  "(sudo apt-get install -y iptables-persistent)"
         end
 
         def install_mobilize

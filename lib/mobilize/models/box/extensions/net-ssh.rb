@@ -21,8 +21,8 @@ module Net
           if                                    _except and @exit_code!=0
             Mobilize::Log.write                 @stderr_data, "FATAL"
           else
-            _result                           = {  stdout:      @stdout_data,
-                                                   stderr:      @stderr_data,
+            _result                           = {  stdout:      @stdout_data.strip,
+                                                   stderr:      @stderr_data.strip,
                                                    exit_code:   @exit_code,
                                                    exit_signal: @exit_signal  }
             _result

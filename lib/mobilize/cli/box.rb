@@ -7,10 +7,16 @@ module Mobilize
         _operator                       = _args[1]
         _operand, _box_name             = _operator == "terminate" ? [ nil, _args[2].dup ] : [ _args[2], _args[3].dup ]
 
-        _box                              = Box.find _box_name, _args
+        _box                            = Box.find _box_name, _args
 
         return false unless _box
-        _box.send                           [_operator, _operand].compact.join("_")
+
+        if _operator == "sh"
+          _result                       = _box.sh _operand
+          puts                            _result[:stdout]
+       else
+          _box.send                       [_operator, _operand].compact.join("_")
+        end
       end
       private
 

@@ -37,15 +37,18 @@ class String
 
     elsif _all_streams == false
 
-      return _out_str
+      return _out_str.strip
 
     else
 
-      return {in: _in_str,
-              out: _out_str,
-              err: _err_str}
+      return {in: _in_str.strip,
+              out: _out_str.strip,
+              err: _err_str.strip}
 
     end
+  end
+  def dirname
+    File.dirname(self)
   end
   #returns a shortened version of the string with an ellipsis if appropriate
   def ellipsize(_length, _ellipsis = "(...)")
