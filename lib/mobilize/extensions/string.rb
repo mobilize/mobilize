@@ -50,6 +50,10 @@ class String
   def dirname
     File.dirname(self)
   end
+  #returns string between 2 markers (from stack overflow)
+  def between(_marker1, _marker2)
+    self[/#{Regexp.escape(_marker1)}(.*?)#{Regexp.escape(_marker2)}/m, 1]
+  end
   #returns a shortened version of the string with an ellipsis if appropriate
   def ellipsize(_length, _ellipsis = "(...)")
     _str               = self

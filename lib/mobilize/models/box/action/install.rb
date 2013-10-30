@@ -12,13 +12,31 @@ module Mobilize
 
         def apt_install(_name, _version)
           _box                   = self
+          Log.write                "Installing apt #{_name} #{_version}..."
           _box.sh                  "sudo apt-get install -y #{_name}=#{_version}"
         end
 
-        def gem_install(_name, _version)
+        def gem_install(_name)
+          _box                   = self
+          _version               = Gem.loaded_specs[_name].version.to_s
+          unless _box.gem_check    _name, _version
+            Log.write              "Installing gem #{_name} #{_version}..."
+            _box.sh                "gem install #{_name} -v=#{_version}"
+          end
+        end
+
+        def gem_check(_name, _version)
           _box                   = self
           #check to make sure binary exists as well as correct installed version
-          _binary_exists         = _box.sh("which resque")
+          _binary_exists                     = _box.sh("which #{_name}",false).length>0
+          if _binary_exists
+            _installed_version_line          = _box.sh 'gem list | grep "^' + _name + '\\ "', false
+            _installed_versions              = _installed_version_line.between('(',')').split ','
+            if _installed_versions.include?    _version
+              Log.write                        "Gem #{_name} #{_version} is alredy installed on #{_box.id}"
+              return true
+            end
+          end
         end
 
         def install_ruby
@@ -42,21 +60,20 @@ module Mobilize
           else
              Log.write                   "mobilize revision #{_installed_revision} already installed on #{_box.id}"
           end
-          _box.sh                  "rm -rf mobilize"
+          _box.sh                        "rm -rf mobilize"
         end
 
         def install_god
           _box                   = self
-          _box.gem_install         "god", "0.13.3"
+          _box.gem_install         "god"
         end
 
         def install_resque_pool
           _box                   = self
-          _box.gem_install         "resque", "1.25.0"
-          _box.gem_install         "resque-pool", 
-                                   "Installing resque && resque-pool on #{_box.id}"
+          _box.gem_install         "resque"
+          _box.gem_install         "resque-pool"
           #resque-pool requires a git repo to work for some reason
-          _box.sh                  "cd `mob test root` && git init"
+          _box.sh                  "cd `mob root` && git init"
         end
 
         def install_engine
@@ -77,7 +94,7 @@ module Mobilize
 
         def install_resque_web
           _box                       = self
-          _box.install                 "gem install resque", "Installing resque on #{_box.id}"
+          _box.gem_install             "resque"
           #add iptables reroute for port 80, set iptables persistent
           _box.sh "(sudo iptables -t nat -A " +
                   "PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 5678) && " +
