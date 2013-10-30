@@ -10,15 +10,21 @@ module Mobilize
           return true
         end
 
-        def install_rvm
+        def apt_install(_name, _version)
+          _box                   = self
+          _box.sh                  "sudo apt-get install -y #{_name}=#{_version}"
+        end
+
+        def gem_install(_name, _version)
+          _box                   = self
+          #check to make sure binary exists as well as correct installed version
+          _binary_exists         = _box.sh("which resque")
+        end
+
+        def install_ruby
           _box            = self
           _box.install      '\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3',
                             "Installing RVM and Ruby 1.9.3 on #{_box.id}"
-        end
-
-        def install_git
-          _box            = self
-          _box.install      "sudo apt-get install -y git", "Installing git on #{_box.id}"
         end
 
         def install_mobilize_gem(_path = "c4ssio/mobilize")
@@ -26,8 +32,8 @@ module Mobilize
           _clone_script                = "rm -rf mobilize && " +
                                          "git clone http://u:p@github.com/#{_path}.git --depth=1"
           _box.sh                        _clone_script
-          _repo_revision               = _box.sh("cd mobilize && git log -1 --pretty=format:%H")[:stdout]
-          _installed_revision          = begin; _box.sh("mob revision")[:stdout];rescue;nil;end
+          _repo_revision               = _box.sh "cd mobilize && git log -1 --pretty=format:%H"
+          _installed_revision          = begin; _box.sh "mob revision";rescue;nil;end
           if _installed_revision      != _repo_revision
              _install_script           = "cd mobilize && bundle install && rake install"
              _box.install                _install_script, "Installing Mobilize on #{_box.id}; " +
@@ -41,12 +47,13 @@ module Mobilize
 
         def install_god
           _box                   = self
-          _box.install            "gem install god", "Installing god on #{_box.id}"
+          _box.gem_install         "god", "0.13.3"
         end
 
         def install_resque_pool
           _box                   = self
-          _box.install             "gem install resque && gem install resque-pool",
+          _box.gem_install         "resque", "1.25.0"
+          _box.gem_install         "resque-pool", 
                                    "Installing resque && resque-pool on #{_box.id}"
           #resque-pool requires a git repo to work for some reason
           _box.sh                  "cd `mob test root` && git init"
@@ -79,9 +86,9 @@ module Mobilize
 
         def install_mobilize
           _box                       = self
-          _box.install_rvm
+          _box.install_ruby
           _box.install_git
-          _box.install_redis_server
+          _box.install_redis
 
           _box.write_mobrc
           _box.write_keys
@@ -89,11 +96,15 @@ module Mobilize
           _box.install_mobilize_gem
         end
 
-        def install_redis_server
+        def install_git
+          _box                    = self
+          _box.install_apt          "git", "1:1.7.9.5-1"
+        end
 
-          _box                   = self
-          _box.install             "sudo apt-get install -y redis-server",
-                                   "Installing redis-server on #{_box.id}"
+        def install_redis
+
+          _box                   =  self
+          _box.install_apt         "redis-server", "2:2.2.12-1build1"
           #installation starts redis-server for some reason so stop it
           _box.sh                  "ps aux | grep redis-server | awk '{print $2}' | " +
                                    "(sudo xargs kill)", false

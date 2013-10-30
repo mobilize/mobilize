@@ -23,7 +23,7 @@ module Mobilize
         puts                        _ssh_cmd
       end
 
-      def sh(_command,  _except = true, _streams = [:stdout, :stderr])
+      def sh(_command,  _except = true, _streams = :stdout)
         _box                                  = self
         _ssh_args                             = {keys: [Box.private_key_path],
                                                  paranoid: false}
@@ -31,10 +31,11 @@ module Mobilize
         _box.write                              _command, _command_file_path, false, false
         _send_args                             = ["start", _box.dns, _box.user_name, _ssh_args]
         _result                               = Net::SSH.send_w_retries(*_send_args) do |_ssh|
-                                                  _ssh.run("bash -l -c 'sh #{_command_file_path}'", _except, _streams)
+                                                  _ssh.run("bash -l -c 'sh #{_command_file_path}'", _except, [_streams].flatten)
                                                 end
         Net::SSH.send_w_retries(*_send_args)   {|_ssh| _ssh.run "rm #{_command_file_path}"}
-        _result
+        
+        if _streams == :stdout;_result[:stdout];else;_result;end
       end
 
       def cp(_loc_path, _rem_path, _mkdir = true, _log = true)

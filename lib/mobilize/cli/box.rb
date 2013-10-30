@@ -13,7 +13,7 @@ module Mobilize
 
         if _operator == "sh"
           _result                       = _box.sh _operand
-          puts                            _result[:stdout]
+          puts                            _result
        else
           _box.send                       [_operator, _operand].compact.join("_")
         end
