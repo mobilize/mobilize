@@ -47,44 +47,28 @@ module Mobilize
 
         def install_mobilize_gem(_path = "c4ssio/mobilize")
           _box                         = self
-          _clone_script                = "rm -rf mobilize && " +
+          _box.sh                        "rm -rf mobilize && " +
                                          "git clone http://u:p@github.com/#{_path}.git --depth=1"
-          _box.sh                        _clone_script
           _repo_revision               = _box.sh "cd mobilize && git log -1 --pretty=format:%H"
           _installed_revision          = begin; _box.sh "mob revision";rescue;nil;end
           if _installed_revision      != _repo_revision
-             _install_script           = "cd mobilize && bundle install && rake install"
-             _box.install                _install_script, "Installing Mobilize on #{_box.id}; " +
-                                                          "installed revision: #{_installed_revision.to_s}" +
-                                                          "repo revision: #{_repo_revision}"
+            Log.write                    "Installing Mobilize on #{_box.id}\n" +
+                                         "installed revision: #{_installed_revision.to_s}\n" +
+                                         "repo revision: #{_repo_revision}"
+            _box.sh                      "cd mobilize && bundle install && rake install"
           else
              Log.write                   "mobilize revision #{_installed_revision} already installed on #{_box.id}"
           end
           _box.sh                        "rm -rf mobilize"
         end
 
-        def install_god
-          _box                   = self
-          _box.gem_install         "god"
-        end
-
-        def install_resque_pool
-          _box                   = self
-          _box.gem_install         "resque"
-          _box.gem_install         "resque-pool"
-          #resque-pool requires a git repo to work for some reason
-          _box.sh                  "cd `mob root` && git init"
-        end
-
         def install_engine
           _box                           = self
           _box.install_mobilize
-          _box.install_resque_pool
 
           _box.write_resque_pool_file
           _box.write_god_file
-
-          _box.install_god
+          Log.write                        "Mobilize engine installed on #{_box.id}"
         end
 
         def install_master
@@ -115,13 +99,13 @@ module Mobilize
 
         def install_git
           _box                    = self
-          _box.install_apt          "git", "1:1.7.9.5-1"
+          _box.apt_install          "git", "1:1.7.9.5-1"
         end
 
         def install_redis
 
           _box                   =  self
-          _box.install_apt         "redis-server", "2:2.2.12-1build1"
+          _box.apt_install         "redis-server", "2:2.2.12-1build1"
           #installation starts redis-server for some reason so stop it
           _box.sh                  "ps aux | grep redis-server | awk '{print $2}' | " +
                                    "(sudo xargs kill)", false
