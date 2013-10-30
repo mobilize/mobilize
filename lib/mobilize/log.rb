@@ -9,7 +9,7 @@ module Mobilize
     field :message,   type: String
     field :revision,  type: String
     field :host,      type: String
-    field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}/#{path}/#{call}/#{line.to_s}" }
+    field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}#{path}/#{call}/#{line.to_s}" }
 
     def Log.write(_message, _level = "INFO")
       _trace                = caller(1)
@@ -34,9 +34,9 @@ module Mobilize
 
                                else
 
-                                 Log.desc(:_id).limit(10)
+                                 Log.desc(:_id).limit(10).to_a.reverse
 
-                               end.order_by(:_id.asc)
+                               end
 
         _tail_logs.each     { |_tail_log| _tail_log.pp _fields }
 
