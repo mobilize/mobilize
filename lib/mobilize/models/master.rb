@@ -1,6 +1,6 @@
 module Mobilize
   module Master
-    @@config                                     = Mobilize.config "master"
+    @@config                                     = Mobilize.config.cluster.master
     def Master.config;                             @@config;end
 
     def Master.start_workers
