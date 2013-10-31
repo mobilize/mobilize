@@ -48,7 +48,10 @@ class String
     end
   end
   def dirname
-    File.dirname(self)
+    File.dirname self
+  end
+  def basename
+    File.basename self
   end
   #returns string between 2 markers (from stack overflow)
   def between(_marker1, _marker2)

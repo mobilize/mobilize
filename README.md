@@ -51,7 +51,7 @@ You'll need to sign up for:
     and password.
   * add your host:port, username, and password to `mobrc`
 
-## Installation
+## Installation, Logging, Monitoring
 
 * install RVM and Ruby 1.9.3 with:
   * `\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3`
@@ -63,13 +63,16 @@ You'll need to sign up for:
   * `git clone https://github.com/mobilize/mobilize.git && cd mobilize && rake install`
   * This will copy default configs to `~/.mobilize/config/config.yml`
 
+* tail application logs with:
+  * `mob log tail`
+
 * install your mobilize cluster (5 engines with 5 Resque workers each):
   * `mob cluster install`
 
-* view your workers (you will need to enter your resque-web password 
+* monitor your workers (you will need to enter your resque-web username/password)
   * `mob cluster view resque_web`
 
-### Console
+## Console
 
 * launch the Mobilize console with:
   * `mob console`
