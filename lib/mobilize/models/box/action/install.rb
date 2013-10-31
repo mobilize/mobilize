@@ -44,7 +44,7 @@ module Mobilize
                             "Installing RVM and Ruby 1.9.3 on #{_box.id}"
         end
 
-        def install_mobilize_gem(_path = "c4ssio/mobilize")
+        def install_mobilize_gem(_path = "mobilize/mobilize")
           _box                         = self
           _box.sh                        "rm -rf mobilize && " +
                                          "git clone http://u:p@github.com/#{_path}.git --depth=1"
