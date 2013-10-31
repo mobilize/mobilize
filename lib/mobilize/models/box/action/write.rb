@@ -22,20 +22,21 @@ module Mobilize
         def write_resque_pool_file
           _box                  = self
           _resque_pool_path     = _box.mobilize_config_dir + "/resque-pool.yml"
-          _resque_pool_string   = {"test"=>{"mobilize-#{Mobilize.env}" => Mobilize.config.engine.workers}}.to_yaml
+          _worker_count         = Mobilize.config.cluster.engines.workers.count
+          _resque_pool_string   = {"test"=>{"mobilize-#{Mobilize.env}" => _worker_count}}.to_yaml
           _box.write              _resque_pool_string, _resque_pool_path
           true
         end
 
-        def write_resque_auth
+        def write_resque_web_auth
           _box                       = self
-          _config                    = Mobilize.config.resque
+          _config                    = Mobilize.config.cluster.master.resque_web
 
-          _resque_auth_script        = "Resque::Server.use(Rack::Auth::Basic) do |_user, _password|\n" +
+          _resque_web_auth_script    = "Resque::Server.use(Rack::Auth::Basic) do |_user, _password|\n" +
                                        "[_user, _password] == ['#{_config.username}', '#{_config.password}']\n" +
                                        "end"
 
-          _box.write                   _resque_auth_script, "#{_box.mobilize_config_dir}/resque-auth.rb"
+          _box.write                   _resque_web_auth_script, "#{_box.mobilize_config_dir}/resque-web-auth.rb"
           true
         end
 

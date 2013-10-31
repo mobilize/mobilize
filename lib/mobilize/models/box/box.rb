@@ -100,8 +100,8 @@ module Mobilize
     end
 
     def Box.engine_names
-      _engine_boxes = Mobilize.config.engine.boxes
-      _engine_boxes.times.map do |_box_i|
+      _engine_count = Mobilize.config.cluster.engines.count
+      _engine_count.times.map do |_box_i|
                                   "mobilize-engine-#{Mobilize.env}-" +
                                  (_box_i + 1).to_s.rjust(2,'0')
                               end

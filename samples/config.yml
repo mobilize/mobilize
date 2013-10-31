@@ -11,10 +11,15 @@ test:
     password: <%= ENV['MOB_MONGODB_PASSWORD'] %>
     database: <%= ENV['MOB_MONGODB_DATABASE'] %>
     hosts:    <%= ENV['MOB_MONGODB_HOSTS'] %>
-  engine:
-    boxes:   5
-    workers: 5
-  master:
+  cluster:
+    engines:
+      count: 5
+      workers:
+        count: 5
+    master:
+      resque:
+        username: <%= ENV['MOB_RESQUE_USERNAME'] %>
+        password: <%= ENV['MOB_RESQUE_PASSWORD'] %>
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
