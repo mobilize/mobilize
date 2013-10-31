@@ -87,7 +87,7 @@ module Mobilize
       def start_resque_web
         _box                  = self
         _redis                = Mobilize.config.redis
-        _resque_auth_path     = "#{_box.mobilize_config_dir}/resque-auth.rb"
+        _resque_auth_path     = "#{_box.mobilize_config_dir}/resque-web-auth.rb"
         _box.sh                 "resque-web #{_resque_auth_path} -r #{_redis.host}:#{_redis.port}:0"
       end
 

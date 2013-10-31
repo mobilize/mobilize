@@ -148,6 +148,10 @@ module Mobilize
       _result
     end
 
+    def Box.view_cluster
+      "open http://#{Box.master.dns}".popen4
+    end
+
     def remote(_session = Box.session)
       _box             = self
 

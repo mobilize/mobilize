@@ -17,7 +17,7 @@ test:
       workers:
         count: 5
     master:
-      resque:
+      resque_web:
         username: <%= ENV['MOB_RESQUE_USERNAME'] %>
         password: <%= ENV['MOB_RESQUE_PASSWORD'] %>
   work:
