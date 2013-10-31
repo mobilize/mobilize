@@ -9,7 +9,7 @@ module Mobilize
     field :message,   type: String
     field :revision,  type: String
     field :host,      type: String
-    field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}/#{path}/#{call}/#{line.to_s}" }
+    field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}#{path}/#{call}/#{line.to_s}" }
 
     def Log.write(_message, _level = "INFO")
       _trace                = caller(1)
@@ -25,18 +25,18 @@ module Mobilize
         raise                 _log.message
       end
     end
-    def Log.tail(_fields = [:level, :time,  :file, :call, :message])
+    def Log.tail(_fields = [:level, :time,  :host, :file, :call, :message])
       _last_log, _tail_logs  = Log.last, nil
       while 1 == 1
         _tail_logs           = if _tail_logs
 
-                                 Log.where(:_id.gt => _last_log.id)
+                                 Log.where(:_id.gt => _last_log.id).to_a
 
                                else
 
-                                 Log.desc(:_id).limit(10)
+                                 Log.desc(:_id).limit(10).to_a.reverse
 
-                               end.order_by(:_id.asc)
+                               end
 
         _tail_logs.each     { |_tail_log| _tail_log.pp _fields }
 
@@ -45,23 +45,24 @@ module Mobilize
         sleep 1
       end
     end
-    def pp(_fields = [:level, :time,  :path, :call, :message])
+
+    def pp_level;   "[#{ self.level}] ".ljust(5, " ");                                  end
+
+    def pp_time;    "[#{ self.time.strftime "%Y-%m-%d %H:%M:%S" }] ";                   end
+
+    def pp_host;    "[#{ self.host }] ";                                                  end
+
+    def pp_path;    "#{ self.path}:#{ self.line.to_s}".ljust(40, " ") + " ";            end
+
+    def pp_file;    "#{ self.path.basename}:#{ self.line.to_s}".ljust(20, " ") + " "  ; end
+
+    def pp_call;    "in '#{ self.call}'; ".ljust(30, " ") + " ";                        end
+
+    def pp_message; self.message;                                                       end
+
+    def pp(_fields = [:level, :time,  :host, :path, :call, :message])
       _log, _result          = self, ""
-      _fields.each  do     |_field|
-                      if    _field  == :level
-                            _result += "[#{ _log.level}] ".ljust(5, " ")
-                      elsif _field  == :time
-                            _result += "[#{ _log.time.strftime "%Y-%m-%d %H:%M:%S" }] "
-                      elsif _field  == :path
-                            _result += "#{_log.path}:#{_log.line.to_s}".ljust(40, " ") + " "
-                      elsif _field  == :file
-                            _result += "#{File.basename _log.path}:#{_log.line.to_s}".ljust(20, " ") + " "
-                      elsif _field  == :call
-                            _result += "in '#{_log.call}'; ".ljust(30, " ") + " "
-                      elsif _field  == :message
-                            _result += _log.message
-                      end
-                    end
+      _fields.each {|_field| _result += _log.send "pp_#{_field.to_s}"}
       puts _result
     end
   end

@@ -1,13 +1,13 @@
 export MOB_AWS_ACCESS_KEY_ID=<aws access key>
 export MOB_AWS_SECRET_ACCESS_KEY=<aws secret access key>
 
+export MOB_REDIS_HOST=<redis host for master and engines>
+export MOB_REDIS_PORT=<redis port for master and engines>
+export MOB_RESQUE_USERNAME=admin
+export MOB_RESQUE_PASSWORD=changeyourpassword
+
 export MOB_GOOGLE_OWNER_EMAIL=<owner email>
 export MOB_GOOGLE_OWNER_PASSWORD=<owner password>
-
-export MOB_GOOGLE_WORKER_GROUP_EMAIL=<google worker group>
-
-export MOB_GOOGLE_WORKER_EMAIL_01=<google worker email 1>
-export MOB_GOOGLE_WORKER_PASSWORD_01=<google worker password 1>
 
 export MOB_GITHUB_OWNER_LOGIN=<github owner email>
 export MOB_GITHUB_OWNER_PASSWORD=<github owner password>
@@ -15,11 +15,6 @@ export MOB_GITHUB_OWNER_PASSWORD=<github owner password>
 export MOB_FIXTURE_GITHUB_PRIVATE_DOMAIN=<domain for private github test>
 export MOB_FIXTURE_GITHUB_PRIVATE_OWNER=<owner for private github test>
 export MOB_FIXTURE_GITHUB_PRIVATE_REPO=<repo for private github test>
-
-export MOB_BOX_USER_NAME=<root user name for boxes>
-
-export MOB_REDIS_HOST=<redis host for master and engines>
-export MOB_REDIS_PORT=<redis port for master and engines>
 
 export MOB_MONGODB_HOSTS=<host:port for mongodb metadata store, comma delimited>
 export MOB_MONGODB_USERNAME=<mongodb username>

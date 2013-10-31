@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "github_api","0.10.2"
   spec.add_runtime_dependency "gmail","0.4.0"
   spec.add_runtime_dependency "google_drive","0.3.6"
-  spec.add_runtime_dependency "resque","1.25.0"
+  spec.add_runtime_dependency "resque","1.25.1"
   spec.add_runtime_dependency "resque-pool","0.3.0"
   spec.add_runtime_dependency "god","0.13.3"
   spec.add_runtime_dependency "redis-objects"
@@ -35,4 +35,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "net-ssh","2.7.0"
   spec.add_runtime_dependency "net-scp","1.1.2"
   spec.add_runtime_dependency "settingslogic","2.0.9"
+  spec.add_runtime_dependency "rake-hooks","1.2.3"
+  spec.add_runtime_dependency "thread","0.1.1"
 end

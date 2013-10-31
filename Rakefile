@@ -24,3 +24,12 @@ task "resque:setup" do
                            port:     Mobilize.config.redis.port,
                            password: Mobilize.config.redis.password
 end
+
+require 'rake/hooks'
+after :install do
+#copy sha1 revision into gem directory
+  _revision              = "git log -1 --pretty=format:%H".popen4
+  _root_dir              = "which mob".popen4.dirname.dirname
+  _revision_path         = "#{_root_dir}/gems/mobilize-#{Mobilize::VERSION}/REVISION"
+  File.write               _revision_path, _revision
+end
