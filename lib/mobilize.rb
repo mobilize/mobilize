@@ -52,6 +52,7 @@ _extensions_dir = "mobilize/extensions"
 require "#{_extensions_dir}/object"
 require "#{_extensions_dir}/string"
 require "#{_extensions_dir}/yaml"
+require "#{_extensions_dir}/array"
 
 _models_dir = "mobilize/models"
 

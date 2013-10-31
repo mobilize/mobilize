@@ -87,6 +87,55 @@ module Mobilize
       end
     end
 
+    def Box.engine_names
+      _engine_boxes = Mobilize.config.engine.boxes
+      _engine_boxes.times.map do |_box_i|
+                                  "mobilize-engine-#{Mobilize.env}-" +
+                                 (_box_i + 1).to_s.rjust(2,'0')
+                              end
+    end
+
+    def Box.cluster_procs(_engine_calls, _master_calls = [])
+      _engine_procs = Box.engine_names.map do |_engine_name|
+                      Proc.new{                _engine_box = Box.find_or_create_by_name _engine_name
+
+                                              [_engine_calls].flatten.each{|_engine_call|
+                                               _engine_box           .send  _engine_call}
+                              }
+                                           end
+      _master_proc  = Proc.new{                   _master_box = Box.find_or_create_by_name "mobilize-master-#{Mobilize.env}"
+                                                 [_master_calls].flatten.each{|_master_call|
+                                                  _master_box           .send  _master_call}
+                              }
+      _cluster_procs = _engine_procs + [_master_proc]
+      _cluster_procs
+    end
+
+    #installs as many engines as specified in config as well as master
+    def Box.install_cluster
+      _cluster_procs    = Box.cluster_procs("install_engine", "install_master")
+      _result           = _cluster_procs.thread
+      _result
+    end
+
+    def Box.start_cluster
+      _cluster_procs    = Box.cluster_procs("start_engine")
+      _result           = _cluster_procs.thread
+      _result
+    end
+
+    def Box.stop_cluster
+      _cluster_procs    = Box.cluster_procs("stop_engine")
+      _result           = _cluster_procs.thread
+      _result
+    end
+
+    def Box.terminate_cluster
+      _cluster_procs    = Box.cluster_procs("terminate","terminate")
+      _result           = _cluster_procs.thread
+      _result
+    end
+
     def remote(_session = Box.session)
       _box             = self
 

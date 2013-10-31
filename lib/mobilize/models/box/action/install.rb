@@ -2,7 +2,6 @@ module Mobilize
   class Box
     module Action
       module Install
-
         def install(_script, _message = nil)
           _box                      = self
           Log.write(_message)      if _message
@@ -74,11 +73,11 @@ module Mobilize
         def install_master
           _box                           = self
           _box.install_mobilize
+          _box.install_resque_routing
         end
 
-        def install_resque_web
+        def install_resque_routing
           _box                       = self
-          _box.gem_install             "resque"
           #add iptables reroute for port 80, set iptables persistent
           _box.sh "(sudo iptables -t nat -A " +
                   "PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 5678) && " +

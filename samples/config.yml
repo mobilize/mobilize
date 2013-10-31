@@ -12,6 +12,7 @@ test:
     database: <%= ENV['MOB_MONGODB_DATABASE'] %>
     hosts:    <%= ENV['MOB_MONGODB_HOSTS'] %>
   engine:
+    boxes:   5
     workers: 5
   master:
   work:
@@ -64,104 +65,3 @@ test:
         domain:         <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_DOMAIN']%>
         owner_name:     <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_OWNER']%>
         repo_name:      <%=ENV['MOB_FIXTURE_GITHUB_PRIVATE_REPO']%>
-development:
-  master:
-  engine:
-    workers: 5
-    nodes:   1
-  redis:
-    host:     <%= ENV['MOB_REDIS_HOST'] %>
-    port:     <%= ENV['MOB_REDIS_PORT'] %>
-    password: <%= ENV['MOB_REDIS_PASSWORD'] %>
-  mongodb:
-    username: <%= ENV['MOB_MONGODB_USERNAME'] %>
-    password: <%= ENV['MOB_MONGODB_PASSWORD'] %>
-    database: <%= ENV['MOB_MONGODB_DATABASE'] %>
-    hosts:    <%= ENV['MOB_MONGODB_HOSTS'] %>
-  work:
-    retry_delay: 600 #number of seconds to wait between job failures before retry
-    max_retries: 5
-  log:
-    level: debug
-    ljust:   75
-  object: #used for ssh
-    send_total_retries: 3
-    send_sleep_time: 5
-  task:
-    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
-    total_retries: 5 #how many times to retry task before job failure
-  aws:
-    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
-    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
-  ssh:
-    user_name: 'ubuntu'
-    private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
-  box:
-    keypair_name: mobilize
-    region: 'us-west-1'
-    ami: 'ami-fe002cbb'
-    size: 't1.micro'
-    security_groups:
-    - 'default'
-  google:
-    api:
-      total_retries: 5
-      sleep_time: 1
-      timeout: 600
-    owner:
-      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
-      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
-    worker:
-      group: <%=ENV['MOB_GOOGLE_WORKER_GROUP_EMAIL']%>
-      accounts:
-      - email: <%=ENV['MOB_GOOGLE_WORKER_01_EMAIL']%>
-        password: <%=ENV['MOB_GOOGLE_WORKER_01_PASSWORD']%>
-  github:
-    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
-    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
-    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
-production:
-  master:
-    redis:
-      name: mobilize-redis-test
-    mongodb:
-      name: mobilize-mongodb-test
-    resque:
-      - name:     mobilize-resque-test-01
-        workers:  5
-  work:
-    retry_delay: 600 #number of seconds to wait between job failures before retry
-  log:
-    dir: ~/.mobilize/log
-    level: warn
-  resque:
-    pid_dir: ~/.mobilize/pid
-  object:
-    send_total_retries: 3
-    send_sleep_time: 5
-  task:
-    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
-  aws:
-    access_key_id: <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
-    secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
-  box:
-    user_name: 'ubuntu'
-    private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
-    keypair_name: mobilize
-    region: 'us-west-1'
-    ami: 'ami-fe002cbb'
-    size: 't1.micro'
-    security_groups:
-    - 'default'
-  google:
-    api:
-      total_retries: 5
-      sleep_time: 1
-      timeout: 600
-    owner:
-      email: <%=ENV['MOB_GOOGLE_OWNER_EMAIL']%>
-      password: <%=ENV['MOB_GOOGLE_OWNER_PASSWORD']%>
-  github:
-    owner_ssh_key_path: <%=ENV['MOB_GITHUB_OWNER_SSH_KEY_PATH']%>
-    owner_login: <%=ENV['MOB_GITHUB_OWNER_LOGIN']%>
-    owner_password: <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
