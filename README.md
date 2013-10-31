@@ -31,22 +31,22 @@ transfers scalably and asynchronously.
 ## Credentials
 
 You'll need to sign up for:
-* [AWS][http://aws.amazon.com]
+* [AWS](http://aws.amazon.com)
   * Add your access key id and secret access key to `mobrc`
-  * [EC2][http://]
+  * [EC2](http://http://aws.amazon.com/ec2)
     * set up a keypair named "mobilize", using the public key `box.ssh.pub`
     * Add inbound TCP access to HTTP (port 80) for the `default` security group. 
-  * [Elasticache][http://]
+  * [Elasticache](http://aws.amazon.com/elasticache/)
     * set up an instance of Redis elasticache in the `default` security group.
     * add the host and port for your Redis box to `mobrc`
     * add your chosen Resque username and password to `mobrc` 
       * this will be set up during installation.
-* [Google Drive][http://drive.google.com]
+* [Google Drive](http://drive.google.com)
   * add your email and password to `mobrc`
-* [Github][http://github.com]
+* [Github](http://github.com)
   * add your login (owner name) and password to `mobrc`
     * add your `git.ssh.pub` key to github as a public key.
-* [Mongolab][http://mongolab.com]
+* [Mongolab](http://mongolab.com)
   * create a database named `mobilize-test`, with your chosen username
     and password.
   * add your host:port, username, and password to `mobrc`
