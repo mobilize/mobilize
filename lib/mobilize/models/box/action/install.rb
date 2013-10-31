@@ -74,6 +74,7 @@ module Mobilize
           _box                           = self
           _box.install_mobilize
           _box.install_resque_routing
+          _box.write_resque_auth
         end
 
         def install_resque_routing

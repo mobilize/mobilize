@@ -87,6 +87,18 @@ module Mobilize
       end
     end
 
+    def Box.master_name
+      "mobilize-master-#{Mobilize.env}"
+    end
+
+    def Box.master
+      Box.find_or_create_by_name Box.master_name
+    end
+
+    def Box.engines
+      Box.engine_names.map{|_engine_name| Box.find_or_create_by_name _engine_name}
+    end
+
     def Box.engine_names
       _engine_boxes = Mobilize.config.engine.boxes
       _engine_boxes.times.map do |_box_i|
@@ -103,7 +115,7 @@ module Mobilize
                                                _engine_box           .send  _engine_call}
                               }
                                            end
-      _master_proc  = Proc.new{                   _master_box = Box.find_or_create_by_name "mobilize-master-#{Mobilize.env}"
+      _master_proc  = Proc.new{                   _master_box = Box.find_or_create_by_name Box.master_name
                                                  [_master_calls].flatten.each{|_master_call|
                                                   _master_box           .send  _master_call}
                               }
