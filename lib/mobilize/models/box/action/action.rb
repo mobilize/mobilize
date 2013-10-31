@@ -74,6 +74,16 @@ module Mobilize
         true
       end
 
+      def start_master
+        _box                  = self
+        _box.start_resque_web
+      end
+
+      def stop_master
+        _box                  = self
+        _box.stop_resque_web
+      end
+
       def start_resque_web
         _box                  = self
         _redis                = Mobilize.config.redis

@@ -113,25 +113,25 @@ module Mobilize
 
     #installs as many engines as specified in config as well as master
     def Box.install_cluster
-      _cluster_procs    = Box.cluster_procs("install_engine", "install_master")
+      _cluster_procs    = Box.cluster_procs "install_engine", "install_master"
       _result           = _cluster_procs.thread
       _result
     end
 
     def Box.start_cluster
-      _cluster_procs    = Box.cluster_procs("start_engine")
+      _cluster_procs    = Box.cluster_procs "start_engine", "start_master"
       _result           = _cluster_procs.thread
       _result
     end
 
     def Box.stop_cluster
-      _cluster_procs    = Box.cluster_procs("stop_engine")
+      _cluster_procs    = Box.cluster_procs "stop_engine", "stop_master"
       _result           = _cluster_procs.thread
       _result
     end
 
     def Box.terminate_cluster
-      _cluster_procs    = Box.cluster_procs("terminate","terminate")
+      _cluster_procs    = Box.cluster_procs "terminate", "terminate"
       _result           = _cluster_procs.thread
       _result
     end
