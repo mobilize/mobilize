@@ -15,29 +15,6 @@ module Mobilize
           _box.sh                  "sudo apt-get install -y #{_name}=#{_version}"
         end
 
-        def gem_install(_name)
-          _box                   = self
-          _version               = Gem.loaded_specs[_name].version.to_s
-          unless _box.gem_check    _name, _version
-            Log.write              "Installing gem #{_name} #{_version}..."
-            _box.sh                "gem install #{_name} -v=#{_version}"
-          end
-        end
-
-        def gem_check(_name, _version)
-          _box                   = self
-          #check to make sure binary exists as well as correct installed version
-          _binary_exists                     = _box.sh("which #{_name}",false).length>0
-          if _binary_exists
-            _installed_version_line          = _box.sh 'gem list | grep "^' + _name + '\\ "', false
-            _installed_versions              = _installed_version_line.between('(',')').split ','
-            if _installed_versions.include?    _version
-              Log.write                        "Gem #{_name} #{_version} is alredy installed on #{_box.id}"
-              return true
-            end
-          end
-        end
-
         def install_ruby
           _box            = self
           _box.install      '\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3',
@@ -59,28 +36,6 @@ module Mobilize
              Log.write                   "mobilize revision #{_installed_revision} already installed on #{_box.id}"
           end
           _box.sh                        "rm -rf mobilize"
-        end
-
-        def install_engine
-          _box                           = self
-          _box.install_mobilize
-
-          _box.write_resque_pool_file
-          _box.write_god_file
-          Log.write                        "Mobilize engine installed on #{_box.id}"
-        end
-
-        def install_master
-          _box                           = self
-          _box.install_mobilize
-          _box.install_resque_web_routing
-          _box.write_resque_web_auth
-        end
-
-        def install_resque_web_routing
-          _box                       = self
-          #add iptables reroute for port 80, set iptables persistent
-          _box.sh "sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 5678"
         end
 
         def install_mobilize

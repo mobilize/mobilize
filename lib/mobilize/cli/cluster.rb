@@ -4,7 +4,7 @@ module Mobilize
     module Cluster
       def Cluster.perform(_args)
         _operator                     = _args[1]
-        Mobilize::Box.send [ _operator, "cluster" ].join "_"
+        Mobilize::Cluster.perform       _operator
       end
     end
   end

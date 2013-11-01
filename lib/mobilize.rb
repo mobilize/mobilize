@@ -56,7 +56,6 @@ require "#{_extensions_dir}/array"
 
 _models_dir = "mobilize/models"
 
-require "#{_models_dir}/master"
 require "#{_models_dir}/user"
 
 _work_dir = "#{_models_dir}/work"
@@ -65,7 +64,6 @@ require "#{_work_dir}/job"
 require "#{_work_dir}/trigger"
 require "#{_work_dir}/stage"
 require "#{_work_dir}/task"
-require "#{_work_dir}/worker"
 
 _path_dir = "#{_models_dir}/path"
 require "#{_path_dir}/path"
@@ -76,16 +74,19 @@ require "resque"
 require "popen4"
 require "#{_path_dir}/script"
 
-require      "aws"
-require      "net/ssh"
-require      "net/scp"
-_box_dir    = "#{_models_dir}/box"
-_action_dir = "#{_box_dir}/action"
-require      "#{_action_dir}/install"
-require      "#{_action_dir}/write"
-require      "#{_action_dir}/action"
-require      "#{_box_dir}/box"
-require      "#{_box_dir}/extensions/net-ssh.rb"
+require        "aws"
+require        "net/ssh"
+require        "net/scp"
+_cluster_dir = "#{_models_dir}/cluster"
+_box_dir     = "#{_cluster_dir}/box"
+require        "#{_box_dir}/install"
+require        "#{_box_dir}/action"
+require        "#{_box_dir}/box"
+require        "#{_box_dir}/extensions/net-ssh.rb"
+
+require        "#{_cluster_dir}/cluster"
+require        "#{_cluster_dir}/engine"
+require        "#{_cluster_dir}/master"
 
 unless File.exists? Mobilize::Github.sh_path and
        File.exists? Mobilize::Box.private_key_path

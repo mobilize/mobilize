@@ -2,12 +2,10 @@ module Mobilize
   class Box
     module Action
       include Mobilize::Box::Action::Install
-      include Mobilize::Box::Action::Write
-      extend ActiveSupport::Concern
-      included do
-        field      :user_name,        type: String, default:->{Mobilize.config.box.user_name}
-        field      :home_dir,         type: String, default:->{"/home/#{user_name}"}
-      end
+
+      def user_name;                 Mobilize.config.box.user_name;end
+
+      def home_dir;                  "/home/#{self.user_name}";end
 
       def mobilize_home_dir;        "#{self.home_dir}/.mobilize";end
 
@@ -34,7 +32,7 @@ module Mobilize
                                                   _ssh.run("bash -l -c 'sh #{_command_file_path}'", _except, [_streams].flatten)
                                                 end
         Net::SSH.send_w_retries(*_send_args)   {|_ssh| _ssh.run "rm #{_command_file_path}"}
-        
+
         if _streams == :stdout;_result[:stdout];else;_result;end
       end
 
@@ -64,44 +62,24 @@ module Mobilize
         Log.write                   "Wrote: #{_string.ellipsize(25)} to #{_box.id}:#{_rem_path}" if _log
       end
 
-      def start_engine
+      def write_mobrc
         _box                  = self
-        _god_script_name      = "resque-pool-#{Mobilize.env}"
-        _start_cmd            = "god && god load #{_box.mobilize_config_dir}/#{_god_script_name}.rb && " +
-                                "god start #{_god_script_name}"
-        _box.sh                 _start_cmd
-        Log.write               _start_cmd
+        _mobrc_path           = _box.mobilize_config_dir + "/mobrc"
+
+        _mob_envs             = ENV.select{|_key, _value|
+                                            _key.starts_with? "MOB"}
+
+        _mobrc_string         = _mob_envs.map{|_key, _value|
+                                              %{export #{_key}=#{_value}}
+                                             }.join("\n")
+
+        _box.write              _mobrc_string, _mobrc_path
         true
       end
 
-      def start_master
-        _box                  = self
-        _box.start_resque_web
-      end
-
-      def stop_master
-        _box                  = self
-        _box.stop_resque_web
-      end
-
-      def start_resque_web
-        _box                  = self
-        _redis                = Mobilize.config.redis
-        _resque_auth_path     = "#{_box.mobilize_config_dir}/resque-web-auth.rb"
-        _box.sh                 "resque-web #{_resque_auth_path} -r #{_redis.host}:#{_redis.port}:0"
-      end
-
-      def stop_resque_web
-        _box                  = self
-        _box.sh                 "ps aux | grep resque-web " + 
-                                "| awk '{print $2}' | xargs kill", false
-      end
-
-      def stop_engine
-        _box                  = self
-        _box.sh                 "god stop resque-pool-#{Mobilize.env}"
-        _pid_path             = "#{_box.mobilize_home_dir}/pid/resque-pool-#{Mobilize.env}.pid"
-        _box.sh                 "kill -2 `cat #{_pid_path}`", false
+      def write_keys
+        _box    = self
+        _box.cp   Config.key_dir, _box.key_dir
       end
     end
   end
