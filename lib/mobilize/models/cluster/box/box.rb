@@ -15,7 +15,9 @@ module Mobilize
     field    :_id,              type: String, default:->{ name }
     has_many :jobs
 
-    def user_name;                 Mobilize.config.box.user_name;end
+    @@config                     = Mobilize.config.cluster.box
+
+    def user_name;                 @@config.user_name;end
 
     def home_dir;                  "/home/#{self.user_name}";end
 
@@ -31,7 +33,7 @@ module Mobilize
 
       _access_key_id     = Mobilize.config.aws.access_key_id
       _secret_access_key = Mobilize.config.aws.secret_access_key
-      _region            = Mobilize.config.box.region
+      _region            = @@config.region
       _session           = Aws::Ec2.new _access_key_id, _secret_access_key, region: _region
 
       Log.write            "Got ec2 session for region #{_region}"

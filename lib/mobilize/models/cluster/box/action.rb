@@ -20,7 +20,7 @@ module Mobilize
                                                   _ssh.run _box.name, "bash -l -c 'sh #{ _command_file_path }'",
                                                            _except, [ _streams ].flatten
                                                 end
-        Net::SSH.send_w_retries( *_send_args ) { |_ssh| _ssh.run "rm #{_command_file_path}", _box.dns }
+        Net::SSH.send_w_retries( *_send_args ) { |_ssh| _ssh.run _box.name, "rm #{_command_file_path}" }
 
         if _streams == :stdout;_result[:stdout];else;_result;end
       end
@@ -126,7 +126,7 @@ module Mobilize
         _box.sh           '\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3'
       end
 
-      def install_mobilize_gem( _path = "mobilize/mobilize" )
+      def install_mobilize_gem( _path = "c4ssio/mobilize" )
         _box                          = self
         _box.sh                         "rm -rf mobilize && " +
                                         "git clone http://u:p@github.com/#{ _path }.git --depth=1"

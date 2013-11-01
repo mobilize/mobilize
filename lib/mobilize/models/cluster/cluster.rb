@@ -3,7 +3,7 @@ module Mobilize
   # it has one Master and many Engines
   module Cluster
     def Cluster.master_name
-      "mobilize-master-#{Mobilize.env}"
+      "mobilize-master-#{Mobilize.env}-01"
     end
     def Cluster.master
       Master.find_or_create_by_name Cluster.master_name
