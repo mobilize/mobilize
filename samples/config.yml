@@ -20,6 +20,15 @@ test:
       resque_web:
         username: <%= ENV['MOB_RESQUE_USERNAME'] %>
         password: <%= ENV['MOB_RESQUE_PASSWORD'] %>
+    box:
+      user_name:        'ubuntu'
+      private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
+      keypair_name:     mobilize
+      region:           'us-west-1'
+      ami:              'ami-fe002cbb'
+      size:             't1.micro'
+      security_groups:
+      - 'default'
   work:
     retry_delay: 600 #number of seconds to wait between job failures before retry
     max_retries: 5
@@ -34,15 +43,6 @@ test:
   aws:
     access_key_id:     <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
-  box:
-    user_name:        'ubuntu'
-    private_key_path: <%=ENV['MOB_BOX_PRIVATE_KEY_PATH']%>
-    keypair_name:     mobilize
-    region:           'us-west-1'
-    ami:              'ami-fe002cbb'
-    size:             't1.micro'
-    security_groups:
-    - 'default'
   google:
     api:
       total_retries: 5

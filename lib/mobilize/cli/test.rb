@@ -1,10 +1,10 @@
 require 'mobilize'
 module Mobilize
   module Cli
-    module Cluster
-      def Cluster.perform(_args)
+    module Test
+      def Test.perform(_args)
         _operator                     = _args[1]
-        Mobilize::Cluster.perform       _operator
+        Mobilize::Test.perform       _operator
       end
     end
   end
