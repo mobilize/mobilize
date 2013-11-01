@@ -126,7 +126,7 @@ module Mobilize
         _box.sh           '\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3'
       end
 
-      def install_mobilize_gem( _path = "c4ssio/mobilize" )
+      def install_mobilize_gem( _path = "mobilize/mobilize" )
         _box                          = self
         _box.sh                         "rm -rf mobilize && " +
                                         "git clone http://u:p@github.com/#{ _path }.git --depth=1"
