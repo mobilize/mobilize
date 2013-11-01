@@ -2,6 +2,9 @@ module Mobilize
   # There is one Cluster per environment;
   # it has one Master and many Engines
   module Cluster
+    def Cluster.master_name
+      "mobilize-master-#{Mobilize.env}"
+    end
     def Cluster.master
       Master.find_or_create_by_name Cluster.master_name
     end
@@ -11,14 +14,16 @@ module Mobilize
       }
     end
     def Cluster.perform( _action )
-      _procs           = Cluster.procs _action
-      _result          = _procs.thread
+
+      begin;return Cluster.send   _action;rescue;end
+
+      _result    = Cluster.thread _action
       _result
     end
 
-    #get procs for engine and master ahead of a multithreaded call
-    def Cluster.procs( _call )
-      _names           = _cluster.engine_names + Cluster.master_name.to_a
+    #get procs for engine and master and call them in threads
+    def Cluster.thread( _call )
+      _names           = Cluster.engine_names + Cluster.master_name.to_a
       _procs           = []
 
       _names.each_with_index { |_name, _name_i|
@@ -27,7 +32,8 @@ module Mobilize
           _box         = _Model.find_or_create_by_name _name
           _box.send       _call}
         _procs        << _proc}
-      _procs
+      _result          = _procs.thread
+      _result
     end
 
     def Cluster.view
@@ -38,7 +44,7 @@ module Mobilize
       _engine_count     = Mobilize.config.cluster.engines.count
       _engine_count.times.map { |_box_i|
                                  _padded_i        = (_box_i + 1).to_s.rjust(2,'0')
-                                 _engine_name     = "mobilize-engine-#{Mobilize.env}-#{_padded_i}"
+                                 _engine_name     = "mobilize-engine-#{ Mobilize.env }-#{ _padded_i }"
                                  _engine_name
                               }
     end

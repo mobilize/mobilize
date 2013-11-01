@@ -1,5 +1,5 @@
 module Mobilize
-  class Engine < Box
+  class Engine < Mobilize::Box
     def start
       _engine               = self
       _god_script_name      = "resque-pool-#{Mobilize.env}"

@@ -15,7 +15,15 @@ module Mobilize
     field    :_id,              type: String, default:->{ name }
     has_many :jobs
 
-    @@config = Mobilize.config("box")
+    def user_name;                 Mobilize.config.box.user_name;end
+
+    def home_dir;                  "/home/#{self.user_name}";end
+
+    def mobilize_home_dir;        "#{self.home_dir}/.mobilize";end
+
+    def mobilize_config_dir;      "#{self.mobilize_home_dir}/config";end
+
+    def key_dir;                  "#{self.mobilize_home_dir}/keys";end
 
     def Box.private_key_path;     "#{Config.key_dir}/box.ssh"; end #created during configuration    
 
@@ -23,7 +31,7 @@ module Mobilize
 
       _access_key_id     = Mobilize.config.aws.access_key_id
       _secret_access_key = Mobilize.config.aws.secret_access_key
-      _region            = @@config.region
+      _region            = Mobilize.config.box.region
       _session           = Aws::Ec2.new _access_key_id, _secret_access_key, region: _region
 
       Log.write            "Got ec2 session for region #{_region}"
@@ -31,7 +39,7 @@ module Mobilize
       _session
     end
 
-    def Box.remotes(_params = nil, _session = Box.session)
+    def Box.remotes( _params = nil, _session = Box.session )
 
       _params            ||= {aws_state: ['running','pending']}
 
@@ -41,9 +49,7 @@ module Mobilize
                              _matches         = _params.map{|_key, _value|
                                                                  _value.to_a.include? _remote[_key]
                                                                }.uniq
-                             #return remotes that match
-                             _matches.length == 1 and
-                             _matches.first  == true
+                             _matches.length == 1 and _matches.first  == true
       end
 
       Log.write           "#{_remotes.length.to_s} " +
@@ -52,25 +58,26 @@ module Mobilize
       _remotes
     end
 
-    def Box.remotes_by_name(_name, _params = nil, _session = Box.session)
+    def Box.remotes_by_name( _name, _params = nil, _session = Box.session )
 
       _params                  ||= {aws_state: ['running','pending']}
 
       _remotes                 = Box.remotes(_params, _session).select{|_remote| _remote[:tags][:Name] == _name}
 
       Log.write                  "#{_remotes.length.to_s} remotes by name #{_name}"
-
       _remotes
     end
 
     #creates both DB box and its remote
-    def Box.find_or_create_by_name(_name, _session = Box.session)
+    def Box.find_or_create_by_name( _name, _session = Box.session )
 
-      _box                  = Box.find_or_create_by name: _name
+      _Box                  = self
+
+      _box                  = _Box.find_or_create_by name: _name
 
       _remote               = _box.remote(_session) if _box.remote_id
       _remotes              = if _remote.nil?
-                                Box.remotes_by_name   _name, nil, _session
+                                _Box.remotes_by_name   _name, nil, _session
                               end
       unless                  _remotes.blank?
         _remote             = _remotes.first
@@ -87,7 +94,7 @@ module Mobilize
       end
     end
 
-    def remote(_session = Box.session)
+    def remote( _session = Box.session )
       _box             = self
 
       Log.write(        "Box has no remote_id", "FATAL") unless _box.remote_id
@@ -102,7 +109,7 @@ module Mobilize
       _remote
     end
 
-    def sync(_remote)
+    def sync( _remote )
       _box                 = self
 
       _box.update_attributes(
@@ -116,50 +123,6 @@ module Mobilize
       )
       Log.write              "synced box #{_box.id} with remote #{_box.remote_id}."
       _box
-    end
-
-    def terminate(_session = Box.session)
-      #terminates the remote then
-      #deletes the local database version
-      _box                          = self
-
-      if _box.remote_id
-        _session.terminate_instances  _box.remote_id
-        Log.write                     "Terminated remote #{_box.remote_id} for #{_box.id}"
-      end
-
-      _box.delete
-      Log.write                       "Deleted #{_box.id} from DB"
-
-      true
-    end
-
-    def launch(_session = Box.session)
-
-      _box                         = self
-
-      _remote_params               = {key_name:      _box.keypair_name,
-                                      group_ids:     _box.security_groups,
-                                      instance_type:   _box.size}
-
-      _remotes                     = _session.launch_instances(_box.ami, _remote_params)
-      _remote                      = _remotes.first
-
-      _box.update_attributes         remote_id: _remote[:aws_instance_id]
-      _session.create_tag            _box.remote_id, "Name", _box.name
-      _remote                      = _box.wait_for_running _session
-      _box.sync                      _remote
-    end
-
-    def wait_for_running(_session  = Box.session)
-      _box                         = self
-      _remote                      = _box.remote _session
-      while                         _remote[:aws_state] != "running"
-        Log.write                   "remote #{_box.remote_id} still at #{_remote[:aws_state]} -- waiting 10 sec"
-        sleep                       10
-        _remote                   = _box.remote _session
-      end
-      _remote
     end
   end
 end

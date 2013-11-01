@@ -6,12 +6,12 @@ module Net
     module Connection
       class Session
         #except=true means exception will be raised on exit_code != 0
-        def run(_command, _except = true, _streams = [ :stdout, :stderr ])
+        def run(_host, _command, _except = true, _streams = [ :stdout, :stderr ])
 
           _ssh, @stdout_data, @stderr_data    = self, "", ""
           @exit_code, @exit_signal, @streams  = nil, nil, _streams
 
-          @command                            = _command
+          @host, @command                     = _host, _command
 
           _ssh.open_channel                 do |_channel|
             _ssh.run_proc _channel
@@ -54,7 +54,7 @@ module Net
           end
         end
         def log_stream(_stream, _data)
-          Mobilize::Log.write("#{_stream.to_s}: #{_data}")  if @streams.include?(_stream)
+          Mobilize::Log.write("[#{@host}] #{_stream.to_s}: #{_data}")  if @streams.include?(_stream)
         end
       end
     end

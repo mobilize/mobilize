@@ -1,5 +1,5 @@
 module Mobilize
-  class Master < Box
+  class Master < Mobilize::Box
     def Master.config;        Mobilize.config.cluster.master;end
 
     def start
