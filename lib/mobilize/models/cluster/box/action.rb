@@ -59,7 +59,7 @@ module Mobilize
                                               _key.starts_with? "MOB" }
 
         _mobrc_string         = _mob_envs.map { |_key, _value|
-                                              %{ export #{ _key }=#{ _value } }
+                                              %{export #{ _key }=#{ _value }}
                                               }.join "\n"
 
         _box.write              _mobrc_string, _mobrc_path
