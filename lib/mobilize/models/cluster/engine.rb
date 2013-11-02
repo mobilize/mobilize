@@ -23,7 +23,6 @@ module Mobilize
 
       _engine.write_resque_pool_file
       _engine.write_god_file
-      Log.write                "Mobilize engine installed on #{_engine.id}"
     end
 
     def write_resque_pool_file

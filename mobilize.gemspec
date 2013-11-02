@@ -37,4 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "settingslogic","2.0.9"
   spec.add_runtime_dependency "rake-hooks","1.2.3"
   spec.add_runtime_dependency "thread","0.1.1"
+  spec.add_runtime_dependency "colorize"
 end

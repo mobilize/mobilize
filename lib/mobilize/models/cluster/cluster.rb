@@ -30,7 +30,12 @@ module Mobilize
         _Model         = _name == _names[-1] ? Master : Engine
         _proc          = Proc.new {
           _box         = _Model.find_or_create_by_name _name
-          _box.send       _call}
+          begin;         _box.send _call;
+            Log.write    "#{ _box.name } #{ _call } complete";
+          rescue      => _exc;
+            Log.write    "#{ _box.name } #{ _call } failed with #{ _exc.to_s }", "FATAL"
+          end
+        }
         _procs        << _proc}
       _result          = _procs.thread
       _result

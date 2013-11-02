@@ -43,8 +43,9 @@ Mobilize::Config.write_from_hash    _mongoid_config_path, _mongoid_config_hash
 Mongoid.load!                       _mongoid_config_path, Mobilize.env
 FileUtils.rm                        _mongoid_config_path
 rescue                           => _exc
-  puts                      "Unable to load Mongoid with current configs: #{_exc.to_s}"
+  puts                              "Unable to load Mongoid with current configs: #{_exc.to_s}"
 end
+require 'colorize'
 require 'mobilize/log'
 require "mobilize/cli"
 
