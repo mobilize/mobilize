@@ -7,7 +7,6 @@ module Mobilize
   # holds all cli methods
   module Cli
     autoload :Ci,        'mobilize/cli/ci'
-    autoload :Box,       'mobilize/cli/box'
     autoload :Cluster,   'mobilize/cli/cluster'
     autoload :Log,       'mobilize/cli/log'
     #adapted from travis CLI code: https://github.com/travis-ci/travis/blob/master/lib/travis/cli.rb
