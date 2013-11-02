@@ -30,14 +30,15 @@ module Mobilize
       while 1 == 1
         _query               = Log
         if _conditions
-          _query             = _query.where _conditions
+           _query            = _query.where _conditions
         end
+
         if _tail_logs
-           _query            = _query.where :_id.gt => _last_log.id
-           _tail_logs        = _query.to_a
+              _query         = _query.where :_id.gt => _last_log.id
+              _tail_logs     = _query.to_a
         else
-           _query            = _query.desc( :_id ).limit( _limit )
-           _tail_logs        = _query.to_a.reverse
+              _query         = _query.desc( :_id ).limit( _limit )
+              _tail_logs     = _query.to_a.reverse
         end
 
         _tail_logs.each     { |_tail_log| _tail_log.pp }
