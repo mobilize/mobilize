@@ -15,8 +15,8 @@ module Mobilize
       _trace                = caller(1)
       _header               = _trace.first.split(Mobilize.root).last
       _call                 = _header.split('`').last[0..-2]
-      _line                 = _header.split(":")[-2].to_i
-      _path                 = _header.split(":").first
+      _line                 = _header.split(':')[-2].to_i
+      _path                 = _header.split(':').first
       _host                 = Socket.gethostname
       _revision             = Mobilize.revision
       _log                  = Log.create(level: _level, path:    _path,    line: _line,
@@ -25,21 +25,22 @@ module Mobilize
         raise                 _log.message
       end
     end
-    def Log.tail(_fields = [:level, :time,  :host, :file, :call, :message])
-      require 'colorize'
+    def Log.tail(_conditions = nil, _limit = 10)
       _last_log, _tail_logs  = Log.last, nil
       while 1 == 1
-        _tail_logs           = if _tail_logs
+        _query               = Log
+        if _conditions
+          _query             = _query.where _conditions
+        end
+        if _tail_logs
+           _query            = _query.where :_id.gt => _last_log.id
+           _tail_logs        = _query.to_a
+        else
+           _query            = _query.desc( :_id ).limit( _limit )
+           _tail_logs        = _query.to_a.reverse
+        end
 
-                                 Log.where(:_id.gt => _last_log.id).to_a
-
-                               else
-
-                                 Log.desc(:_id).limit(10).to_a.reverse
-
-                               end
-
-        _tail_logs.each     { |_tail_log| _tail_log.pp _fields }
+        _tail_logs.each     { |_tail_log| _tail_log.pp }
 
         _last_log            = _tail_logs.last || _last_log
 
@@ -48,34 +49,36 @@ module Mobilize
     end
 
     def pp_level
-      _level = self.level
-      _color = case _level
+      _color = case self.level
                when "FATAL"
-                 "red"
+                 "light_red"
+               when "ERROR"
+                 "light_yellow"
                when "STAT"
-                 "white"
+                 "light_white"
                else
-                 "green"
+                 "light_green"
                end
-      _level = _level.send _color
-      "[#{ _level}] ".ljust(5, " ");
+      _level = self.level.ljust( 5, " " )
+      "[#{ _level.send _color}]";
     end
 
-    def pp_time;    "[#{ self.time.strftime("%Y-%m-%d %H:%M:%S")}] ";                                 end
+    def pp_time;    "[#{ self.time.strftime "%Y-%m-%d %H:%M:%S" }]";                                        end
 
-    def pp_host;    "[#{ self.host.ellipsize(23)}] ";                                                 end
+    def pp_host;    "[#{ self.host.ellipsize 23 }]";                                                        end
 
-    def pp_path;    "#{ self.path.white}:#{ self.line.to_s.magenta}".ljust(80, " ") + " ";            end
+    def pp_path;    " #{ self.path.white }:#{ self.line.to_s.magenta }".ljust( 80, " " ) + " ";             end
 
-    def pp_file;    "#{ self.path.basename.white}:#{ self.line.to_s.magenta}".ljust(50, " ") + " "  ; end
+    def pp_file;    " #{ self.path.basename.white }:#{ self.line.to_s.magenta }".ljust( 45, " " ) + " ";    end
 
-    def pp_call;    "in '#{ self.call.yellow}'; ".ljust(50, " ") + " ";                               end
+    def pp_call;    "in #{ self.call.white }: ".ljust( 45, " " ) + " ";                                     end
 
-    def pp_message; self.message.cyan;                                                                end
+    def pp_message; self.message.split( 'stderr' ).map { |_text| _text.light_cyan }.join 'stderr'.light_red;end
 
-    def pp(_fields = [:level, :time,  :host, :path, :call, :message])
+    def pp(_fields = [:level, :time,  :host, :file, :call, :message])
       _log, _result          = self, ""
-      _fields.each {|_field| _result += _log.send "pp_#{_field.to_s}"}
+
+      _fields.each { |_field| _result += _log.send "pp_#{ _field.to_s }" }
       puts _result
     end
   end

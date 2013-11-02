@@ -19,7 +19,7 @@ class Object
       rescue                             => _exc
         _current_retries                 += 1
         Mobilize::Log.write                "Failed #{_identifier} with #{_exc.to_s}; " + 
-                                           "Sleeping for #{_sleep_time.to_s}"
+                                           "Sleeping for #{_sleep_time.to_s}", "ERROR"
         
         sleep                                _sleep_time
         Mobilize::Log.write                "Retrying #{_identifier}; " + 

@@ -33,7 +33,7 @@ module Mobilize
         _send_args                 = [ "start", _box.dns, _box.user_name, _ssh_args ]
         _result                    = Net::SCP.send_w_retries( *_send_args ) do |_scp|
                                        _scp.upload!( _loc_path, _rem_path, recursive: true ) do |_ch, _name, _sent, _total|
-                                       Log.write( "#{ _name }: #{ _sent }/#{ _total }" ) if _log
+                                       Log.write( "#{ _name.basename } -> #{ _box.name }: #{ _sent }/#{ _total }" ) if _log
                                        end
                                      end
         _result
@@ -112,6 +112,8 @@ module Mobilize
           sleep                         10
           _remote                     = _box.remote _session
         end
+        Log.write                     "remote #{_box.remote_id} online -- waiting 20 sec for SSH ready"
+        sleep                         20
         _remote
       end
 

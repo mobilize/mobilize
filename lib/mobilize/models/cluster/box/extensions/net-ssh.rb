@@ -19,7 +19,8 @@ module Net
           _ssh.loop
 
           if                                    _except and @exit_code!=0
-            Mobilize::Log.write                 @stderr_data, "FATAL"
+            Mobilize::Log.write                 "[#{ @host.ljust( 23, ' ') }] " +
+                                                "stderr: " + @stderr_data, "FATAL"
           else
             _result                           = {  stdout:      @stdout_data.strip,
                                                    stderr:      @stderr_data.strip,

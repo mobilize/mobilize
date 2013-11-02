@@ -53,15 +53,28 @@ class String
   def basename
     File.basename self
   end
-  #returns string between 2 markers (from stack overflow)
-  def between(_marker1, _marker2)
-    self[/#{Regexp.escape(_marker1)}(.*?)#{Regexp.escape(_marker2)}/m, 1]
+  def between?( _start_marker, _end_marker = _start_marker )
+    self[0] == _start_marker and self[-1] == _end_marker and self.length >= 2
+  end
+  def between( _start_marker, _end_marker = _start_marker, _end_marker_last = false )
+    if _end_marker_last == false
+      #returns string between 2 markers (from stack overflow)
+      self[ /#{ Regexp.escape( _start_marker ) }(.*?)#{ Regexp.escape( _end_marker ) }/m, 1 ]
+    else
+      _start_marker_index = self.index  _start_marker
+      _end_marker_index   = self.rindex _end_marker
+
+      self[ self.index( _start_marker_index+1 )..( _end_marker_index-1 )]
+    end
   end
   #returns a shortened version of the string with an ellipsis if appropriate
-  def ellipsize(_length, _ellipsis = "(...)")
+  def ellipsize(_length, _ellipsis = " (...)")
     _str               = self
     _ellipsis          = "" unless _str.length > _length
-    return              _str[0.._length-1] + " " + _ellipsis
+    return              _str[0.._length-1] + _ellipsis
+  end
+  def is_integer?
+    self == self.to_i.to_s
   end
   def escape_regex
     _str         = self
