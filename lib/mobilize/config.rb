@@ -80,13 +80,13 @@ module Mobilize
     end
     def Config.write_key_files
       FileUtils.mkdir_p            Config.key_dir
-      Config.write_box_file     if Mobilize.config.box.private_key_path
+      Config.write_box_file     if Mobilize.config.cluster.box.private_key_path
       Config.write_git_files    if Mobilize.config.github.owner_ssh_key_path
       return true
     end
     def Config.write_box_file
       _box_ssh_path           = "#{Config.key_dir}/box.ssh"
-      FileUtils.cp              Mobilize.config.box.private_key_path,
+      FileUtils.cp              Mobilize.config.cluster.box.private_key_path,
                                 _box_ssh_path
       FileUtils.chmod           0700, _box_ssh_path
       puts                      "Wrote box ssh file"
