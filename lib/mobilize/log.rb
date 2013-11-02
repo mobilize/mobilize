@@ -26,6 +26,7 @@ module Mobilize
       end
     end
     def Log.tail(_fields = [:level, :time,  :host, :file, :call, :message])
+      require 'colorize'
       _last_log, _tail_logs  = Log.last, nil
       while 1 == 1
         _tail_logs           = if _tail_logs
@@ -46,19 +47,31 @@ module Mobilize
       end
     end
 
-    def pp_level;   "[#{ self.level}] ".ljust(5, " ");                                  end
+    def pp_level
+      _level = self.level
+      _color = case _level
+               when "FATAL"
+                 "red"
+               when "STAT"
+                 "white"
+               else
+                 "green"
+               end
+      _level = _level.send _color
+      "[#{ _level}] ".ljust(5, " ");
+    end
 
-    def pp_time;    "[#{ self.time.strftime "%Y-%m-%d %H:%M:%S" }] ";                   end
+    def pp_time;    "[#{ self.time.strftime("%Y-%m-%d %H:%M:%S")}] ";                                 end
 
-    def pp_host;    "[#{ self.host }] ";                                                  end
+    def pp_host;    "[#{ self.host.ellipsize(23)}] ";                                                 end
 
-    def pp_path;    "#{ self.path}:#{ self.line.to_s}".ljust(40, " ") + " ";            end
+    def pp_path;    "#{ self.path.white}:#{ self.line.to_s.magenta}".ljust(80, " ") + " ";            end
 
-    def pp_file;    "#{ self.path.basename}:#{ self.line.to_s}".ljust(20, " ") + " "  ; end
+    def pp_file;    "#{ self.path.basename.white}:#{ self.line.to_s.magenta}".ljust(50, " ") + " "  ; end
 
-    def pp_call;    "in '#{ self.call}'; ".ljust(30, " ") + " ";                        end
+    def pp_call;    "in '#{ self.call.yellow}'; ".ljust(50, " ") + " ";                               end
 
-    def pp_message; self.message;                                                       end
+    def pp_message; self.message.cyan;                                                                end
 
     def pp(_fields = [:level, :time,  :host, :path, :call, :message])
       _log, _result          = self, ""
