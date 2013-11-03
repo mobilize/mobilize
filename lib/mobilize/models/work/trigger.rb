@@ -81,7 +81,7 @@ module Mobilize
         return             @trigger.tripped_once?
       end
       #parent trigger
-      if                   @trigger.parent@job_id
+      if                   @trigger.parent_job_id
         return             @trigger.tripped_by_parent?
       end
       #time trigger
@@ -116,19 +116,22 @@ module Mobilize
       return true
     end
 
-    def due_field_format(field)
+    def due_field_format( _field )
       _unit                   = @trigger.unit
       if                        field == "day"
         return                  _unit == "day_of_month" ? @trigger.number.to_s.rjust(2,'0') : nil
       else
-        _field_number         = if @trigger.send "#{field}_due"
-                                   @trigger.send "#{field}_due"
-                                elsif @job.completed_at and _unit != "day_of_month"
-                                   @job.completed_at.min
-                                else
-                                   0
-                                end
-        return                  _field_number.to_s.rjust(2,'0')
+        return                  @trigger.field_number( _field ).to_s.rjust(2,'0')
+      end
+    end
+
+    def field_number( _field )
+      if @trigger.send "#{ _field }_due"
+        @trigger.send "#{ _field }_due"
+      elsif @job.completed_at and _unit != "day_of_month"
+        @job.completed_at.min
+      else
+        0
       end
     end
 

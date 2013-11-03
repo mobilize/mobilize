@@ -17,4 +17,14 @@ class Array
     _pool.shutdown
     _result
   end
+  #selects hash members whose attributes all match the query_hash
+  def hash_match( _query_hash )
+    _array                      = self
+    _array.select do             |_member|
+      _matches = _query_hash.map{|_key, _value|
+                                  _value.to_a.include? _member[_key]
+                                }.uniq
+      _matches.length == 1 and _matches.first  == true
+    end
+  end
 end
