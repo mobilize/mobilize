@@ -50,17 +50,13 @@ module Mobilize
     end
 
     def pp_level
-      _color = case self.level
-               when "FATAL"
-                 "light_red"
-               when "ERROR"
-                 "light_yellow"
-               when "STAT"
-                 "light_white"
-               else
-                 "light_green"
+      _color = case self.level;
+               when "FATAL";   "light_red";
+               when "ERROR";   "light_yellow"
+               when "STAT";    "light_white";
+               else;           "light_green";
                end
-      _level = self.level.ljust( 5, " " )
+      _level                  = self.level.ljust( 5, " " )
       "[#{ _level.send _color}]";
     end
 

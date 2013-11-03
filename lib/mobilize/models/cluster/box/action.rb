@@ -15,12 +15,14 @@ module Mobilize
                                                   paranoid: false }
         _command_file_path                    = "/tmp/" + "#{ _command }#{ Time.now.utc.to_f.to_s }".to_md5
         _box.write                              _command, _command_file_path, false, false
-        _send_args                            = [ "start", _box.dns, _box.user_name, _ssh_args ]
-        _result                               = Net::SSH.send_w_retries( *_send_args ) do |_ssh|
+        _send_args                            = [ _box.dns, _box.user_name, _ssh_args ]
+        _retrier                              = Retrier.new Net::SSH, "start"
+        _result                               = _retrier.try(*_send_args ) do |_ssh|
                                                   _ssh.run _box.name, "bash -l -c 'sh #{ _command_file_path }'",
                                                            _except, [ _streams ].flatten
                                                 end
-        Net::SSH.send_w_retries( *_send_args ) { |_ssh| _ssh.run _box.name, "rm #{_command_file_path}" }
+
+        _retrier.try( *_send_args ) { |_ssh| _ssh.run _box.name, "rm #{_command_file_path}" }
 
         if _streams == :stdout;_result[:stdout];else;_result;end
       end
@@ -30,8 +32,9 @@ module Mobilize
         _box.sh(                     "mkdir -p " + _rem_path.dirname ) if _mkdir
         _ssh_args                  = { keys: [ Box.private_key_path ],
                                        paranoid: false }
-        _send_args                 = [ "start", _box.dns, _box.user_name, _ssh_args ]
-        _result                    = Net::SCP.send_w_retries( *_send_args ) do |_scp|
+        _send_args                 = [ _box.dns, _box.user_name, _ssh_args ]
+        _retrier                   = Retrier.new Net::SCP, "start"
+        _result                    = _retrier.try( *_send_args ) do |_scp|
                                        _scp.upload!( _loc_path, _rem_path, recursive: true ) do |_ch, _name, _sent, _total|
                                        Log.write( "#{ _name.basename } -> #{ _box.name }: #{ _sent }/#{ _total }" ) if _log
                                        end
