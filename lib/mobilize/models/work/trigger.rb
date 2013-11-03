@@ -118,14 +118,14 @@ module Mobilize
 
     def due_field_format( _field )
       _unit                   = @trigger.unit
-      if                        field == "day"
+      if                        _field == "day"
         return                  _unit == "day_of_month" ? @trigger.number.to_s.rjust(2,'0') : nil
       else
-        return                  @trigger.field_number( _field ).to_s.rjust(2,'0')
+        return                  @trigger.field_number( _field, _unit ).to_s.rjust(2,'0')
       end
     end
 
-    def field_number( _field )
+    def field_number( _field, _unit )
       if @trigger.send "#{ _field }_due"
         @trigger.send "#{ _field }_due"
       elsif @job.completed_at and _unit != "day_of_month"
