@@ -1,7 +1,7 @@
 module Mobilize
   class Engine < Mobilize::Box
     after_initialize :set_self
-    def set_self;    @engine = self;end
+    def set_self;    @box, @engine = self, self;end
 
     def start
       _god_script_name      = "resque-pool-#{Mobilize.env}"

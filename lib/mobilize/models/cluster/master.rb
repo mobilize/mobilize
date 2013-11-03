@@ -1,7 +1,7 @@
 module Mobilize
   class Master < Mobilize::Box
     after_initialize :set_self
-    def set_self;@master = self;end
+    def set_self;@box, @master = self, self;end
 
     def start
       @master.start_resque_web
