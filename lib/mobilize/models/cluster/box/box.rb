@@ -17,6 +17,9 @@ module Mobilize
 
     @@config                     = Mobilize.config.cluster.box
 
+    after_initialize :set_self
+    def set_self;  @box = self; end
+
     def user_name;                 @@config.user_name;end
 
     def home_dir;                  "/home/#{self.user_name}";end
@@ -47,12 +50,7 @@ module Mobilize
 
       _remotes           = _session.describe_instances.map{|_remote| _remote.with_indifferent_access }
       #check for params that match inside the selected remotes
-      _remotes           = _remotes.select do  |_remote|
-                             _matches         = _params.map{|_key, _value|
-                                                                 _value.to_a.include? _remote[_key]
-                                                               }.uniq
-                             _matches.length == 1 and _matches.first  == true
-      end
+      _remotes           = _remotes.hash_match _params
 
       Log.write           "#{_remotes.length.to_s} " +
                           "remotes for #{_session.params[:region]}, " +
@@ -97,24 +95,20 @@ module Mobilize
     end
 
     def remote( _session = Box.session )
-      _box             = self
+      Log.write(        "Box has no remote_id", "FATAL") unless @box.remote_id
 
-      Log.write(        "Box has no remote_id", "FATAL") unless _box.remote_id
-
-      _remotes         = Box.remotes_by_name _box.name,
+      _remotes         = Box.remotes_by_name @box.name,
                                              {aws_state:       ['running','pending'],
-                                              aws_instance_id: _box.remote_id},
+                                              aws_instance_id: @box.remote_id},
                                              _session
       _remote          = _remotes.first
-      Log.write(         "Found remote #{_box.remote_id} for #{_box.id}," +
+      Log.write(         "Found remote #{@box.remote_id} for #{@box.id}," +
                          " currently #{_remote[:aws_state]}") if _remote
       _remote
     end
 
     def sync( _remote )
-      _box                 = self
-
-      _box.update_attributes(
+      @box.update_attributes(
         ami:                 _remote[:aws_image_id],
         size:                _remote[:aws_instance_type],
         keypair_name:        _remote[:ssh_key_name],
@@ -123,8 +117,8 @@ module Mobilize
         dns:                 _remote[:dns_name],
         ip:                  _remote[:aws_private_ip_address]
       )
-      Log.write              "synced box #{_box.id} with remote #{_box.remote_id}."
-      _box
+      Log.write              "synced box #{@box.id} with remote #{@box.remote_id}."
+      @box
     end
   end
 end

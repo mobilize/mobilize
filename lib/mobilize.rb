@@ -48,9 +48,9 @@ end
 require 'colorize'
 require 'mobilize/log'
 require "mobilize/cli"
+require "mobilize/attempter"
 
 _extensions_dir = "mobilize/extensions"
-require "#{_extensions_dir}/object"
 require "#{_extensions_dir}/string"
 require "#{_extensions_dir}/yaml"
 require "#{_extensions_dir}/array"

@@ -35,9 +35,9 @@ test:
   log:
     level: info
     ljust:   75 #amount to pad the log source from the log message
-  object:
-    send_total_retries: 3
-    send_sleep_time: 2
+  attempter:
+    max_attempts: 3
+    sleep_time: 2
   task:
     max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:

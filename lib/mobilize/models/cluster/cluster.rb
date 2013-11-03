@@ -26,8 +26,8 @@ module Mobilize
       _names           = Cluster.engine_names + Cluster.master_name.to_a
       _procs           = []
 
-      _names.each_with_index { |_name, _name_i|
-        _Model         = _name == _names[-1] ? Master : Engine
+      _names.each { |_name|
+        _Model         = _name == _names.last ? Master : Engine
         _proc          = Proc.new {
           _box         = _Model.find_or_create_by_name _name
           begin;         _box.send _call;

@@ -11,7 +11,7 @@ module Mobilize
     field :host,      type: String
     field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}#{path}/#{call}/#{line.to_s}" }
 
-    def Log.write(_message, _level = "INFO")
+    def Log.write( _message, _level = "INFO" )
       _trace                = caller(1)
       _header               = _trace.first.split(Mobilize.root).last
       _call                 = _header.split('`').last[0..-2]
@@ -25,7 +25,8 @@ module Mobilize
         raise                 _log.message
       end
     end
-    def Log.tail(_conditions = nil, _limit = 10)
+
+    def Log.tail( _conditions = nil, _limit = 10 )
       _last_log, _tail_logs  = Log.last, nil
       while 1 == 1
         _query               = Log
@@ -33,13 +34,7 @@ module Mobilize
            _query            = _query.where _conditions
         end
 
-        if _tail_logs
-              _query         = _query.where :_id.gt => _last_log.id
-              _tail_logs     = _query.to_a
-        else
-              _query         = _query.desc( :_id ).limit( _limit )
-              _tail_logs     = _query.to_a.reverse
-        end
+        _tail_logs           = Log.tail_logs _query, _last_log, _limit, _tail_logs
 
         _tail_logs.each     { |_tail_log| _tail_log.pp }
 
@@ -49,18 +44,25 @@ module Mobilize
       end
     end
 
+    def Log.tail_logs( _query, _last_log, _limit, _tail_logs )
+      if _tail_logs
+         _query         = _query.where :_id.gt => _last_log.id
+         _tail_logs     = _query.to_a
+      else
+         _query         = _query.desc( :_id ).limit( _limit )
+         _tail_logs     = _query.to_a.reverse
+      end
+      _tail_logs
+    end
+
     def pp_level
-      _color = case self.level
-               when "FATAL"
-                 "light_red"
-               when "ERROR"
-                 "light_yellow"
-               when "STAT"
-                 "light_white"
-               else
-                 "light_green"
+      _color = case self.level;
+               when "FATAL";   "light_red";
+               when "ERROR";   "light_yellow"
+               when "STAT";    "light_white";
+               else;           "light_green";
                end
-      _level = self.level.ljust( 5, " " )
+      _level                  = self.level.ljust( 5, " " )
       "[#{ _level.send _color}]";
     end
 
