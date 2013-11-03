@@ -15,7 +15,7 @@ script: rake install &&
   mob ci decode ec2_ssh && chmod 0400 ec2_ssh && 
   export MOB_BOX_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh" && 
   export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh" && 
-  rake test > /dev/null
+  rake test
 branches:
   only:
   - master
