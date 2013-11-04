@@ -9,7 +9,7 @@ class GfileTest < MiniTest::Unit::TestCase
 
     @gfile_owner, @gfile_name           = Mobilize.config.google.owner.email, "test_gfile"
     @gfile                              = @Gfile.find_or_create_by_owner_and_name(
-                                          @gfile_owner, @gfile_name, @gfile_session)
+                                          @gfile_owner, @gfile_name, @gfile_session )
 
     @box                                = Mobilize::Box.find_or_create_by_name "mobilize-gfile-test"
 
@@ -31,24 +31,24 @@ class GfileTest < MiniTest::Unit::TestCase
     #remove all remotes for this file
     @gfile.terminate                  @gfile_session
     @gfile                          = @Gfile.find_or_create_by_owner_and_name(
-                                      @gfile_owner, @gfile_name, @gfile_session)
+                                      @gfile_owner, @gfile_name, @gfile_session )
 
     #delete DB version, start over, should find existing instance
     #with same key
     _remote_id                      = @gfile.remote_id
     @gfile.delete
     @gfile                          = @Gfile.find_or_create_by_owner_and_name(
-                                      @gfile_owner, @gfile_name, @gfile_session)
+                                      @gfile_owner, @gfile_name, @gfile_session )
 
     assert_equal                      @gfile.remote_id, _remote_id
   end
 
   def test_write_and_read
     @script.run                       @script_task
-    _test_input_string              = File.read "#{@script_task.dir}/stdout"
+    _test_input_string              = File.read "#{ @script_task.dir }/stdout"
     @gfile.write                      @gfile_write_task
     @gfile.read                       @gfile_read_task
-    _test_output_string             = File.read "#{@gfile_read_task.dir}/stdout"
+    _test_output_string             = File.read "#{ @gfile_read_task.dir }/stdout"
 
     assert_equal                      _test_input_string, _test_output_string
   end

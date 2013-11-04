@@ -42,10 +42,10 @@ module Mobilize
       def write( _string, _rem_path, _mkdir = true, _log = true )
         _temp_file_path           = "/tmp/" + "#{ _string }#{ Time.now.utc.to_f.to_s }".to_md5
         begin
-          File.write                _temp_file_path, _string
+          _temp_file_path.write     _string
           @box.cp                   _temp_file_path, _rem_path, _mkdir, false
         ensure
-          FileUtils.rm              _temp_file_path, force: true
+          _temp_file_path.rm_r
         end
         Log.write                   "Wrote: #{ _string.ellipsize 25 } to #{ @box.id }:#{ _rem_path }" if _log
       end
@@ -103,8 +103,8 @@ module Mobilize
           sleep                         10
           _remote                     = @box.remote _session
         end
-        Log.write                     "remote #{@box.remote_id} online -- waiting 20 sec for SSH ready"
-        sleep                         20
+        Log.write                     "remote #{@box.remote_id} online -- waiting 10 sec for SSH ready"
+        sleep                         10
         _remote
       end
 

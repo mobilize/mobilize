@@ -1,3 +1,4 @@
+require "fileutils"
 class String
   def to_a
     return [self]
@@ -17,7 +18,7 @@ class String
   #fires system command with full visibility into stdout and stderr
   #default returns stdout only
   #with option to return all streams in hash
-  def popen4(_except = nil, _all_streams = nil)
+  def popen4( _except = nil, _all_streams = nil )
     _except               = true unless _except == false
     _all_streams        ||= false
     _in_str               = self
@@ -41,9 +42,9 @@ class String
 
     else
 
-      return {in: _in_str.strip,
-              out: _out_str.strip,
-              err: _err_str.strip}
+      return { in:  _in_str.strip,
+               out: _out_str.strip,
+               err: _err_str.strip }
 
     end
   end
@@ -53,7 +54,28 @@ class String
   def basename
     File.basename self
   end
-  def between?( _start_marker, _end_marker = _start_marker )
+  def expand_path
+    File.expand_path self
+  end
+  def write( _string )
+    File.write self, _string
+  end
+  def exists?
+    File.exists? self
+  end
+  def cp( _target )
+    FileUtils.cp self, _target
+  end
+  def mkdir_p
+    FileUtils.mkdir_p self
+  end
+  def chmod( _code )
+    FileUtils.chmod _code, self
+  end
+  def rm_r
+    FileUtils.rm_r self, force: true
+  end
+  def is_between?( _start_marker, _end_marker = _start_marker )
     self[0] == _start_marker and self[-1] == _end_marker and self.length >= 2
   end
   def between( _start_marker, _end_marker = _start_marker, _end_marker_last = false )
@@ -68,7 +90,7 @@ class String
     end
   end
   #returns a shortened version of the string with an ellipsis if appropriate
-  def ellipsize(_length, _ellipsis = " (...)")
+  def ellipsize( _length, _ellipsis = " (...)" )
     _str               = self
     _ellipsis          = "" unless _str.length > _length
     return              _str[0.._length-1] + _ellipsis

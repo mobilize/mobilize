@@ -11,9 +11,9 @@ class TriggerTest < MiniTest::Unit::TestCase
     _job                       = Mobilize::Fixture::Job.default     @user, @box
     _parent_job                = Mobilize::Fixture::Job.parent      @user, @box
     _class_methods             = Mobilize::Fixture::Trigger.methods false
-    _trip_methods              = _class_methods.select{|_method| _method.to_s.starts_with?("_")}
+    _trip_methods              = _class_methods.select{|_method| _method.to_s.starts_with? "_" }
     _trip_methods.each        { |_trip_method|
-      if                         _trip_method.to_s.index("parent")
+      if                         _trip_method.to_s.index "parent"
         _parent_job.delete
         _parent_job            = Mobilize::Fixture::Job.parent   @user, @box
         _job.delete
@@ -22,9 +22,9 @@ class TriggerTest < MiniTest::Unit::TestCase
       else
         _job.delete
         _job                   = Mobilize::Fixture::Job.default @user, @box
-        _expected              = Mobilize::Fixture::Trigger.send(_trip_method, _job)
+        _expected              = Mobilize::Fixture::Trigger.send _trip_method, _job
       end
-      Mobilize::Log.write        "Checking Trigger #{_trip_method.to_s}"
+      Mobilize::Log.write        "Checking Trigger #{ _trip_method.to_s }"
       assert_equal               _expected, _job.trigger.tripped?
                               }
   end

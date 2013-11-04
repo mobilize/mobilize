@@ -18,10 +18,10 @@ module Mobilize
     end
 
     def Job.purge!
-      FileUtils.rm_r Job.dir, force: true
+      Job.dir.rm_r
     end
 
-    def Job.perform(_job_id)
+    def Job.perform( _job_id )
          _job                   = Job.find _job_id
       if _job.trigger.tripped?
          _stage                 = _job.next_stage
@@ -39,15 +39,15 @@ module Mobilize
       _job                       = self
       _trigger                   = _job.trigger
       if _trigger.parent_job_id
-        _parent_job              = Job.find(_trigger.parent_job_id)
+        _parent_job              = Job.find _trigger.parent_job_id
         return                     _parent_job
       end
     end
 
     def next_stage
       _job                      = self
-      _stages                   = _job.stages.sort_by{|stage| stage.order}
-      _next_stage               = _stages.select{|stage| !stage.complete? }.first
+      _stages                   = _job.stages.sort_by { |_stage| _stage.order }
+      _next_stage               = _stages.select { |_stage| !_stage.complete? }.first
       return                      _next_stage
     end
 
