@@ -7,7 +7,7 @@ God.watch do |w|
             'REDIS_HOST'     => Mobilize.config.redis.host,
             'REDIS_PORT'     => Mobilize.config.redis.port,
             'REDIS_PASSWORD' => Mobilize.config.redis.password,
-            'TERM_CHILD'     => 1}
+            'TERM_CHILD'     => 1 }
 
   w.dir   = Mobilize.root
 

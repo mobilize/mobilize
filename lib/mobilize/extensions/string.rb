@@ -115,7 +115,10 @@ class String
     _str          = self
     _alphanum_str = _str.gsub(/[^A-Za-z0-9_\.@ \/]/,"")
     _under_str    = _alphanum_str.gsub(/[ \/\.@]/,"_")
-    return         _under_str
+    _under_str.downcase
+  end
+  def pretty_key
+    self.alphanunderscore.to_sym
   end
   def split_strip( _delim )
     self.split( _delim ).map { |_part| _part.strip }
