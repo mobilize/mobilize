@@ -13,52 +13,56 @@ module Mobilize
     has_many   :stages
     has_many   :tasks
 
+    after_initialize :set_self
+    def set_self; @job = self;end
+
     def Job.dir
       "#{Mobilize.home_dir}/jobs"
     end
 
     def Job.purge!
-      FileUtils.rm_r Job.dir, force: true
+      Job.dir.rm_r
     end
 
-    def Job.perform(_job_id)
-         _job                   = Job.find _job_id
-      if _job.trigger.tripped?
-         _stage                 = _job.next_stage
+    def Job.perform( _job_id )
+         @job                   = Job.find _job_id
+      if @job.trigger.tripped?
+         _stage                 = @job.next_stage
          Resque.enqueue_by        :mobilize, Stage, _stage.id
       end
     end
 
     def working?
-      _job                       = self
-      _next_stage                = _job.next_stage
+      _next_stage                = @job.next_stage
       return                       _next_stage.working? if _next_stage
     end
 
     def parent
-      _job                       = self
-      _trigger                   = _job.trigger
+      _trigger                   = @job.trigger
       if _trigger.parent_job_id
-        _parent_job              = Job.find(_trigger.parent_job_id)
+        _parent_job              = Job.find _trigger.parent_job_id
         return                     _parent_job
       end
     end
 
     def next_stage
-      _job                      = self
-      _stages                   = _job.stages.sort_by{|stage| stage.order}
-      _next_stage               = _stages.select{|stage| !stage.complete? }.first
+      _stages                   = @job.stages.sort_by { |_stage| _stage.order }
+      _next_stage               = _stages.select { |_stage| !_stage.complete? }.first
       return                      _next_stage
     end
 
     def complete
-      _job                      = self
-      _job.update_status         :completed
+      @job.update_status         :completed
     end
 
     def fail
-      _job                      = self
-      _job.update_status         :failed
+      @job.update_status         :failed
+    end
+
+    def purge!
+      @job.stages.each { |_stage| _stage.purge! }
+      @job.delete
+      Log.write "Purged job #{ @job.id }"
     end
   end
 end

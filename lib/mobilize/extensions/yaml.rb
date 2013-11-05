@@ -3,7 +3,7 @@ module YAML
     YAML.load_file( _path ).with_indifferent_access
   end
   def YAML.easy_hash_string( _value )
-    if _value.between? "/"
+    if _value.is_between? "/"
        Regexp.new(     _value.between "/" )
     else 
       _value.gsub      ": //", "://"
@@ -13,7 +13,7 @@ module YAML
     _value.map { |_array_value| _array_value.to_s.gsub ": //", "://" }
   end
   def YAML.easy_hashify( _string )
-    _hash_string                      = _string.between?( '{', '}' ) ? _string : "{#{_string}}"
+    _hash_string                      = _string.is_between?( '{', '}' ) ? _string : "{#{_string}}"
     _colon_space_string               = _hash_string.gsub( ":", ": " ).gsub( ":  ", ": " )
     YAML.load                           _colon_space_string
   end

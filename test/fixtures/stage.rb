@@ -1,9 +1,9 @@
 module Mobilize
   module Fixture
     module Stage
-      def Stage.default(job,order,call)
-        _stage = job.stages.find_or_create_by(
-          job_id: job.id, order: order, call: call
+      def Stage.default( _job, _order, _call )
+        _stage = _job.stages.find_or_create_by(
+          job_id: _job.id, order: _order, call: _call
         )
         _stage
       end

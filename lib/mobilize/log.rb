@@ -9,14 +9,14 @@ module Mobilize
     field :message,   type: String
     field :revision,  type: String
     field :host,      type: String
-    field :_id,       type: String, default:->{"#{time.to_f.to_s}/#{host}#{path}/#{call}/#{line.to_s}" }
+    field :_id,       type: String, default:->{"#{ time.to_f.to_s }/#{ host }#{ path }/#{ call }/#{ line.to_s }" }
 
     def Log.write( _message, _level = "INFO" )
-      _trace                = caller(1)
-      _header               = _trace.first.split(Mobilize.root).last
-      _call                 = _header.split('`').last[0..-2]
-      _line                 = _header.split(':')[-2].to_i
-      _path                 = _header.split(':').first
+      _trace                = caller 1
+      _header               = _trace.first.split( Mobilize.root ).last
+      _call                 = _header.split( '`' ).last[ 0..-2 ]
+      _line                 = _header.split( ':' )[ -2 ].to_i
+      _path                 = _header.split( ':' ).first
       _host                 = Socket.gethostname
       _revision             = Mobilize.revision
       _log                  = Log.create(level: _level, path:    _path,    line: _line,
