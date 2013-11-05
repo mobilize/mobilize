@@ -11,11 +11,11 @@ notifications:
 gemfile:
 - Gemfile
 script: rake install && 
-  mob ci decode git_ssh && chmod 0400 git_ssh && 
-  mob ci decode ec2_ssh && chmod 0400 ec2_ssh && 
-  export MOB_BOX_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh" && 
-  export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh" && 
-  rake test > /dev/null
+  mob ci decode git_ssh && chmod 0400 git_ssh &&
+  mob ci decode ec2_ssh && chmod 0400 ec2_ssh &&
+  export MOB_BOX_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh" &&
+  export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh" &&
+  mob test all
 branches:
   only:
   - master
