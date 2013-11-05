@@ -22,8 +22,16 @@ module Mobilize
                              Proc.new {
                                _result = "m #{ _test_path }".popen4( false )
                                puts "#{ _test_path.basename }\n#{ _result }"
+                               _result
                                       } }
-        _threads.thread
+        _results         = _threads.thread
+        _results.each do  |_result|
+          _last_line = _result.split( "\n" ).last
+          _fields    = _last_line.split_strip ","
+          _failures  = _fields[ -3 ].split(" ").first.to_i
+          _errors    = _fields[ -2 ].split(" ").first.to_i
+          raise "One or more tests have failed or errored!" if _errors >= 1 or _failures >= 1
+        end
       end
     end
   end
