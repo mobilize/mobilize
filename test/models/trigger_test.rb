@@ -8,23 +8,23 @@ class TriggerTest < MiniTest::Unit::TestCase
   end
 
   def test_tripped
-    _job_name                  = "job_trigger_test"
-    _parent_job_name           = "job_trigger_test_parent"
+    _job_name,_parent_job_name = "job_trigger_test", "job_trigger_test_parent"
+    _job, _parent_job          = nil, nil
     _class_methods             = Mobilize::Fixture::Trigger.methods false
     _trip_methods              = _class_methods.select{|_method|  _method.to_s.starts_with? "_" }
     _trip_methods.each        { |_trip_method|
 
       if _trip_method.to_s.index "parent"
 
-        _parent_job.delete
+        _parent_job.delete if _parent_job
         _parent_job            = Mobilize::Fixture::Job.default   @user, @box, _parent_job_name
-        _job.delete
+        _job.delete if _job
         _job                   = Mobilize::Fixture::Job.default   @user, @box, _job_name
         _expected              = Mobilize::Fixture::Trigger.send  _trip_method, _job, _parent_job
 
       else
 
-        _job.delete
+        _job.delete if _job
         _job                   = Mobilize::Fixture::Job.default   @user, @box, _job_name
         _expected              = Mobilize::Fixture::Trigger.send  _trip_method, _job
 

@@ -1,6 +1,7 @@
 require "settingslogic"
 require 'fileutils'
 require 'mongoid'
+require 'tempfile'
 module Mobilize
   def Mobilize.db
     Mongoid.session( :default )[ :database ].database
@@ -113,8 +114,9 @@ module Mobilize
     end
 
     def Config.connect_mongodb
-      _mongoid_config_path   = "#{ Config.dir }/mongoid.yml"
+      _mongoid_config_file   = Tempfile.new "mongodb"
       begin
+      _mongoid_config_path   = _mongoid_config_file.path
       _Mongodb               = Mobilize.config.mongodb
 
       _mongoid_config_hash   = { Mobilize.env => {
@@ -135,6 +137,8 @@ module Mobilize
       FileUtils.rm_r                      _mongoid_config_path
       rescue                           => _exc
         puts                              "Unable to load Mongoid with current configs: #{ _exc.to_s }, #{ _exc.backtrace.to_s }"
+      ensure
+        _mongoid_config_file.unlink
       end
     end
   end

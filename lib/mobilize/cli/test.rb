@@ -20,8 +20,8 @@ module Mobilize
         end
         _threads         = _test_paths.map { |_test_path|
                              Proc.new {
-                               puts _test_path.basename +
-                                    "m #{ _test_path }".popen4( false )
+                               _result = "m #{ _test_path }".popen4( false )
+                               puts "#{ _test_path.basename }\n#{ _result }"
                                       } }
         _threads.thread
       end

@@ -113,7 +113,7 @@ module Mobilize
         true
       end
 
-      def Trigger._parent_completed_child_completed(job,parent_job)
+      def Trigger._parent_completed_child_completed( _job, _parent_job )
         _current_time               = Time.now.utc
         _job.create_trigger(          job_id:        _job.id,
                                       parent_job_id: _parent_job.id )
