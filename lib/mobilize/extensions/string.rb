@@ -117,4 +117,7 @@ class String
     _under_str    = _alphanum_str.gsub(/[ \/\.@]/,"_")
     return         _under_str
   end
+  def split_strip( _delim )
+    self.split( _delim ).map { |_part| _part.strip }
+  end
 end

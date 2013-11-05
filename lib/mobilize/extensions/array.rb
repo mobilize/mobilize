@@ -10,8 +10,11 @@ class Array
 
       _pool.process {
 
-        _result[_proc_i]    = _proc.call
-
+        _result[ _proc_i ]  = begin
+                                _proc.call
+                              rescue => _exc
+                                _exc
+                              end
       }
     }
     _pool.shutdown

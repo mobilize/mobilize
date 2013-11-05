@@ -1,15 +1,13 @@
 require "test_helper"
 class ScriptTest < MiniTest::Unit::TestCase
   def setup
-    Mongoid.purge!
-    Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
     @box                       = Mobilize::Box.find_or_create_by_name "mobilize-script-test"
     @user                      = @Fixture::User.default
     @stdin                     = "(echo 'log this to the log' > log) && cmd"
     @script                    = Mobilize::Script.find_or_create_by stdin: @stdin
     @script_session            = Mobilize::Script.session
-    @job                       = @Fixture::Job.default     @user, @box
+    @job                       = @Fixture::Job.default     @user, @box, "job_script_test"
     @stage                     = @Fixture::Stage.default   @job, 1, "run"
     @script_task               = @Fixture::Task.default    @stage, @script, @script_session,
                                                            subs: { cmd: 'pwd' }
@@ -27,5 +25,7 @@ class ScriptTest < MiniTest::Unit::TestCase
 
   def teardown
     @box.terminate
+    @job.purge!
+    @script.delete
   end
 end

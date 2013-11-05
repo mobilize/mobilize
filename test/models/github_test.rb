@@ -1,14 +1,12 @@
 require "test_helper"
 class GithubTest < MiniTest::Unit::TestCase
   def setup
-    Mongoid.purge!
-    Mobilize::Job.purge!
     @Fixture                   = Mobilize::Fixture
     @github_public             = @Fixture::Github.public
     @box                       = Mobilize::Box.find_or_create_by_name "mobilize-github-test"
     @user                      = @Fixture::User.default
     @github_private            = @Fixture::Github.private
-    @job                       = @Fixture::Job.default      @user, @box
+    @job                       = @Fixture::Job.default      @user, @box, "job_github_test"
     @stage                     = @Fixture::Stage.default    @job,  1,  "read"
     #assign same session to both githubs
     @github_session            = Mobilize::Github.session
@@ -30,5 +28,8 @@ class GithubTest < MiniTest::Unit::TestCase
 
   def teardown
     @box.terminate
+    @job.purge!
+    @github_public.delete
+    @github_private.delete
   end
 end

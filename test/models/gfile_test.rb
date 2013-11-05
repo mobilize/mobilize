@@ -1,8 +1,6 @@
 require "test_helper"
 class GfileTest < MiniTest::Unit::TestCase
   def setup
-    Mongoid.purge!
-    Mobilize::Job.purge!
     @Fixture, @Gfile, @Script           = Mobilize::Fixture, Mobilize::Gfile, Mobilize::Script
     @Config                             = Mobilize.config.fixture
     @gfile_session, @script_session     = @Gfile.session, @Script.session
@@ -16,15 +14,15 @@ class GfileTest < MiniTest::Unit::TestCase
     @script                             = @Script.find_or_create_by stdin: "echo test_file_string"
 
     @user                               = @Fixture::User.default
-    @job                                = @Fixture::Job.default      @user, @box
-    @stage01                            = @Fixture::Stage.default    @job, 1, "run"
-    @stage02                            = @Fixture::Stage.default    @job, 2, "write"
-    @stage03                            = @Fixture::Stage.default    @job, 3, "read"
-    @script_task                        = @Fixture::Task.default     @stage01, @script, @script_session
-    @gfile_write_task                   = @Fixture::Task.default     @stage02, @gfile, @gfile_session
-    @gfile_read_task                    = @Fixture::Task.default     @stage03, @gfile, @gfile_session
+    @job                                = @Fixture::Job.default      @user, @box, "job_gfile_test"
+    @run_stage                          = @Fixture::Stage.default    @job,     1, "run"
+    @write_stage                        = @Fixture::Stage.default    @job,     2, "write"
+    @read_stage                         = @Fixture::Stage.default    @job,     3, "read"
+    @script_task                        = @Fixture::Task.default     @run_stage,   @script, @script_session
+    @gfile_write_task                   = @Fixture::Task.default     @read_stage,  @gfile,  @gfile_session
+    @gfile_read_task                    = @Fixture::Task.default     @write_stage, @gfile,  @gfile_session
 
-    @gfile_write_task.update_attributes   input:  "#{@script_task.dir}/stdout"
+    @gfile_write_task.update_attributes   input:  "#{ @script_task.dir }/stdout"
   end
 
   def test_find_or_create_remote
@@ -55,5 +53,8 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def teardown
     @box.terminate
+    @job.purge!
+    @gfile.delete
+    @script.delete
   end
 end

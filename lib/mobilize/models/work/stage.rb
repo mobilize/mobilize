@@ -12,48 +12,53 @@ module Mobilize
     belongs_to :job
     has_many :tasks
 
+    after_initialize :set_self
+    def set_self; @stage = self; end
+
     def working?
-      _stage              = self
-      _tasks              = _stage.tasks
+      @stage              = self
+      _tasks              = @stage.tasks
       if                    _tasks.index{|_task| _task.working?}
         return              true
       end
     end
 
-    def Stage.perform(_stage_id)
-      _stage                     = Stage.find _stage_id
-      _stage.update_status        :started
-      _tasks                     = _stage.tasks
+    def Stage.perform( _stage_id )
+      @stage.update_status        :started
+      _tasks                     = @stage.tasks
       _tasks.each              do |_task|
         unless                     _task.working?  or
                                    _task.queued?   or
                                    _task.complete?
-          Resque.enqueue_by       "mobilize-#{Mobilize.env}", Task, _task.id
+          Resque.enqueue_by       "mobilize-#{ Mobilize.env }", Task, _task.id
         end
       end
     end
 
     def last?
-      _stage                = self
-      _job                  = _stage.job
-      _max_order            = _job.stages.map{|_job_stage| _job_stage.order}.max
-      return true          if _stage.order == _max_order
+      _job                  = @stage.job
+      _max_order            = _job.stages.map { |_job_stage| _job_stage.order }.max
+      return true          if @stage.order == _max_order
     end
 
     def complete
-      _stage                 = self
-      _stage.update_status    :completed
-      if                       _stage.last?
-        _job                 = _stage.job
+      @stage.update_status    :completed
+      if                       @stage.last?
+        _job                 = @stage.job
         _job.complete
       end
     end
 
     def fail
-      _stage                 = self
-      _stage.update_status    :failed
-      _job                   = _stage.job
+      @stage.update_status    :failed
+      _job                   = @stage.job
       _job.fail
+    end
+
+    def purge!
+      @stage.tasks.each { |_task| _task.purge! }
+      @stage.delete
+      Log.write "Purged stage #{ @stage.id }"
     end
   end
 end

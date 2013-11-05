@@ -42,7 +42,7 @@ module Mobilize
       end
     end
 
-    def Task.perform(_task_id)
+    def Task.perform( _task_id )
       @task                      = Task.find _task_id
       _path                      = @task.path
       _session                   = _path.class.session
@@ -136,6 +136,11 @@ module Mobilize
     def create_dir
       @task.dir.mkdir_p
      Log.write                   "Created task dir "   + @task.dir
+    end
+
+    def purge!
+      @task.delete
+      Log.write "Purged task #{ @task.id }"
     end
   end
 end
