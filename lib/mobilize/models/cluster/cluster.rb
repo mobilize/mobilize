@@ -41,8 +41,24 @@ module Mobilize
       _result
     end
 
+    def Cluster.resque_web_url
+      _username                  = Mobilize.config.cluster.master.resque_web.username
+      _password                  = Mobilize.config.cluster.master.resque_web.password
+      "http://#{ _username }:#{ _password }@#{ Cluster.master.dns }"
+    end
+
     def Cluster.view
-      "open http://#{Cluster.master.dns}".popen4
+      "open #{ Cluster.resque_web_url }/overview".popen4
+    end
+
+    def Cluster.resque_web_workers
+      _workers_url               = "#{ Cluster.resque_web_url }/workers"
+      _html_string               = "curl #{ _workers_url }".popen4
+      _html_doc                  = Nokogiri::HTML _html_string
+      _text_rows                 = _html_doc.css( 'table.queues' ).css( 'tr' )
+      _value_array_array         = _text_rows.map { |_node| _node.text.strip.split_strip( "\n" ) }
+      _value_hash                = _value_array_array.tuples_to_hash
+      _value_hash
     end
 
     def Cluster.engine_names

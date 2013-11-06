@@ -21,9 +21,6 @@ module Mobilize
   def Mobilize.config_dir
     "#{ Mobilize.home_dir }/config"
   end
-  def Mobilize.log_dir
-    "#{ Mobilize.home_dir }/log"
-  end
   def Mobilize.queue
     "mobilize-#{ Mobilize.env }"
   end

@@ -108,6 +108,10 @@ module Mobilize
       _remote
     end
 
+    def hostname
+      "ip-#{ _box.ip.gsub ".", "-" }"
+    end
+
     def sync( _remote )
       @box.update_attributes(
         ami:                 _remote[:aws_image_id],
