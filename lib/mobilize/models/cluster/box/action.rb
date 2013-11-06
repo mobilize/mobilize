@@ -93,18 +93,25 @@ module Mobilize
         @box.update_attributes         remote_id: _remote[:aws_instance_id]
         _session.create_tag            @box.remote_id, "Name", @box.name
         _remote                      = @box.wait_for_running _session
-        @box.sync                      _remote
+        @box                         = @box.sync _remote
+        @box.wait_for_ssh
       end
 
-      def wait_for_running (_session  = Box.session )
+      def wait_for_ssh
+        while ( begin; @box.sh "hostname"; rescue; nil; end ).nil?
+          Log.write                     "#{@box.id} ssh not ready; waiting 10 sec"
+          sleep                         10
+        end
+        @box
+      end
+
+      def wait_for_running( _session  = Box.session )
         _remote                       = @box.remote _session
         while                           _remote[:aws_state] != "running"
-          Log.write                     "remote #{@box.remote_id} still at #{_remote[:aws_state]} -- waiting 10 sec"
+          Log.write                     "remote #{@box.id} still at #{_remote[:aws_state]} -- waiting 10 sec"
           sleep                         10
           _remote                     = @box.remote _session
         end
-        Log.write                     "remote #{@box.remote_id} online -- waiting 10 sec for SSH ready"
-        sleep                         10
         _remote
       end
 
