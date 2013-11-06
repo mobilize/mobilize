@@ -62,13 +62,11 @@ class Array
   end
   #turn 2 column table into hash
   def tuples_to_hash( _has_header = true, _pretty_key = true )
-    _array                = _has_header ? self[ 1..-1 ] : self
-    _hash                 = Hash.new.with_indifferent_access
-    _array.each          do |_row|
-      _row[0..1].each    do |_key, _value|
-        _hash_key          = _pretty_key ? _key.pretty_key : _key
-        _hash[ _hash_key ] = _value
-      end
+    _array               = _has_header ? self[ 1..-1 ] : self
+    _hash                = Hash.new.with_indifferent_access
+    _array.each        do |_key, _value|
+      _hash_key          = _pretty_key ? _key.pretty_key : _key
+      _hash[ _hash_key ] = _value
     end
     _hash
   end

@@ -113,8 +113,8 @@ class String
   #which are made into underscores
   def alphanunderscore
     _str          = self
-    _alphanum_str = _str.gsub(/[^A-Za-z0-9_\.@ \/]/,"")
-    _under_str    = _alphanum_str.gsub(/[ \/\.@]/,"_")
+    _alphanum_str = _str.gsub(/[^A-Za-z0-9_\-\.@ \/]/,"")
+    _under_str    = _alphanum_str.gsub(/[ \/\.\-@]/,"_")
     _under_str.downcase
   end
   def pretty_key
