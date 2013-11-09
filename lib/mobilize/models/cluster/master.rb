@@ -13,8 +13,8 @@ module Mobilize
 
     def start_resque_web
       _redis                = Mobilize.config.redis
-      _resque_auth_path     = "#{@master.mobilize_config_dir}/resque-web-auth.rb"
-      @master.sh              "resque-web #{_resque_auth_path} -r #{_redis.host}:#{_redis.port}:0"
+      _resque_auth_path     = "#{ @master.mobilize_config_dir }/resque-web-auth.rb"
+      @master.sh              "resque-web #{ _resque_auth_path } -r #{ _redis.host }:#{ _redis.port }:0"
     end
 
     def stop_resque_web
@@ -30,17 +30,17 @@ module Mobilize
 
     def install_resque_web_routing
       #add iptables reroute for port 80, set iptables persistent
-      @master.sh        "sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 5678"
+      @master.sh              "sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 5678"
     end
 
     def write_resque_web_auth
       _config                    = Mobilize.config.cluster.master.resque_web
 
       _resque_web_auth_script    = "Resque::Server.use(Rack::Auth::Basic) do |_user, _password|\n" +
-                                   "[_user, _password] == ['#{_config.username}', '#{_config.password}']\n" +
+                                   "[_user, _password] == ['#{ _config.username }', '#{ _config.password }']\n" +
                                    "end"
 
-      @master.write                _resque_web_auth_script, "#{@master.mobilize_config_dir}/resque-web-auth.rb"
+      @master.write                _resque_web_auth_script, "#{ @master.mobilize_config_dir }/resque-web-auth.rb"
       true
     end
   end

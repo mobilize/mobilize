@@ -10,9 +10,10 @@ module Mobilize
       field :retried_at,          type: Time
       field :status_at,           type: Time
       field :status,              type: String
-      field :retries,             type: Fixnum, default:->{0}
-      field :max_retries,         type: Fixnum, default:->{Mobilize.config.work.max_retries}
-      field :retry_delay,         type: Fixnum, default:->{Mobilize.config.work.retry_delay}
+      field :retries,             type: Fixnum, default:->{ 0 }
+      field :max_retries,         type: Fixnum, default:->{ Mobilize.config.work.max_retries }
+      field :retry_delay,         type: Fixnum, default:->{ Mobilize.config.work.retry_delay }
+      field :timeout,             type: Fixnum, default:->{ Mobilize.config.work.timeout }
     end
 
     def update_status(_status)
@@ -27,6 +28,11 @@ module Mobilize
 
       Log.write                   "#{_work.id} status: #{_work.status} " +
                                   "at #{_work.send _timestamp_string}"
+    end
+
+    def timed_out?
+      _work                    = self
+      Time.now.utc > _work.started_at + _work.timeout
     end
 
     def complete?

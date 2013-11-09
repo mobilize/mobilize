@@ -13,7 +13,7 @@ module Mobilize
     belongs_to :stage
     belongs_to :path
 
-    @@config = Mobilize.config("task")
+    @@config = Mobilize.config "task"
 
     attr_accessor :session #used to hold onto session object for task
 
@@ -42,8 +42,7 @@ module Mobilize
       end
     end
 
-    def Task.perform( _task_id )
-      @task                      = Task.find _task_id
+    def perform
       _path                      = @task.path
       _session                   = _path.class.session
       if                           _session
@@ -140,7 +139,7 @@ module Mobilize
 
     def purge!
       @task.delete
-      Log.write "Purged task #{ @task.id }"
+      Log.write                  "Purged task #{ @task.id }"
     end
   end
 end

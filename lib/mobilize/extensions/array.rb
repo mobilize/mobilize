@@ -42,7 +42,7 @@ class Array
   def to_hash_array
     _array           = self
     _hash_array      = []
-    _headers         = _array.first.map { |_header| _header.alphanunderscore.to_sym }
+    _headers         = _array.first.map { |_header| _header.alphanunder.to_sym }
     _rows            = _array[ 1..-1 ]
 
     _rows.each     do |_row|

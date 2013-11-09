@@ -4,12 +4,12 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     include Mobilize::Work
-    field :job_id,    type: String
-    field :order,     type: Fixnum, default:->{ 1 }
-    field :name,      type: String, default:->{ "stage" + ("%02d" % order) }
-    field :call,      type: String #read, write, or run
-    field :_id,       type: String, default:->{ "#{job_id}/#{name}" }
-    belongs_to :job
+    field :cron_id,    type: String
+    field :order,      type: Fixnum, default:->{ 1 }
+    field :call,       type: String #read, write, or run
+    field :name,       type: String, default:->{ call + ("%02d" % order) }
+    field :_id,        type: String, default:->{ "#{job_id}/#{name}" }
+    belongs_to :cron
     has_many :tasks
 
     after_initialize :set_self
@@ -18,21 +18,17 @@ module Mobilize
     def working?
       @stage              = self
       _tasks              = @stage.tasks
-      if                    _tasks.index{|_task| _task.working?}
+      if                    _tasks.index { |_task| _task.working? }
         return              true
       end
     end
 
-    def Stage.perform( _stage_id )
+    def perform
       @stage.update_status        :started
-      _tasks                     = @stage.tasks
-      _tasks.each              do |_task|
-        unless                     _task.working?  or
-                                   _task.queued?   or
-                                   _task.complete?
-          Resque.enqueue_by       "mobilize-#{ Mobilize.env }", Task, _task.id
-        end
+      _task_procs = @stage.tasks.map do |_task|
+        Proc.new _task.perform
       end
+      _task_procs.thread
     end
 
     def last?

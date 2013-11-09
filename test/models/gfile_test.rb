@@ -6,18 +6,18 @@ class GfileTest < MiniTest::Unit::TestCase
     @gfile_session, @script_session     = @Gfile.session, @Script.session
 
     @gfile_owner, @gfile_name           = Mobilize.config.google.owner.email, "test_gfile"
-    @gfile                              = @Gfile.find_or_create_by_owner_and_name(
-                                          @gfile_owner, @gfile_name, @gfile_session )
+    @gfile                              = @Gfile.find_or_create_by_owner_and_name @gfile_owner, @gfile_name
 
     @box                                = Mobilize::Box.find_or_create_by_name "mobilize-gfile-test"
 
     @script                             = @Script.find_or_create_by stdin: "echo test_file_string"
 
     @user                               = @Fixture::User.default
-    @job                                = @Fixture::Job.default      @user, @box, "job_gfile_test"
-    @run_stage                          = @Fixture::Stage.default    @job,     1, "run"
-    @write_stage                        = @Fixture::Stage.default    @job,     2, "write"
-    @read_stage                         = @Fixture::Stage.default    @job,     3, "read"
+    @crontab                            = @Fixture::Crontab.default  @user
+    @cron                               = @Fixture::Cron.default     @crontab, "gfile_test"
+    @run_stage                          = @Fixture::Stage.default    @cron,     1, "run"
+    @write_stage                        = @Fixture::Stage.default    @cron,     2, "write"
+    @read_stage                         = @Fixture::Stage.default    @cron,     3, "read"
     @script_task                        = @Fixture::Task.default     @run_stage,   @script, @script_session
     @gfile_write_task                   = @Fixture::Task.default     @read_stage,  @gfile,  @gfile_session
     @gfile_read_task                    = @Fixture::Task.default     @write_stage, @gfile,  @gfile_session
@@ -27,22 +27,20 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def test_find_or_create_remote
     #remove all remotes for this file
-    @gfile.terminate                  @gfile_session
-    @gfile                          = @Gfile.find_or_create_by_owner_and_name(
-                                      @gfile_owner, @gfile_name, @gfile_session )
+    @gfile.terminate
+    @gfile                          = @Gfile.find_or_create_by_owner_and_name @gfile_owner, @gfile_name
 
     #delete DB version, start over, should find existing instance
     #with same key
     _remote_id                      = @gfile.remote_id
     @gfile.delete
-    @gfile                          = @Gfile.find_or_create_by_owner_and_name(
-                                      @gfile_owner, @gfile_name, @gfile_session )
+    @gfile                          = @Gfile.find_or_create_by_owner_and_name @gfile_owner, @gfile_name
 
     assert_equal                      @gfile.remote_id, _remote_id
   end
 
   def test_write_and_read
-    @script.run                       @script_task
+    Cli.perform                       [ "master","enqueue", @cron.id ]
     _test_input_string              = File.read "#{ @script_task.dir }/stdout"
     @gfile.write                      @gfile_write_task
     @gfile.read                       @gfile_read_task

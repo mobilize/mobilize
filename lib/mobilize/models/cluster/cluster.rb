@@ -21,8 +21,8 @@ module Mobilize
       _result
     end
 
-    #get procs for engine and master and call them in threads
     def Cluster.thread( _call )
+      Log.write          "Calling #{ _call } on master and engines"
       _names           = Cluster.engine_names + Cluster.master_name.to_a
       _procs           = []
 

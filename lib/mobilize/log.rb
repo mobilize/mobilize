@@ -9,7 +9,7 @@ module Mobilize
     field :message,   type: String
     field :revision,  type: String
     field :host,      type: String
-    field :_id,       type: String, default:->{"#{ time.to_f.to_s }/#{ host }#{ path }/#{ call }/#{ line.to_s }" }
+    field :_id,       type: String, default:->{ "#{ time.to_f.to_s }/#{ host }#{ path }/#{ call }/#{ line.to_s }" }
 
     def Log.write( _message, _level = "INFO" )
       _trace                = caller 1

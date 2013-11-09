@@ -3,6 +3,10 @@ module Mobilize
     after_initialize :set_self
     def set_self;    @box, @engine = self, self;end
 
+    def queue
+      "mobilize-#{ @engine.hostname }"
+    end
+
     def start
       _god_script_name      = "resque-pool-#{ Mobilize.env }"
       _start_cmd            = "god && god load #{ @engine.mobilize_config_dir }/#{ _god_script_name }.rb && " +
@@ -32,7 +36,9 @@ module Mobilize
     def write_resque_pool_file
       _resque_pool_path     = @engine.mobilize_config_dir + "/resque-pool.yml"
       _worker_count         = Mobilize.config.cluster.engines.workers.count
-      _resque_pool_string   = {"test"=>{"mobilize-#{ Mobilize.env }" => _worker_count}}.to_yaml
+      _resque_pool_string   = { Mobilize.env =>
+                                { "#{ Mobilize.queue },#{ @engine.queue }" =>
+                                  _worker_count } }.to_yaml
       @engine.write              _resque_pool_string, _resque_pool_path
       true
     end

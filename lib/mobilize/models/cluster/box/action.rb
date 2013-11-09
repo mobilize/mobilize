@@ -2,20 +2,20 @@ module Mobilize
   class Box
     module Action
       def view_ssh_cmd
-        _ssh_cmd                  = "ssh -i #{Box.private_key_path} " +
+        _ssh_cmd                  = "ssh -i #{ Box.private_key_path } " +
                                     "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
-                                    "#{@box.user_name}@#{@box.dns}"
+                                    "#{ @box.user_name }@#{ @box.dns }"
         puts                        _ssh_cmd
       end
 
       def sh( _command,  _except = true, _streams = :stdout )
         _ssh_args                             = { keys: [ Box.private_key_path ],
                                                   paranoid: false }
-        _command_file_path                    = "/tmp/" + "#{ _command }#{ Time.now.utc.to_f.to_s }".to_md5
+        _command_file_path                    = "/tmp/" + "#{ _command }#{ Time.alphanunder_now }"
         @box.write                              _command, _command_file_path, false, false
         _send_args                            = [ @box.dns, @box.user_name, _ssh_args ]
         _attempter                            = Attempter.new Net::SSH, "start"
-        _result                               = _attempter.attempt(*_send_args ) do |_ssh|
+        _result                               = _attempter.attempt( *_send_args ) do |_ssh|
                                                   _ssh.run @box.name, "bash -l -c 'sh #{ _command_file_path }'",
                                                            _except, [ _streams ].flatten
                                                 end
@@ -40,7 +40,7 @@ module Mobilize
       end
 
       def write( _string, _rem_path, _mkdir = true, _log = true )
-        _temp_file_path           = "/tmp/" + "#{ _string }#{ Time.now.utc.to_f.to_s }".to_md5
+        _temp_file_path           = "/tmp/" + "#{ _string }#{ Time.alphanunder_now }"
         begin
           _temp_file_path.write     _string
           @box.cp                   _temp_file_path, _rem_path, _mkdir, false
@@ -124,7 +124,7 @@ module Mobilize
         @box.sh           '\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3'
       end
 
-      def install_mobilize_gem( _path = "mobilize/mobilize" )
+      def install_mobilize_gem( _path = "c4ssio/mobilize" )
         @box.sh                         "rm -rf mobilize && " +
                                         "git clone http://u:p@github.com/#{ _path }.git --depth=1"
         _repo_revision                = @box.sh "cd mobilize && git log -1 --pretty=format:%H"

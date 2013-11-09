@@ -4,7 +4,7 @@ module Mobilize
     include Mongoid::Timestamps
     field :stdin,            type: String
     field :task_id,          type: String
-    field :name,             type: String, default:->{ stdin.alphanunderscore[ 0..254 ] }
+    field :name,             type: String, default:->{ stdin.alphanunder[ 0..254 ] }
     field :_id,              type: String, default:->{ "script/#{ stdin.to_md5 }" }
 
     def write( _task )
