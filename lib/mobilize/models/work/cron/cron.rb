@@ -68,15 +68,15 @@ module Mobilize
       end
 
       if Box.find_self.nil?
-        Log.write                "Enqueueing #{ _cron_id } remotely"
-        Cluster.master.sh        "mob cluster enqueue #{ _cron_id }"
+        Log.write                "Enqueueing #{ @cron.id } remotely from #{ Socket.gethostname }"
+        Cluster.master.sh        "mob cron enqueue #{ @cron.id }"
       else
         Resque.redis = Redis.new host:     Mobilize.config.redis.host,
                                  port:     Mobilize.config.redis.port,
                                  password: Mobilize.config.redis.password
 
         Resque.enqueue_to        _queue, Job, @cron.id, _box.id, _job.id
-        Log.write                "Enqueued #{ _cron_id }"
+        Log.write                "Enqueued #{ @cron.id }"
       end
     end
   end

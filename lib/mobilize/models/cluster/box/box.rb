@@ -5,10 +5,10 @@ module Mobilize
     include Mongoid::Timestamps
     include Mobilize::Box::Action
     field    :name,             type: String
-    field    :ami,              type: String, default:->{@@config.ami}
-    field    :size,             type: String, default:->{@@config.size}
-    field    :keypair_name,     type: String, default:->{@@config.keypair_name}
-    field    :security_groups,  type: Array,  default:->{@@config.security_groups}
+    field    :ami,              type: String, default:->{ @@config.ami }
+    field    :size,             type: String, default:->{ @@config.size }
+    field    :keypair_name,     type: String, default:->{ @@config.keypair_name }
+    field    :security_groups,  type: Array,  default:->{ @@config.security_groups }
     field    :remote_id,        type: String
     field    :dns,              type: String #public dns
     field    :ip,               type: String #private ip
@@ -19,19 +19,19 @@ module Mobilize
     @@config                     = Mobilize.config.cluster.box
 
     after_initialize :set_self
-    def set_self;  @box = self; end
+    def set_self ; @box = self ; end
 
-    def user_name;                 @@config.user_name;end
+    def user_name ;                 @@config.user_name ; end
 
-    def home_dir;                  "/home/#{self.user_name}";end
+    def home_dir ;                  "/home/#{ self.user_name }" ; end
 
-    def mobilize_home_dir;        "#{self.home_dir}/.mobilize";end
+    def mobilize_home_dir ;        "#{ self.home_dir }/.mobilize" ; end
 
-    def mobilize_config_dir;      "#{self.mobilize_home_dir}/config";end
+    def mobilize_config_dir ;      "#{ self.mobilize_home_dir }/config" ; end
 
-    def key_dir;                  "#{self.mobilize_home_dir}/keys";end
+    def key_dir ;                  "#{ self.mobilize_home_dir }/keys" ; end
 
-    def Box.private_key_path;     "#{ Config.key_dir }/box.ssh"; end #created during configuration    
+    def Box.private_key_path ;     "#{ Config.key_dir }/box.ssh" ;  end #created during configuration    
 
     def Box.session
 

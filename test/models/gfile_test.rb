@@ -40,7 +40,7 @@ class GfileTest < MiniTest::Unit::TestCase
   end
 
   def test_write_and_read
-    Cli.perform                       [ "master","enqueue", @cron.id ]
+    Cli.perform                       [ "cron","enqueue", @cron.id ]
     _test_input_string              = File.read "#{ @script_task.dir }/stdout"
     @gfile.write                      @gfile_write_task
     @gfile.read                       @gfile_read_task

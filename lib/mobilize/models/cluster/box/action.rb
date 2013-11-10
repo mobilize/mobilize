@@ -83,14 +83,14 @@ module Mobilize
       end
 
       def launch( _session = Box.session )
-        _remote_params               = {key_name:      @box.keypair_name,
-                                        group_ids:     @box.security_groups,
-                                        instance_type:   @box.size}
+        _remote_params               = { key_name:      @box.keypair_name,
+                                         group_ids:     @box.security_groups,
+                                         instance_type:   @box.size }
 
-        _remotes                     = _session.launch_instances(@box.ami, _remote_params)
+        _remotes                     = _session.launch_instances @box.ami, _remote_params
         _remote                      = _remotes.first
 
-        @box.update_attributes         remote_id: _remote[:aws_instance_id]
+        @box.update_attributes         remote_id: _remote[ :aws_instance_id ]
         _session.create_tag            @box.remote_id, "Name", @box.name
         _remote                      = @box.wait_for_running _session
         @box                         = @box.sync _remote
@@ -99,7 +99,7 @@ module Mobilize
 
       def wait_for_ssh
         while ( begin; @box.sh "hostname"; rescue; nil; end ).nil?
-          Log.write                     "#{@box.id} ssh not ready; waiting 10 sec"
+          Log.write                     "#{ @box.id } ssh not ready; waiting 10 sec"
           sleep                         10
         end
         @box
@@ -107,8 +107,8 @@ module Mobilize
 
       def wait_for_running( _session  = Box.session )
         _remote                       = @box.remote _session
-        while                           _remote[:aws_state] != "running"
-          Log.write                     "remote #{@box.id} still at #{_remote[:aws_state]} -- waiting 10 sec"
+        while                           _remote[ :aws_state ] != "running"
+          Log.write                     "remote #{ @box.id } still at #{ _remote[ :aws_state ] } -- waiting 10 sec"
           sleep                         10
           _remote                     = @box.remote _session
         end
