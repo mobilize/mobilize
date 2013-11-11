@@ -61,10 +61,10 @@ module Mobilize
     def Cron.enqueue( _cron_id )
       @cron                      = Cron.find _cron_id
       if _job                    = @cron.job
-        _box                     = _job.box
+        _box_id, _job_id         = _job.box.id, _job.id
         _queue                   = _box.queue
       else
-        _job, _box               = nil, nil
+        _job_id, _box_id         = nil, nil
         _queue                   = Mobilize.queue
       end
 
@@ -72,7 +72,7 @@ module Mobilize
         Log.write                "Enqueueing #{ @cron.id } remotely from #{ Socket.gethostname }"
         Cluster.master.sh        "mob cron enqueue #{ @cron.id }"
       else
-        Resque.enqueue_to        _queue, Job, @cron.id, _box.id, _job.id
+        Resque.enqueue_to        _queue, Job, _cron_id, _box_id, _job_id
         Log.write                "Enqueued #{ @cron.id }"
       end
 
