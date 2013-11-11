@@ -37,7 +37,7 @@ module Mobilize
       end
     end
 
-    def streams(_task)
+    def streams( _task )
       _stream_array         = [ :stdin, :stdout, :stderr, :exit_signal, :log ]
 
       _result               = {}

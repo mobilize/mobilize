@@ -60,7 +60,7 @@ test:
     gfile:
       name:  mobilize_gfile_test
     crontab:
-      name:     flow
+      name:     test
       gbook_id: 0AhErDVK4q00ydE1DRnFma2tJbzM0RGFsRTZKaVpkbXc
     box:
       name:             <%=ENV['MOB_FIXTURE_BOX_NAME']%>

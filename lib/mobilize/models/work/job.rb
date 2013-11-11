@@ -13,6 +13,10 @@ module Mobilize
     after_initialize :set_self
     def set_self; @job = self;end
 
+    def dir
+      "~/.mobilize/jobs/#{ @job.id }".expand_path
+    end
+
     def Job.perform( _cron_id, _box_id = nil, _job_id = nil )
       @cron                     = Cron.find _cron_id
       if _job_id

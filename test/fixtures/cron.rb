@@ -1,9 +1,8 @@
 module Mobilize
   module Fixture
     module Cron
-      def Cron._once( _crontab )
-        _crontab.crons.find_or_create_by crontab_id: _crontab.id, once: true
-        true
+      def Cron._once( _crontab, _name )
+        _crontab.crons.find_or_create_by crontab_id: _crontab.id, once: true, name: _name
       end
 
       #cron methods return the expected results for @cron.tripped?

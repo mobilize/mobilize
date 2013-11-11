@@ -1,6 +1,6 @@
 module Mobilize
   module Fixture
-    module Cron
+    module Crontab
       def Crontab.default( _user )
         _user.crontabs.find_or_create_by user_id:  _user.id,
                                          name:     Mobilize.config.fixture.crontab.name,

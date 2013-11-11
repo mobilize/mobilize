@@ -1,6 +1,6 @@
 module Mobilize
   #a task defines an item on a resque queue
-  #that performs on behalf of a job
+  #that performs on behalf of a cron
   class Task
     include Mongoid::Document
     include Mongoid::Timestamps
@@ -15,17 +15,29 @@ module Mobilize
 
     @@config = Mobilize.config "task"
 
-    attr_accessor :session #used to hold onto session object for task
-
     after_initialize :set_self
     def set_self; @task = self;end
 
-    def job
-      self.stage.job
+    def cron
+      self.stage.cron
     end
 
     def user
-      self.job.user
+      self.cron.user
+    end
+
+    def source
+      if @task.input.starts_with? "stage"
+        _order                  = @task.input.split( "stage" ).last.to_i
+        _prior_stage            = @stage.cron.stages.where( order: _order ).first
+        return File.read          "#{ _prior_stage.dir }/stdout"
+      else
+        return @task.input
+      end
+    end
+
+    def target
+      return File.read            "#{ @task}"
     end
 
     #gsubs keys in files with the replacement value given
@@ -79,8 +91,8 @@ module Mobilize
 
     def queued?
       _queued_jobs           = ::Resque.peek( Mobilize.queue, 0, 0 ).to_a
-      _queued_jobs.index    { |job|
-        _work_id             = job[ 'args' ].first
+      _queued_jobs.index    { |_job|
+        _work_id             = _job[ 'args' ].first
         @queued              = true if _work_id == @task.id
                               }
       @queued
@@ -106,13 +118,8 @@ module Mobilize
     end
 
     def dir
-      _path                     = @task.path
-      if _path.class == Script  #scripts use the alphanunderscrore name for the directory
-        _dir                    = "#{ Job.dir }/#{ @task.stage.id }/script/#{ _path.name }"
-      else
-        _dir                    = "#{ Job.dir }/#{ @task.id }"
-      end
-      _dir
+      _job        = @task.stage.cron.job
+      "#{ _job.dir }/#{ @task.stage.name }/#{ @task.path.id }"
     end
 
     def path_dir
