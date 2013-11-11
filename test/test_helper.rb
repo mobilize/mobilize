@@ -8,7 +8,7 @@ Mongoid.purge!
 #get fixtures
 require               "./test/fixtures/github"
 require               "./test/fixtures/user"
-require               "./test/fixtures/job"
+require               "./test/fixtures/cron"
+require               "./test/fixtures/crontab"
 require               "./test/fixtures/stage"
 require               "./test/fixtures/task"
-require               "./test/fixtures/trigger"

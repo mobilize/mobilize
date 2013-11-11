@@ -25,6 +25,7 @@ require           "#{ _extensions_dir }/object"
 require           "#{ _extensions_dir }/string"
 require           "#{ _extensions_dir }/array"
 require           "#{ _extensions_dir }/yaml"
+require           "#{ _extensions_dir }/time"
 
 require           'colorize'
 require           'mobilize/log'

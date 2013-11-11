@@ -25,20 +25,6 @@ class GfileTest < MiniTest::Unit::TestCase
     @gfile_write_task.update_attributes   input:  "#{ @script_task.dir }/stdout"
   end
 
-  def test_find_or_create_remote
-    #remove all remotes for this file
-    @gfile.terminate
-    @gfile                          = @Gfile.find_or_create_by_owner_and_name @gfile_owner, @gfile_name
-
-    #delete DB version, start over, should find existing instance
-    #with same key
-    _remote_id                      = @gfile.remote_id
-    @gfile.delete
-    @gfile                          = @Gfile.find_or_create_by_owner_and_name @gfile_owner, @gfile_name
-
-    assert_equal                      @gfile.remote_id, _remote_id
-  end
-
   def test_write_and_read
     Cli.perform                       [ "cron","enqueue", @cron.id ]
     _test_input_string              = File.read "#{ @script_task.dir }/stdout"

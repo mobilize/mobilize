@@ -2,6 +2,7 @@ require "settingslogic"
 require 'fileutils'
 require 'mongoid'
 require 'tempfile'
+require 'pry'
 module Mobilize
   def Mobilize.db
     Mongoid.session( :default )[ :database ].database

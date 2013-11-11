@@ -58,7 +58,8 @@ module Mobilize
       Log.write            "Purged cron #{ @cron.id }"
     end
 
-    def enqueue
+    def Cron.enqueue( _cron_id )
+      @cron                      = Cron.find _cron_id
       if _job                    = @cron.job
         _box                     = _job.box
         _queue                   = _box.queue
@@ -78,6 +79,8 @@ module Mobilize
         Resque.enqueue_to        _queue, Job, @cron.id, _box.id, _job.id
         Log.write                "Enqueued #{ @cron.id }"
       end
+
+
     end
   end
 end

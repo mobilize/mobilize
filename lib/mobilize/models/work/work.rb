@@ -16,7 +16,7 @@ module Mobilize
       field :timeout,             type: Fixnum, default:->{ Mobilize.config.work.timeout }
     end
 
-    def update_status(_status)
+    def update_status( _status )
       _work                     = self
       _status_string            = _status.to_s
       _timestamp_string         = _status_string + "_at"
@@ -26,8 +26,8 @@ module Mobilize
                                   status:                  _status_string,
                                   status_at:               _current_time
 
-      Log.write                   "#{_work.id} status: #{_work.status} " +
-                                  "at #{_work.send _timestamp_string}"
+      Log.write                   "#{ _work.id } status: #{ _work.status } " +
+                                  "at #{ _work.send _timestamp_string }"
     end
 
     def timed_out?

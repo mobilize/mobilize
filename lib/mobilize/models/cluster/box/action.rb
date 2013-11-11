@@ -11,7 +11,7 @@ module Mobilize
       def sh( _command,  _except = true, _streams = :stdout )
         _ssh_args                             = { keys: [ Box.private_key_path ],
                                                   paranoid: false }
-        _command_file_path                    = "/tmp/" + "#{ _command }#{ Time.alphanunder_now }"
+        _command_file_path                    = "/tmp/" + "#{ _command }#{ Time.alphanunder_now }".to_md5
         @box.write                              _command, _command_file_path, false, false
         _send_args                            = [ @box.dns, @box.user_name, _ssh_args ]
         _attempter                            = Attempter.new Net::SSH, "start"
@@ -40,7 +40,7 @@ module Mobilize
       end
 
       def write( _string, _rem_path, _mkdir = true, _log = true )
-        _temp_file_path           = "/tmp/" + "#{ _string }#{ Time.alphanunder_now }"
+        _temp_file_path           = "/tmp/" + "#{ _string }#{ Time.alphanunder_now }".to_md5
         begin
           _temp_file_path.write     _string
           @box.cp                   _temp_file_path, _rem_path, _mkdir, false
