@@ -20,13 +20,6 @@ Mobilize.config
 
 Mobilize::Config.connect_mongodb
 
-if Box.find_self
-  Resque.redis = Redis.new host:     Mobilize.config.redis.host,
-                           port:     Mobilize.config.redis.port,
-                           password: Mobilize.config.redis.password
-
-end
-
 _extensions_dir = "mobilize/extensions"
 require           "#{ _extensions_dir }/object"
 require           "#{ _extensions_dir }/string"
@@ -79,6 +72,13 @@ unless [ Mobilize::Github.sh_path,
          Mobilize::Box.private_key_path].all :exists?
 
   Mobilize::Config.write_key_files
+end
+
+if Mobilize::Box.find_self
+  Resque.redis = Redis.new host:     Mobilize.config.redis.host,
+                           port:     Mobilize.config.redis.port,
+                           password: Mobilize.config.redis.password
+
 end
 
 _google_dir     = "#{ _path_dir }/google"
