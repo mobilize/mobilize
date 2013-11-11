@@ -20,6 +20,13 @@ Mobilize.config
 
 Mobilize::Config.connect_mongodb
 
+if Box.find_self
+  Resque.redis = Redis.new host:     Mobilize.config.redis.host,
+                           port:     Mobilize.config.redis.port,
+                           password: Mobilize.config.redis.password
+
+end
+
 _extensions_dir = "mobilize/extensions"
 require           "#{ _extensions_dir }/object"
 require           "#{ _extensions_dir }/string"

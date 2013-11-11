@@ -18,12 +18,6 @@ require 'mobilize'
 require 'resque/tasks'
 require 'resque/pool/tasks'
 require 'pp'
-task "resque:setup" do
-  puts "Starting Resque..."
-  Resque.redis = Redis.new host:     Mobilize.config.redis.host,
-                           port:     Mobilize.config.redis.port,
-                           password: Mobilize.config.redis.password
-end
 
 require 'rake/hooks'
 after :install do
