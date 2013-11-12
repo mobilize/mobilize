@@ -39,13 +39,17 @@ module Mobilize
         _job                    = @cron.create_job cron_id: _cron_id, box_id:  _box_id
         _job.start
       end
+      _job.process
+    end
 
+    def process
       while 1 == 1
+        _job.reload
         if _job.complete?
           Log.write "Job #{ _job.id } complete"
           return true
         elsif _job.timed_out?
-          Log.write "Job #{ _job.id } timed out", "FATAL" 
+          Log.write "Job #{ _job.id } timed out", "FATAL"
           return false
         elsif _job.failed?
           Log.write "Job #{ _job.id } failed", "FATAL"
@@ -54,9 +58,8 @@ module Mobilize
           _next_stage = _job.cron.next_stage
           _job.cron.next_stage.perform if _next_stage.status.nil?
         end
+        sleep 2
       end
-
-      false
     end
   end
 end
