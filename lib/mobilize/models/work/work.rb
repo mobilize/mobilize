@@ -21,7 +21,7 @@ module Mobilize
       _work.update_attributes( touched_at: nil, started_at: nil,
                                completed_at: nil, failed_at: nil,
                                retried_at: nil, status_at: nil,
-                               status: nil, retries: nil )
+                               status: nil, retries: 0 )
 
       Log.write                "#{ _work.id } cleared at #{ Time.now.utc.to_s }"
     end
