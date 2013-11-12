@@ -54,23 +54,20 @@ module Mobilize
 
     def perform
       _path                      = @task.path
-      _session                   = _path.class.session
-      if                           _session
-        @task.start
-        begin
-          _stage                 = @task.stage
-          _path.send               _stage.call, @task
-          @task.complete
-        rescue                  => _exc
-          if                       @task.retries < Mobilize.config.work.max_retries
-            Log.write              "Failed #{ @task.id } with #{ _exc.to_s }", "ERROR"
-            @task.retry
-          else
-            @task.fail
-          end
+      @task.start
+      begin
+        _stage                 = @task.stage
+        _path.send               _stage.call, @task
+        @task.complete
+      rescue                  => _exc
+        if                       @task.retries < Mobilize.config.work.max_retries
+          Log.write              "Failed #{ @task.id } with #{ _exc.to_s }," +
+                                 "retry #{ @task.retries } of #{ Mobilize.config.work.max_retries }", "ERROR"
+          @task.retry
+        else
+          @task.fail
+          return _exc
         end
-      else
-        Log.write                  "No session available for #{ @task.id }"
       end
     end
 
@@ -98,7 +95,7 @@ module Mobilize
 
     def retry
       @task.update_attributes  retries: @task.retries + 1
-      Resque.enqueue_to        Mobilize.queue, Task, @task.id
+      @task.perform
     end
 
     def complete
