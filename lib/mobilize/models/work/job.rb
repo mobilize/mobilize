@@ -40,7 +40,11 @@ module Mobilize
         _job.start
       end
 
-      unless _job.is { complete? or timed_out? }
+      if _job.complete?
+        Log.write "Job #{ _job.id } complete"
+      elsif _job.timed_out?
+        Log.write "Job #{ _job.id } timed out", "FATAL"
+      else
         _job.cron.next_stage.perform
       end
     end
