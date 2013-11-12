@@ -22,6 +22,7 @@ module Mobilize
       if _job_id
         _job                    = Job.find _job_id
       else
+        _box_id                 = Box.find_self.id
         _job                    = @cron.create_job cron_id: _cron_id, box_id:  _box_id
         _job.start
       end

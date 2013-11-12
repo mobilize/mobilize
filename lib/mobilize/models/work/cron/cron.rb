@@ -62,7 +62,7 @@ module Mobilize
       @cron                      = Cron.find _cron_id
       if _job                    = @cron.job
         _box_id, _job_id         = _job.box_id, _job.id
-        _queue                   = _box.queue
+        _queue                   = Box.find( _box_id ).queue
       else
         _job_id, _box_id         = nil, nil
         _queue                   = Mobilize.queue

@@ -26,7 +26,7 @@ module Mobilize
     def perform
       @stage.update_status        :started
       _task_procs = @stage.tasks.map do |_task|
-        Proc.new _task.perform
+        Proc.new { _task.perform }
       end
       _task_procs.thread
     end
