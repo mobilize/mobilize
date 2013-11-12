@@ -28,8 +28,13 @@ module Mobilize
       _task_procs = @stage.tasks.map do |_task|
         Proc.new { _task.perform }
       end
-      _task_procs.thread
-      @stage.complete
+      _results    = _task_procs.thread
+      _failures   = _results.select do |_result|
+                      _result.is_a? Exception
+                    end
+      if _failures.empty?
+        @stage.complete
+      end
     end
 
     def last?
@@ -41,15 +46,16 @@ module Mobilize
     def complete
       @stage.update_status    :completed
       if                       @stage.last?
-        _cron                 = @stage.cron
+        _cron                = @stage.cron
         _cron.complete
       end
     end
 
     def fail
       @stage.update_status    :failed
-      _cron                   = @stage.cron
+      _cron                  = @stage.cron
       _cron.fail
+      Log.write               "Failure in #{ @stage.id }; Check logs"
     end
 
     def purge!

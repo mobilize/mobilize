@@ -45,11 +45,13 @@ module Mobilize
     end
 
     def complete
+      @cron.job.update_status     :completed
       @cron.update_status         :completed
     end
 
     def fail
       @cron.update_status         :failed
+      @cron.job.fail
     end
 
     def purge!

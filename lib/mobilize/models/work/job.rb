@@ -17,6 +17,10 @@ module Mobilize
       "~/.mobilize/jobs/#{ @job.id }".expand_path
     end
 
+    def fail
+      @job.update_status         :failed
+    end
+
     def Job.perform( _cron_id, _box_id = nil, _job_id = nil )
       @cron                     = Cron.find _cron_id
       if _job_id
@@ -27,8 +31,8 @@ module Mobilize
         _job.start
       end
 
-      until _job.is { complete? or timed_out? }
-            _job.cron.next_stage.perform
+      unless _job.is { complete? or timed_out? }
+        _job.cron.next_stage.perform
       end
     end
   end

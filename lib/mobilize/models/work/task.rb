@@ -13,8 +13,6 @@ module Mobilize
     belongs_to :stage
     belongs_to :path
 
-    @@config = Mobilize.config "task"
-
     after_initialize :set_self
     def set_self; @task = self;end
 
@@ -64,7 +62,7 @@ module Mobilize
           _path.send               _stage.call, @task
           @task.complete
         rescue                  => _exc
-          if                       @task.retries < @@config.max_retries
+          if                       @task.retries < Mobilize.config.work.max_retries
             Log.write              "Failed #{ @task.id } with #{ _exc.to_s }", "ERROR"
             @task.retry
           else

@@ -39,8 +39,6 @@ test:
   attempter:
     max_attempts: 5
     sleep_time: 2
-  task:
-    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
     access_key_id:     <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
