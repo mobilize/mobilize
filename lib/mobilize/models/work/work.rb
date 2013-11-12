@@ -26,7 +26,7 @@ module Mobilize
                                   status:                  _status_string,
                                   status_at:               _current_time
 
-      Log.write                   "#{ _work.id } status: #{ _work.status } " +
+      Log.write                   "#{ _work.id } status set to '#{ _work.status }' " +
                                   "at #{ _work.send _timestamp_string }"
     end
 
