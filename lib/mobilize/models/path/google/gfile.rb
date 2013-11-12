@@ -82,7 +82,7 @@ module Mobilize
     def read( _task )
       _user                        = _task.user
 
-      _remote                      = @gfile.remote _task.session
+      _remote                      = @gfile.remote Gfile.session
 
       if @gfile.is_reader?           _user
         #make sure path exists but dir does not
@@ -101,7 +101,7 @@ module Mobilize
     def write( _task )
       _user                        = _task.user
 
-      _remote                      = @gfile.remote _task.session
+      _remote                      = @gfile.remote Gfile.session
 
       if @gfile.is_writer?           _user
 

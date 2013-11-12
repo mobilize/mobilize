@@ -85,7 +85,7 @@ module Mobilize
     end
 
     def fail
-      @task.update_status     = :failed
+      @task.update_status     :failed
       _stage                  = @task.stage
       _stage.fail
     end

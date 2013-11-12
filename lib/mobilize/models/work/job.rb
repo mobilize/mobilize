@@ -40,17 +40,22 @@ module Mobilize
         _job.start
       end
 
-      until _job.timed_out?
+      while 1 == 1
         if _job.complete?
           Log.write "Job #{ _job.id } complete"
           return true
+        elsif _job.timed_out?
+          Log.write "Job #{ _job.id } timed out", "FATAL" 
+          return false
+        elsif _job.failed?
+          Log.write "Job #{ _job.id } failed", "FATAL"
+          return false
         else
           _next_stage = _job.cron.next_stage
           _job.cron.next_stage.perform if _next_stage.status.nil?
         end
       end
 
-      Log.write( "Job #{ _job.id } timed out", "FATAL" ) if _job.timed_out?
       false
     end
   end

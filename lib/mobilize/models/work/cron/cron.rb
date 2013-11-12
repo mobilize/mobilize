@@ -26,6 +26,10 @@ module Mobilize
       @cron = self
     end
 
+    def user
+      self.crontab.user
+    end
+
     def parent
       if @cron.parent_cron_id
         _parent_cron             = Cron.find @cron.parent_cron_id

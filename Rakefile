@@ -19,6 +19,12 @@ require 'resque/tasks'
 require 'resque/pool/tasks'
 require 'pp'
 
+task "resque:pool:setup" do
+  Resque::Pool.after_prefork do
+    Resque.redis.client.reconnect
+  end
+end
+
 require 'rake/hooks'
 after :install do
 #copy sha1 revision into gem directory

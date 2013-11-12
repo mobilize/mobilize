@@ -49,5 +49,10 @@ module Mobilize
       _work                    = self
       _work.status            == "completed"
     end
+
+    def failed?
+      _work                    = self
+      _work.status            == "failed"
+    end
   end
 end
