@@ -71,28 +71,6 @@ module Mobilize
       end
     end
 
-    def working?
-      _workers               = Resque.workers
-      _workers.index        { |worker|
-        _payload             = worker.job[ 'payload' ]
-        if _payload
-          _work_id           = _payload[ 'args' ].first
-          _working           = true if _work_id == @task.id
-        end
-        _working
-                             }
-      _working
-    end
-
-    def queued?
-      _queued_jobs           = ::Resque.peek( Mobilize.queue, 0, 0 ).to_a
-      _queued_jobs.index    { |_job|
-        _work_id             = _job[ 'args' ].first
-        @queued              = true if _work_id == @task.id
-                              }
-      @queued
-    end
-
     def retry
       @task.update_attributes  retries: @task.retries + 1
       @task.perform

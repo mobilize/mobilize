@@ -46,7 +46,7 @@ module Mobilize
 
     def start
       @cron.update_status       :started
-      @cron.stages.each       { |_stage| _stage.start }
+      @cron.stages.each       { |_stage| _stage.clear }
     end
 
     def complete

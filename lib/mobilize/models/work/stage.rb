@@ -24,6 +24,7 @@ module Mobilize
     end
 
     def perform
+      @stage.start
       _task_procs = @stage.tasks.map do |_task|
         Proc.new { _task.perform }
       end
@@ -52,7 +53,7 @@ module Mobilize
 
     def start
       @stage.update_status       :started
-      @stage.tasks.each { |_task| _task.start }
+      @stage.tasks.each { |_task| _task.clear }
     end
 
     def fail

@@ -45,7 +45,8 @@ module Mobilize
           Log.write "Job #{ _job.id } complete"
           return true
         else
-          _job.cron.next_stage.perform
+          _next_stage = _job.cron.next_stage
+          _job.cron.next_stage.perform if _next_stage.status.nil?
         end
       end
 
