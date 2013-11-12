@@ -4,7 +4,7 @@ module Mobilize
     def set_self;    @box, @engine = self, self;end
 
     def queue
-      "mobilize-#{ @engine.hostname }"
+      @engine.id
     end
 
     def start

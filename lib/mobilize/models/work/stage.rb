@@ -29,6 +29,7 @@ module Mobilize
         Proc.new { _task.perform }
       end
       _task_procs.thread
+      @stage.complete
     end
 
     def last?
