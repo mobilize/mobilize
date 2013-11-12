@@ -16,6 +16,16 @@ module Mobilize
       field :timeout,             type: Fixnum, default:->{ Mobilize.config.work.timeout }
     end
 
+    def clear
+      _work                  = self
+      _work.update_attributes( touched_at: nil, started_at: nil,
+                               completed_at: nil, failed_at: nil,
+                               retried_at: nil, status_at: nil,
+                               status: nil, retries: nil )
+
+      Log.write                "#{ _work.id } cleared at #{ Time.now.utc.to_s }"
+    end
+
     def update_status( _status )
       _work                     = self
       _status_string            = _status.to_s
