@@ -36,7 +36,7 @@ module Mobilize
     def write_resque_web_auth
       _config                    = Mobilize.config.cluster.master.resque_web
 
-      _resque_web_auth_script    = "Resque::Server.use(Rack::Auth::Basic) do |_user, _password|\n" +
+      _resque_web_auth_script    = "require 'yaml';Resque::Server.use(Rack::Auth::Basic) do |_user, _password|\n" +
                                    "[_user, _password] == ['#{ _config.username }', '#{ _config.password }']\n" +
                                    "end"
 

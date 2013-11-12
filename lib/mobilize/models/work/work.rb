@@ -39,5 +39,10 @@ module Mobilize
       _work                    = self
       _work.status            == "completed"
     end
+
+    def start
+      _work                    = self
+      _work.update_status       :started
+    end
   end
 end

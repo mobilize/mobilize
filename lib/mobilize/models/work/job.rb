@@ -23,6 +23,7 @@ module Mobilize
         _job                    = Job.find _job_id
       else
         _job                    = @cron.create_job cron_id: _cron_id, box_id:  _box_id
+        _job.start
       end
 
       until _job.is { complete? or timed_out? }

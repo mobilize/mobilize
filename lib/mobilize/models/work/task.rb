@@ -103,10 +103,6 @@ module Mobilize
       Resque.enqueue_to        Mobilize.queue, Task, @task.id
     end
 
-    def start
-      @task.update_status       :started
-    end
-
     def complete
       @task.update_status       :completed
     end
