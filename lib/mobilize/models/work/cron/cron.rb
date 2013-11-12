@@ -44,8 +44,13 @@ module Mobilize
       _next_stage
     end
 
+    def start
+      @cron.update_status       :started
+      @cron.stages.each       { |_stage| _stage.start }
+    end
+
     def complete
-      @cron.job.update_status     :completed
+      @cron.job.archive
       @cron.update_status         :completed
     end
 
@@ -68,6 +73,7 @@ module Mobilize
       else
         _job_id, _box_id         = nil, nil
         _queue                   = Mobilize.queue
+        @cron.start
       end
 
       if Box.find_self.nil?
@@ -77,8 +83,6 @@ module Mobilize
         Resque.enqueue_to        _queue, Job, _cron_id, _box_id, _job_id
         Log.write                "Enqueued #{ @cron.id }"
       end
-
-
     end
   end
 end

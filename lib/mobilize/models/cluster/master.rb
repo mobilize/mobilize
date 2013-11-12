@@ -28,6 +28,12 @@ module Mobilize
       @master.write_resque_web_auth
     end
 
+    def upgrade
+      @master.install_mobilize_gem
+      @master.stop
+      @master.start
+    end
+
     def install_resque_web_routing
       #add iptables reroute for port 80, set iptables persistent
       @master.sh              "sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 5678"

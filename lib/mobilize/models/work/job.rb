@@ -21,6 +21,15 @@ module Mobilize
       @job.update_status         :failed
     end
 
+    def archive
+      @job.delete #for now there is no archiving
+      Log.write "Job #{ @job.id } archived."
+    end
+
+    def start
+      @job.update_status       :started
+    end
+
     def Job.perform( _cron_id, _box_id = nil, _job_id = nil )
       @cron                     = Cron.find _cron_id
       if _job_id

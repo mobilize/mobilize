@@ -51,6 +51,11 @@ module Mobilize
       end
     end
 
+    def start
+      @stage.update_status       :started
+      @stage.tasks.each { |_task| _task.start }
+    end
+
     def fail
       @stage.update_status    :failed
       _cron                  = @stage.cron

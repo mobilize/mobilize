@@ -29,6 +29,12 @@ module Mobilize
       @engine.write_god_file
     end
 
+    def upgrade
+      @engine.install_mobilize_gem
+      @engine.stop
+      @engine.start
+    end
+
     def create_log_dir
       @engine.sh              "mkdir -p #{ @engine.mobilize_home_dir }/log"
     end

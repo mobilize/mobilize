@@ -105,6 +105,10 @@ module Mobilize
       @task.update_status       :completed
     end
 
+    def start
+      @task.update_status       :started
+    end
+
     def fail
       @task.update_status     = :failed
       _stage                  = @task.stage
