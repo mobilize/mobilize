@@ -24,7 +24,6 @@ module Mobilize
     end
 
     def perform
-      @stage.update_status        :started
       _task_procs = @stage.tasks.map do |_task|
         Proc.new { _task.perform }
       end
