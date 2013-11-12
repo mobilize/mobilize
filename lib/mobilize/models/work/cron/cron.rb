@@ -61,7 +61,7 @@ module Mobilize
     def Cron.enqueue( _cron_id )
       @cron                      = Cron.find _cron_id
       if _job                    = @cron.job
-        _box_id, _job_id         = _job.box.id, _job.id
+        _box_id, _job_id         = _job.box_id, _job.id
         _queue                   = _box.queue
       else
         _job_id, _box_id         = nil, nil
