@@ -56,9 +56,9 @@ module Mobilize
         elsif _job.failed?
           Log.write "Job #{ _job.id } failed", "FATAL"
           return false
-        else
-          _next_stage = _job.cron.next_stage
-          _job.cron.next_stage.perform if _next_stage.status.nil?
+        elsif _next_stage = _job.cron.next_stage and
+              _next_stage.status.nil?
+          _job.cron.next_stage.perform
         end
         sleep 2
       end
