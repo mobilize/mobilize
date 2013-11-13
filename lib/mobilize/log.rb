@@ -79,7 +79,7 @@ module Mobilize
     def pp_model
       if self.model_class
         _model_id_path      = self.model_id.split( "/" )
-        _short_path_length  = [_model_id_path.length, 3 ].min
+        _short_path_length  = [_model_id_path.length, 2 ].min
         "#{ self.model_class.to_s }: #{ _model_id_path[ -_short_path_length..-1 ].join "/" } ".light_yellow
       else
         ""
