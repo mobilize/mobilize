@@ -48,6 +48,7 @@ module Mobilize
         _job.reload
         if _job.complete?
           Log.write "Job #{ _job.id } complete"
+          _job.archive
           return true
         elsif _job.timed_out?
           Log.write "Job #{ _job.id } timed out", "FATAL"

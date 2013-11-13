@@ -54,7 +54,6 @@ module Mobilize
     end
 
     def complete
-      @cron.job.archive
       @cron.update_status         :completed
     end
 

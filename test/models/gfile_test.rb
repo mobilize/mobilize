@@ -18,8 +18,8 @@ class GfileTest < MiniTest::Unit::TestCase
     @write_stage                        = @Fixture::Stage.default    @cron,     2, "write"
     @read_stage                         = @Fixture::Stage.default    @cron,     3, "read"
     @script_task                        = @Fixture::Task.default     @run_stage,   1, @script
-    @gfile_write_task                   = @Fixture::Task.default     @read_stage,  1, @gfile, input: "cat stage1/task1/stdout"
-    @gfile_read_task                    = @Fixture::Task.default     @write_stage, 1, @gfile
+    @gfile_write_task                   = @Fixture::Task.default     @write_stage,  1, @gfile, input: "cat stage1/task1/stdout"
+    @gfile_read_task                    = @Fixture::Task.default     @read_stage, 1, @gfile
   end
 
   def test_write_and_read
