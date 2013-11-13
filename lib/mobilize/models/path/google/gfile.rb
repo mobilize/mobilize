@@ -105,7 +105,7 @@ module Mobilize
 
         _source                    = _task.source
         _remote.update_from_string   _source
-        Log.write                    "Uploaded input to #{ @gfile.id }", "INFO", _task
+        Log.write                    "uploaded input to #{ @gfile.id }", "INFO", _task
         Log.write                    "#{ _task.source.length } bytes", "STAT", _user
       else
         Log.write                    "does not have write access to #{ @gfile.id }", "FATAL", _user

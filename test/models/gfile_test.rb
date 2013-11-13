@@ -53,7 +53,7 @@ class GfileTest < MiniTest::Unit::TestCase
         { model_id: @write_stage.id,        message: "status set to started" },
         { model_id: @gfile_write_task.id,   message: "cleared" },
         { model_id: @gfile_write_task.id,   message: "status set to started" },
-        { model_id: @gfile_write_task.id,   message: "Uploaded input to #{ @gfile_write_task.path.id }" },
+        { model_id: @gfile_write_task.id,   message: "uploaded input to #{ @gfile_write_task.path.id }" },
         { model_id: @user.id,               message: "16 bytes" },
         { model_id: @gfile_write_task.id,   message: "status set to completed" },
         { model_id: @write_stage.id,        message: "status set to completed" },
