@@ -3,8 +3,6 @@ require               'bundler/setup'
 require               'minitest/autorun'
 ENV['MOBILIZE_ENV'] = 'test'
 require               'mobilize'
-#drop test database
-Mongoid.purge!
 #get fixtures
 require               "./test/fixtures/github"
 require               "./test/fixtures/user"

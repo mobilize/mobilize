@@ -23,7 +23,7 @@ module Mobilize
                                retried_at: nil, status_at: nil,
                                status: nil, retries: 0 )
 
-      Log.write                "#{ _work.id } cleared at #{ Time.now.utc.to_s }"
+      Log.write                "cleared", "INFO", _work
     end
 
     def update_status( _status )
@@ -36,8 +36,7 @@ module Mobilize
                                   status:                  _status_string,
                                   status_at:               _current_time
 
-      Log.write                   "#{ _work.id } status set to '#{ _work.status }' " +
-                                  "at #{ _work.send _timestamp_string }"
+      Log.write                   "status set to #{ _work.status }", "INFO", _work
     end
 
     def timed_out?

@@ -9,12 +9,12 @@ module Mobilize
           return false     if _parent.working? or _parent.completed_at.nil?
           #child is triggered if it's never completed and parent has
           if                  @cron.completed_at.nil?
-            Log.write         "#{ @cron.id } triggered by completed parent, never completed child"
+            Log.write         "triggered by completed parent, never completed child", "INFO", @cron
             return true
           end
           #child is triggered if parent completed more recently
           if                  _parent.completed_at > @cron.completed_at
-            Log.write         "#{ @cron.id } triggered by more recently completed parent"
+            Log.write         "triggered by more recently completed parent", "INFO", @cron
             return true
           end
         end
@@ -23,12 +23,10 @@ module Mobilize
 
       def triggered_once?
         if                @cron.never_completed?
-          Log.write       "#{ @cron.id } triggered by once, " +
-                          "cron never completed"
+          Log.write       "triggered by once, cron never completed", "INFO", @cron
           return true
         elsif             @cron.completed_at < @cron.touched_at
-          Log.write       "#{ @cron.id } triggered by once, " +
-                          "touched since last completion"
+          Log.write       "triggered by once, touched since last completion", "INFO", @cron
           return true
         else
           return false
@@ -83,7 +81,7 @@ module Mobilize
                                   else
                                     "cron never completed"
                                   end
-        Log.write                 "#{ @cron.id } from #{ _call_method } #{ _due_time_msg }; #{ _cron_msg }"
+        Log.write                 "from #{ _call_method } #{ _due_time_msg }; #{ _cron_msg }", "INFO", @cron
         return true
       end
 

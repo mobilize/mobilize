@@ -44,7 +44,7 @@ module Mobilize
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{ _string1 }/#{ _string2 }/g')"
         _replace_cmd.popen4
-        Log.write                 "Replaced #{ _string1 } with #{ _string2 } in #{ @task.dir }"
+        Log.write                 "Replaced #{ _string1 } with #{ _string2 } in dir", "INFO", @task
       end
     end
 
@@ -57,8 +57,8 @@ module Mobilize
         @task.complete
       rescue                  => _exc
         if                       @task.retries < Mobilize.config.work.max_retries
-          Log.write              "Failed #{ @task.id } with #{ _exc.to_s }," +
-                                 "retry #{ @task.retries } of #{ Mobilize.config.work.max_retries }", "ERROR"
+          Log.write              "failed with #{ _exc.to_s }," +
+                                 "retry #{ @task.retries } of #{ Mobilize.config.work.max_retries }", "ERROR", @task
           @task.retry
         else
           @task.fail
@@ -94,23 +94,7 @@ module Mobilize
     def refresh_dir
       @task.dir.rm_r
       @task.dir.mkdir_p
-      Log.write                   "Refreshed task dir " + @task.dir
-    end
-
-    def purge_dir
-      @task.dir.rm_r
-      @task.dir.mkdir_p
-      Log.write                   "Purged task dir "    + @task.dir
-    end
-
-    def create_dir
-      @task.dir.mkdir_p
-     Log.write                   "Created task dir "   + @task.dir
-    end
-
-    def purge!
-      @task.delete
-      Log.write                  "Purged task #{ @task.id }"
+      Log.write                   "local dir refreshed", "INFO", @task
     end
   end
 end

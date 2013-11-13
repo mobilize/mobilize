@@ -85,7 +85,7 @@ module Mobilize
         _remote             = _remotes.first
 
         if                    _remotes.length > 1
-          Log.write          "TOO MANY REMOTES: #{ _remotes.length } remotes named #{ _name }", "WARN"
+          Log.write          "TOO MANY REMOTES: #{ _remotes.length } remotes named #{ _name }", "WARN", _box
         end
       end
 
@@ -101,7 +101,7 @@ module Mobilize
     end
 
     def remote( _session = Box.session )
-      Log.write(        "Box has no remote_id", "FATAL") unless @box.remote_id
+      Log.write(        "Box has no remote_id", "FATAL", @box ) unless @box.remote_id
 
       _remotes         = Box.remotes_by_name @box.name,
                                              { aws_state:       [ 'running', 'pending' ],
@@ -109,7 +109,7 @@ module Mobilize
                                              _session
       _remote          = _remotes.first
       Log.write(         "Found remote #{ @box.remote_id } for #{ @box.id }," +
-                         " currently #{ _remote[ :aws_state ] }") if _remote
+                         " currently #{ _remote[ :aws_state ] }", "INFO", @box ) if _remote
       _remote
     end
 
@@ -126,7 +126,7 @@ module Mobilize
         ip:                  _remote[ :aws_private_ip_address ],
         hostname:            "ip-#{ _ip.gsub ".", "-" }"
       )
-      Log.write              "synced box #{ @box.id } with remote #{ @box.remote_id }."
+      Log.write              "synced with remote #{ @box.remote_id }", "INFO", @box
       @box
     end
   end

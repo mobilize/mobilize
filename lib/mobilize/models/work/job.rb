@@ -23,7 +23,7 @@ module Mobilize
 
     def archive
       @job.delete #for now there is no archiving
-      Log.write "Job #{ @job.id } archived."
+      Log.write "archived", "INFO", @job
     end
 
     def start
@@ -37,32 +37,30 @@ module Mobilize
     def Job.perform( _cron_id, _box_id = nil, _job_id = nil )
       @cron                     = Cron.find _cron_id
       if _job_id
-        _job                    = Job.find _job_id
+        @job                    = Job.find _job_id
       else
         _box_id                 = Box.find_self.id
-        _job                    = @cron.create_job cron_id: _cron_id, box_id:  _box_id
-        _job.start
+        @job                    = @cron.create_job cron_id: _cron_id, box_id:  _box_id
+        @job.start
       end
-      _job.process
+      @job.process
     end
 
     def process
-      _job = self
       while 1 == 1
-        _job.reload
-        if _job.complete?
-          Log.write "Job #{ _job.id } complete"
-          _job.archive
+        @job.reload
+        if @job.complete?
+          @job.archive
           return true
-        elsif _job.timed_out?
-          Log.write "Job #{ _job.id } timed out", "FATAL"
+        elsif @job.timed_out?
+          Log.write "Timed out", "FATAL", @job
           return false
-        elsif _job.failed?
-          Log.write "Job #{ _job.id } failed", "FATAL"
+        elsif @job.failed?
+          Log.write "Failed", "FATAL", @job
           return false
-        elsif _next_stage = _job.cron.next_stage and
+        elsif _next_stage = @job.cron.next_stage and
               _next_stage.status.nil?
-          _job.cron.next_stage.perform
+          @job.cron.next_stage.perform
         end
         sleep 2
       end

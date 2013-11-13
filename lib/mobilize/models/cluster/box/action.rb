@@ -33,7 +33,7 @@ module Mobilize
         _attempter                 = Attempter.new Net::SCP, "start"
         _result                    = _attempter.attempt( *_send_args ) do |_scp|
                                        _scp.upload!( _loc_path, _rem_path, recursive: true ) do |_ch, _name, _sent, _total|
-                                       Log.write( "#{ _name.basename } -> #{ @box.name }: #{ _sent }/#{ _total }" ) if _log
+                                       Log.write( "to #{ _name.basename } #{ _sent }/#{ _total }", "INFO", @box ) if _log
                                        end
                                      end
         _result
@@ -47,7 +47,7 @@ module Mobilize
         ensure
           _temp_file_path.rm_r
         end
-        Log.write                   "Wrote: #{ _string.ellipsize 25 } to #{ @box.id }:#{ _rem_path }" if _log
+        Log.write(                  "Wrote: #{ _string.ellipsize 25 } to #{ _rem_path }", "INFO", @box ) if _log
       end
 
       def write_mobrc
@@ -73,11 +73,11 @@ module Mobilize
         #deletes the local database version
         if @box.remote_id
           _session.terminate_instances  @box.remote_id
-          Log.write                     "Terminated remote #{@box.remote_id} for #{@box.id}"
+          Log.write                     "Terminated remote #{ @box.remote_id }", "INFO", @box
         end
 
         @box.delete
-        Log.write                       "Deleted #{@box.id} from DB"
+        Log.write                       "Deleted from DB", "INFO", @box
 
         true
       end
@@ -99,7 +99,7 @@ module Mobilize
 
       def wait_for_ssh
         while ( begin; @box.sh "hostname"; rescue; nil; end ).nil?
-          Log.write                     "#{ @box.id } ssh not ready; waiting 10 sec"
+          Log.write                     "ssh not ready; waiting 10 sec", "INFO", @box
           sleep                         10
         end
         @box
@@ -108,7 +108,7 @@ module Mobilize
       def wait_for_running( _session  = Box.session )
         _remote                       = @box.remote _session
         while                           _remote[ :aws_state ] != "running"
-          Log.write                     "remote #{ @box.id } still at #{ _remote[ :aws_state ] } -- waiting 10 sec"
+          Log.write                     "remote still at #{ _remote[ :aws_state ] } -- waiting 10 sec", "INFO", @box
           sleep                         10
           _remote                     = @box.remote _session
         end
@@ -116,7 +116,7 @@ module Mobilize
       end
 
       def apt_install( _name, _version )
-        Log.write                "Installing apt #{ _name } #{ _version }..."
+        Log.write                "Installing apt #{ _name } #{ _version }...", "INFO", @box
         @box.sh                  "sudo apt-get install -y #{ _name }=#{ _version }"
       end
 
@@ -130,12 +130,12 @@ module Mobilize
         _repo_revision                = @box.sh "cd mobilize && git log -1 --pretty=format:%H"
         _installed_revision           = begin; @box.sh "mob revision";rescue;nil;end
         if _installed_revision       != _repo_revision
-          Log.write                     "Installing Mobilize on #{ @box.id }\n" +
+          Log.write                     "Installing Mobilize\n" +
                                         "installed revision: #{ _installed_revision.to_s }\n" +
-                                        "repo revision: #{ _repo_revision }"
+                                        "repo revision: #{ _repo_revision }", "INFO", @box
           @box.sh                       "cd mobilize && bundle install && rake install"
         else
-           Log.write                    "mobilize revision #{ _installed_revision } already installed on #{ @box.id }"
+           Log.write                    "mobilize revision #{ _installed_revision } already installed", "INFO", @box
         end
         @box.sh                         "rm -rf mobilize"
       end

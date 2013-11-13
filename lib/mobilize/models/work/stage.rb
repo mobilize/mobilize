@@ -60,13 +60,13 @@ module Mobilize
       @stage.update_status    :failed
       _cron                  = @stage.cron
       _cron.fail
-      Log.write               "Failure in #{ @stage.id }; Check logs"
+      Log.write               "Failure; Check logs", "ERROR", @stage
     end
 
     def purge!
       @stage.tasks.each { |_task| _task.purge! }
       @stage.delete
-      Log.write "Purged stage #{ @stage.id }"
+      Log.write            "Purged", "INFO", @stage
     end
   end
 end

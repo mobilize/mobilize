@@ -12,7 +12,7 @@ module Mobilize
       _task.refresh_dir
       _stdin_path          = _task.dir + "/stdin"
       _stdin_path.write      _script.stdin
-      Log.write              "wrote stdin into task dir at #{ _stdin_path }"
+      Log.write              "stdin written to local dir", "INFO", _task
     end
 
     def Script.session

@@ -12,7 +12,7 @@ module Mobilize
       _start_cmd            = "god && god load #{ @engine.mobilize_config_dir }/#{ _god_script_name }.rb && " +
                               "god start #{ _god_script_name }"
       @engine.sh              _start_cmd
-      Log.write               _start_cmd
+      Log.write               _start_cmd, "INFO", @engine
       true
     end
 

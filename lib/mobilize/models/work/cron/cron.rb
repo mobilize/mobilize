@@ -66,7 +66,7 @@ module Mobilize
     def purge!
       @cron.stages.each { |_stage| _stage.purge! }
       @cron.delete
-      Log.write            "Purged cron #{ @cron.id }"
+      Log.write            "Purged;", "INFO", @cron
     end
 
     def Cron.enqueue( _cron_id )
@@ -81,11 +81,11 @@ module Mobilize
       end
 
       if Box.find_self.nil?
-        Log.write                "Enqueueing #{ @cron.id } remotely from #{ Socket.gethostname }"
+        Log.write                "sent remote enqueue", "INFO", @cron
         Cluster.master.sh        "mob cron enqueue #{ @cron.id }"
       else
         Resque.enqueue_to        _queue, Job, _cron_id, _box_id, _job_id
-        Log.write                "Enqueued #{ @cron.id }"
+        Log.write                "enqueued locally", "INFO", @cron
       end
     end
   end
