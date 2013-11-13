@@ -25,7 +25,7 @@ class GfileTest < MiniTest::Unit::TestCase
     _start_time                         = Time.now.utc
     Cli.perform                       [ "cron", "enqueue", @cron.id ]
     #monitor logs until expected messages are complete
-    @test.expect _start_time, _end_time, _sleep_time
+    @test.expect _start_time
   end
 
   def teardown
@@ -34,7 +34,7 @@ class GfileTest < MiniTest::Unit::TestCase
     #@script.delete
   end
 
-  def expect( _start_time, _end_time, _sleep_time )
+  def expect( _start_time, _end_time = _start_time + 600, _sleep_time = 10 )
     _expecteds = [
         { model_id: @cron,               message: "sent remote enqueue" },
         { model_id: @cron,               message: "status set to started" },
@@ -68,7 +68,18 @@ class GfileTest < MiniTest::Unit::TestCase
       ]
 
     _model_ids = _expecteds.map { |_expected| _expected[ :model_id ] }
-    _logs      = Log.where( :time.gte => _start_time, :model_id.in => _model_ids ).asc( :time )
+    _logs      = []
+    while _logs.length != _expecteds.length
+      if Time.now.utc > _end_time
+        Mobilize::Log.write "gfile test timed out!", "FATAL"
+      elsif _logs.length > _expecteds.length
+        Mobilize::Log.write "gfile test has too many logs!", "FATAL"
+      else
+        Mobilize::Log.write "waiting #{ _sleep_time.to_s }s for gfile test to complete", "INFO"
+      end
+      sleep _sleep_time
+      _logs = Mobilize::Log.where( :time.gte => _start_time, :model_id.in => _model_ids ).asc( :time ).to_a
+    end
 
     _logs.each_with_index do |_log, _log_i|
       _expected = _expecteds[ _log_i ]
