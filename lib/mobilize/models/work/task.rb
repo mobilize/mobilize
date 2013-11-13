@@ -29,7 +29,7 @@ module Mobilize
     def source
       _orders                       = @task.input.gsub( "task", "" ).gsub( "stage", "" ).split( "/" )
       _stage_order, _task_order     = _orders.map { |_order| "%02d" % _order.to_i }
-      _source_task                  = Task.find _id: "#{ _task.stage.job.id }/stage#{ _stage_order }/task#{ _task_order }"
+      _source_task                  = Task.find _id: "#{ @task.stage.cron.id }/stage#{ _stage_order }/task#{ _task_order }"
       return File.read                "#{ _source_task.dir }/stdout"
     end
 

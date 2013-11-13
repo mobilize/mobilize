@@ -43,6 +43,7 @@ module Mobilize
     end
 
     def process
+      _job = self
       while 1 == 1
         _job.reload
         if _job.complete?
