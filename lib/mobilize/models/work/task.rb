@@ -5,11 +5,13 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     include Mobilize::Work
-    field :input,    type: String #used by write tasks to specify input
-    field :subs,     type: Hash   #used by run tasks to sub input
-    field :stage_id, type: String #need for id
-    field :path_id,  type: String #need for id
-    field :_id,      type: String, default:->{"#{stage_id}/#{path_id}"}
+    field      :input,    type: String #used by write tasks to specify input
+    field      :subs,     type: Hash   #used by run tasks to sub input
+    field      :stage_id, type: String #need for id
+    field      :path_id,  type: String
+    field      :order,    type: Fixnum, default:->{ 1 } #used for naming
+    field      :name,     type: String, default:->{ "task" + ( "%02d" % order ) }
+    field      :_id,      type: String, default:->{"#{ stage_id }/#{ name }"}
     belongs_to :stage
     belongs_to :path
 
@@ -25,17 +27,14 @@ module Mobilize
     end
 
     def source
-      if @task.input.starts_with? "stage"
-        _order                  = @task.input.split( "stage" ).last.to_i
-        _prior_stage            = @stage.cron.stages.where( order: _order ).first
-        return File.read          "#{ _prior_stage.dir }/stdout"
-      else
-        return @task.input
-      end
+      _orders                       = @task.input.gsub( "task", "" ).gsub( "stage", "" ).split( "/" )
+      _stage_order, _task_order     = _orders.map { |_order| "%02d" % _order.to_i }
+      _source_task                  = Task.find _id: "#{ _task.stage.job.id }/stage#{ _stage_order }/task#{ _task_order }"
+      return File.read                "#{ _source_task.dir }/stdout"
     end
 
     def target
-      return File.read            "#{ @task}"
+      return File.read            "#{ @task.dir }/stdout"
     end
 
     #gsubs keys in files with the replacement value given
