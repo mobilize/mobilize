@@ -22,8 +22,9 @@ class GfileTest < MiniTest::Unit::TestCase
   end
 
   def test_run
+    Mobilize::Log.write                   "starting gfile test"
     _start_time                         = Time.now.utc
-    Cli.perform                       [ "cron", "enqueue", @cron.id ]
+    Mobilize::Cli.perform                 [ "cron", "enqueue", @cron.id ]
     #monitor logs until expected messages are complete
     @test.expect _start_time
   end
@@ -36,35 +37,32 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def expect( _start_time, _end_time = _start_time + 600, _sleep_time = 10 )
     _expecteds = [
-        { model_id: @cron,               message: "sent remote enqueue" },
-        { model_id: @cron,               message: "status set to started" },
-        { model_id: @script_stage,       message: "cleared" },
-        { model_id: @gfile_write_stage,  message: "cleared" },
-        { model_id: @gfile_read_stage,   message: "cleared" },
-        { model_id: @cron,               message: "enqueued locally" },
-        { model_id: @job,                message: "status set to started" },
-        { model_id: @script_stage,       message: "status set to started" },
-        { model_id: @script_stage_task,  message: "cleared" },
-        { model_id: @script_stage_task,  message: "status set to started" },
-        { model_id: @script_stage_task,  message: "local dir refreshed" },
-        { model_id: @script_stage_task,  message: "stdin written to local dir" },
-        { model_id: @script_stage_task,  message: "status set to completed" },
-        { model_id: @script_stage,       message: "status set to completed" },
-        { model_id: @gfile_write_stage,  message: "status set to started" },
-        { model_id: @gfile_write_task,   message: "cleared" },
-        { model_id: @gfile_write_task,   message: "status set to started" },
-        { model_id: @gfile_write_task,   message: "status set to completed" },
-        { model_id: @gfile_write_stage,  message: "status set to completed" },
-        { model_id: @gfile_read_stage,   message: "status set to started" },
-        { model_id: @gfile_read_task,    message: "cleared" },
-        { model_id: @gfile_read_task,    message: "status set to started" },
-        { model_id: @gfile_read_task,    message: "local dir refreshed" },
-        { model_id: @gfile_read_task,    message: "downloaded #{ @gfile_read_task.path.id } to local dir" },
-        { model_id: @gfile_read_task,    message: "status set to completed" },
-        { model_id: @gfile_read_stage,   message: "status set to completed" },
-        { model_id: @cron,               message: "status set to completed" },
-        { model_id: @job,                message: "status set to completed" },
-        { model_id: @job,                message: "archived" }
+        { model_id: @cron.id,               message: "sent remote enqueue" },
+        { model_id: @cron.id,               message: "status set to started" },
+        { model_id: @run_stage.id,          message: "cleared" },
+        { model_id: @write_stage.id,        message: "cleared" },
+        { model_id: @read_stage.id,         message: "cleared" },
+        { model_id: @cron.id,               message: "enqueued locally" },
+        { model_id: @run_stage.id,          message: "status set to started" },
+        { model_id: @script_task.id,        message: "cleared" },
+        { model_id: @script_task.id,        message: "status set to started" },
+        { model_id: @script_task.id,        message: "local dir refreshed" },
+        { model_id: @script_task.id,        message: "stdin written to local dir" },
+        { model_id: @script_task.id,        message: "status set to completed" },
+        { model_id: @run_stage.id,          message: "status set to completed" },
+        { model_id: @write_stage.id,        message: "status set to started" },
+        { model_id: @gfile_write_task.id,   message: "cleared" },
+        { model_id: @gfile_write_task.id,   message: "status set to started" },
+        { model_id: @gfile_write_task.id,   message: "status set to completed" },
+        { model_id: @write_stage.id,        message: "status set to completed" },
+        { model_id: @read_stage.id,         message: "status set to started" },
+        { model_id: @gfile_read_task.id,    message: "cleared" },
+        { model_id: @gfile_read_task.id,    message: "status set to started" },
+        { model_id: @gfile_read_task.id,    message: "local dir refreshed" },
+        { model_id: @gfile_read_task.id,    message: "downloaded #{ @gfile_read_task.path.id } to local dir" },
+        { model_id: @gfile_read_task.id,    message: "status set to completed" },
+        { model_id: @read_stage.id,         message: "status set to completed" },
+        { model_id: @cron.id,               message: "status set to completed" },
       ]
 
     _model_ids = _expecteds.map { |_expected| _expected[ :model_id ] }
@@ -73,9 +71,9 @@ class GfileTest < MiniTest::Unit::TestCase
       if Time.now.utc > _end_time
         Mobilize::Log.write "gfile test timed out!", "FATAL"
       elsif _logs.length > _expecteds.length
-        Mobilize::Log.write "gfile test has too many logs!", "FATAL"
+        Mobilize::Log.write "gfile test has #{ _logs.length }, expecting #{ _expecteds.length }; too many logs!", "FATAL"
       else
-        Mobilize::Log.write "waiting #{ _sleep_time.to_s }s for gfile test to complete", "INFO"
+        Mobilize::Log.write "gfile test has #{ _logs.length }, expecting #{ _expecteds.length }; waiting #{ _sleep_time.to_s }s for completion", "INFO"
       end
       sleep _sleep_time
       _logs = Mobilize::Log.where( :time.gte => _start_time, :model_id.in => _model_ids ).asc( :time ).to_a
@@ -83,6 +81,7 @@ class GfileTest < MiniTest::Unit::TestCase
 
     _logs.each_with_index do |_log, _log_i|
       _expected = _expecteds[ _log_i ]
+      puts "expected: #{ _expected}", "log: #{ _log.inspect }"
       assert_equal _expected[ :model_id ], _log[ :model_id ]
       assert_equal _expected[ :message ], _log[ :message ]
     end
