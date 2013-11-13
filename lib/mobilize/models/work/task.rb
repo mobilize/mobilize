@@ -10,7 +10,7 @@ module Mobilize
     field      :stage_id, type: String #need for id
     field      :path_id,  type: String
     field      :order,    type: Fixnum, default:->{ 1 } #used for naming
-    field      :name,     type: String, default:->{ "task" + ( "%02d" % order ) }
+    field      :name,     type: String, default:->{ "task" + order.to_s }
     field      :_id,      type: String, default:->{"#{ stage_id }/#{ name }"}
     belongs_to :stage
     belongs_to :path
@@ -27,14 +27,11 @@ module Mobilize
     end
 
     def source
-      _orders                       = @task.input.gsub( "task", "" ).gsub( "stage", "" ).split( "/" )
-      _stage_order, _task_order     = _orders.map { |_order| "%02d" % _order.to_i }
-      _source_task                  = Task.find _id: "#{ @task.stage.cron.id }/stage#{ _stage_order }/task#{ _task_order }"
-      return File.read                "#{ _source_task.dir }/stdout"
+      return "cd #{ @task.dir }/../.. && #{ @task.input }".popen4
     end
 
     def target
-      return File.read            "#{ @task.dir }/stdout"
+      return "cat #{ @task.dir }/stdout".popen4
     end
 
     #gsubs keys in files with the replacement value given
