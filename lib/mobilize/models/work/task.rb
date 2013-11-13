@@ -27,7 +27,7 @@ module Mobilize
     end
 
     def source
-      return "cd #{ @task.dir }/../.. && #{ @task.input }".popen4
+      return "cd #{ @task.dir.dirname.dirname } && #{ @task.input }".popen4
     end
 
     def target
@@ -88,12 +88,7 @@ module Mobilize
 
     def dir
       _job        = @task.stage.cron.job
-      "#{ _job.dir }/#{ @task.stage.name }/#{ @task.path.id }"
-    end
-
-    def path_dir
-      _path_dir                 = @task.dir.dirname
-      return                      _path_dir
+      "#{ _job.dir }/#{ @task.stage.name }/#{ @task.name }"
     end
 
     def refresh_dir

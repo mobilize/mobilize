@@ -7,7 +7,7 @@ module Mobilize
     field :cron_id,    type: String
     field :order,      type: Fixnum, default:->{ 1 }
     field :call,       type: String #read, write, or run
-    field :name,       type: String, default:->{ "stage" + ( "%02d" % order ) }
+    field :name,       type: String, default:->{ "stage" + order.to_s }
     field :_id,        type: String, default:->{ "#{ cron_id }/#{ name }" }
     belongs_to :cron
     has_many :tasks
