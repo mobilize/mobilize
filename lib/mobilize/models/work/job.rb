@@ -30,6 +30,10 @@ module Mobilize
       @job.update_status       :started
     end
 
+    def complete
+      @job.update_status       :completed
+    end
+
     def Job.perform( _cron_id, _box_id = nil, _job_id = nil )
       @cron                     = Cron.find _cron_id
       if _job_id

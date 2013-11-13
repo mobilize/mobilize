@@ -55,6 +55,7 @@ module Mobilize
 
     def complete
       @cron.update_status         :completed
+      @cron.job.complete
     end
 
     def fail
