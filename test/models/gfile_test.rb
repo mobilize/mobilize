@@ -84,7 +84,6 @@ class GfileTest < MiniTest::Unit::TestCase
 
     _logs.each_with_index do |_log, _log_i|
       _expected = _expecteds[ _log_i ]
-      puts "expected: #{ _expected}", "log: #{ _log.inspect }"
       assert_equal _expected[ :model_id ], _log[ :model_id ]
       assert_equal _expected[ :message ], _log[ :message ]
     end
