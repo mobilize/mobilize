@@ -59,14 +59,13 @@ module Mobilize
         _github.read_private   _task
       end
       #get size of objects and log, formatted for no line breaks
-      _log_cmd               = "cd #{ _task.dir } && git count-objects -v"
+      _log_cmd               = "cd #{ _task.dir }/#{ _github.repo_name } && git count-objects -v"
 
       _size                  = _log_cmd.popen4.split( "\n" ).join ", "
 
       Log.write                "Read #{ _github.id } into #{ _task.dir }"
 
-      _stat                  = _task.user.google_login + ": " + _size
-      Log.write                _stat, "STAT"
+      Log.write                _size, "STAT", _task.user
       #deploy github repo
       true
     end
