@@ -91,6 +91,11 @@ module Mobilize
       "#{ _job.dir }/#{ @task.stage.name }/#{ @task.name }"
     end
 
+    def purge_dir
+      @task.dir.rm_r
+      Log.write                   "dir purged", "INFO", @task
+    end
+
     def refresh_dir
       @task.dir.rm_r
       @task.dir.mkdir_p
