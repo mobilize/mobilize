@@ -50,7 +50,7 @@ module Mobilize
     #needs user_id with git_ssh_key to get private repo
     def read( _task )
       _github                = self
-      _task.purge_dir
+      _task.refresh_dir
       begin
         Log.write              "attempting public read for #{ _github.id }"
         _github.read_public    _task
@@ -101,7 +101,7 @@ module Mobilize
       _cmd                        = "export GIT_SSH=#{ Github.sh_path } && " +
                                     "cd #{ _task.dir.dirname } && " +
                                     "git clone -q git@#{ _github.name.sub "/", ":" }.git --depth=1"
-      _cmd.popen4(true)
+      _cmd.popen4
       Log.write                     "Read private git repo #{ _github.id }"
       true
     end

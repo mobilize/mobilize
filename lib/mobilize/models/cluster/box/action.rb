@@ -150,12 +150,12 @@ module Mobilize
       def write_keys
         ['box.ssh', 'git.ssh'].each do |_key|
 
-          @box.cp   "#{ Config.key_dir }/#{ _key }",
-                    "#{ @box.key_dir   }/"
+          @box.cp           "#{ Config.key_dir }/#{ _key }",
+                            "#{ @box.key_dir   }/"
         end
+        @box.sh             "chmod 0400 #{ @box.key_dir }/*"
         @box.write_git_sh
-        @box.sh     "chmod 0400 #{ @box.key_dir }/*"
-        Log.write   "wrote and chmod'ed keys", "INFO", @box
+        Log.write           "wrote and chmod'ed keys", "INFO", @box
       end
 
       def write_git_sh
