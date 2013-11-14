@@ -21,9 +21,9 @@ module Mobilize
     end
 
     def repo_call( _task, _action, _category = nil )
-      _github                 = self
+      _github, _session       = self, Github.session
       begin
-        _connection           = _task.session.repos
+        _connection           = _session.repos
         _connection           = _category ? _connection.send( _category ) : _connection
         _response             = _connection.send _action,
                                                  user: _github.owner_name,

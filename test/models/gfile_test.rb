@@ -30,9 +30,8 @@ class GfileTest < MiniTest::Unit::TestCase
   end
 
   def teardown
-    #@box.terminate
-    #@gfile.delete
-    #@script.delete
+    @gfile.delete
+    @script.delete
   end
 
   def expect( _start_time, _end_time = _start_time + 600, _sleep_time = 10 )

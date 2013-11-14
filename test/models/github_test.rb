@@ -1,35 +1,29 @@
 require "test_helper"
 class GithubTest < MiniTest::Unit::TestCase
   def setup
+    @test                      = self
     @Fixture                   = Mobilize::Fixture
     @github_public             = @Fixture::Github.public
-    @box                       = Mobilize::Box.find_or_create_by_name "mobilize-github-test"
     @user                      = @Fixture::User.default
+    @crontab                   = @Fixture::Crontab.default  @user
+    @cron                      = @Fixture::Cron._once       @crontab,        "github_test"
     @github_private            = @Fixture::Github.private
-    @job                       = @Fixture::Job.default      @user, @box, "job_github_test"
-    @stage                     = @Fixture::Stage.default    @job,  1,  "read"
+    @stage                     = @Fixture::Stage.default    @cron,  1,  "read"
     #assign same session to both githubs
-    @github_session            = Mobilize::Github.session
-    @github_public_task        = @Fixture::Task.default     @stage,  @github_public,  @github_session
-    @github_private_task       = @Fixture::Task.default     @stage,  @github_private, @github_session
+    @github_public_task        = @Fixture::Task.default     @stage,  1, @github_public
+    @github_private_task       = @Fixture::Task.default     @stage,  2, @github_private
   end
 
-  def test_read
-    @github_public.send          @stage.call, @github_public_task
-    _status_cmd                = "cd #{ @github_public_task.dir } && git status"
-    assert_in_delta              _status_cmd.popen4.length, 1, 1000
-
-    if @github_private
-      @github_private.send       @stage.call, @github_private_task
-      _status_cmd              = "cd #{ @github_private_task.dir } && git status"
-      assert_in_delta            _status_cmd.popen4.length, 1, 1000
-    end
+  def test_run
+    Mobilize::Log.write                   "starting github test"
+    #_start_time                         = Time.now.utc
+    Mobilize::Cli.perform                 [ "cron", "enqueue", @cron.id ]
+    #monitor logs until expected messages are complete
+    #@test.expect _start_time
   end
 
   def teardown
-    @box.terminate
-    @job.purge!
-    @github_public.delete
-    @github_private.delete
+    #@github_public.delete
+    #@github_private.delete
   end
 end
