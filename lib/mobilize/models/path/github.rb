@@ -73,7 +73,7 @@ module Mobilize
 
     def read_public( _task )
       _github                = self
-      _cmd                   = "cd #{ _task.dir.dirname } && " +
+      _cmd                   = "cd #{ _task.dir } && " +
                                "git clone -q https://u:p@#{ _github.name }.git --depth=1"
       _cmd.popen4
       Log.write                "Read complete: #{ _github.id }"
@@ -99,7 +99,7 @@ module Mobilize
       _github.verify_collaborator   _task
       #add key, clone repo, go to specific revision, execute command
       _cmd                        = "export GIT_SSH=#{ Github.sh_path } && " +
-                                    "cd #{ _task.dir.dirname } && " +
+                                    "cd #{ _task.dir } && " +
                                     "git clone -q git@#{ _github.name.sub "/", ":" }.git --depth=1"
       _cmd.popen4
       Log.write                     "Read private git repo #{ _github.id }"
