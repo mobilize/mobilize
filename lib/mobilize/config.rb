@@ -29,6 +29,10 @@ module Mobilize
     require 'mobilize'
     Mobilize.pry
   end
+  def Mobilize.script( _args )
+    require 'mobilize'
+    eval _args[ -1 ]
+  end
   def Mobilize.revision
     _revision_path = "#{ Mobilize.root }/REVISION"
     _revision_path.exists? ? File.read( _revision_path ) : "HEAD"
@@ -79,38 +83,6 @@ module Mobilize
         end
       end
     end
-    def Config.write_key_files
-      Config.key_dir.mkdir_p
-      Config.write_box_file     if Mobilize.config.cluster.box.private_key_path
-      Config.write_git_files    if Mobilize.config.github.owner_ssh_key_path
-      return true
-    end
-    def Config.write_box_file
-      _box_ssh_path           = "#{ Config.key_dir }/box.ssh"
-      _private_key_path       = Mobilize.config.cluster.box.private_key_path
-      _private_key_path.cp      _box_ssh_path
-      _box_ssh_path.chmod       0700
-      puts                      "Wrote box ssh file"
-    end
-    def Config.write_git_files
-      _git_ssh_path           = "#{ Config.key_dir }/git.ssh"
-      _owner_ssh_key_path     = Mobilize.config.github.owner_ssh_key_path
-      _owner_ssh_key_path.cp    _git_ssh_path
-
-      #set git to not check strict host
-      _git_sh_path           = "#{ Config.key_dir }/git.sh"
-      _git_sh_cmd            = "#!/bin/sh\nexec /usr/bin/ssh " +
-                                "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
-                                "-i #{ _git_ssh_path } \"$@\""
-
-      _git_sh_path.write        _git_sh_cmd
-
-      _git_sh_path.chmod        0700
-      _git_ssh_path.chmod       0700
-      puts                      "Wrote git ssh files"
-      return                    true
-    end
-
     def Config.connect_mongodb
       _mongoid_config_file   = Tempfile.new "mongodb"
       begin

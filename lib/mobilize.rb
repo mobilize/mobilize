@@ -68,12 +68,6 @@ require           "#{ _cluster_dir }/cluster"
 require           "#{ _cluster_dir }/engine"
 require           "#{ _cluster_dir }/master"
 
-unless [ Mobilize::Github.sh_path,
-         Mobilize::Box.private_key_path].all :exists?
-
-  Mobilize::Config.write_key_files
-end
-
 if Mobilize::Box.find_self
   Resque.redis = Redis.new host:     Mobilize.config.redis.host,
                            port:     Mobilize.config.redis.port,

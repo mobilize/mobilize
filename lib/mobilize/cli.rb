@@ -11,7 +11,14 @@ module Mobilize
 
     def Cli.perform( _args )
       _name                    = _args[ 0 ]
-      begin ;                    return puts Mobilize.send _name ; rescue ; end
+       if Mobilize.respond_to? _name
+         _arity = Mobilize.method( _name ).arity.abs
+         if _arity == 0
+           return puts Mobilize.send _name
+         else
+           return puts Mobilize.send _name, _args
+         end
+       end
       _module                  = Cli.const_get _name.capitalize
       _module.perform            _args
     end

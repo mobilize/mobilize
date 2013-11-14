@@ -64,10 +64,6 @@ module Mobilize
         true
       end
 
-      def write_keys
-        @box.cp   Config.key_dir, @box.key_dir
-      end
-
       def terminate( _session = Box.session )
         #terminates the remote then
         #deletes the local database version
@@ -149,6 +145,33 @@ module Mobilize
         @box.write_keys
 
         @box.install_mobilize_gem
+      end
+
+      def write_keys
+        ['box.ssh', 'git.ssh'].each do |_key|
+
+          @box.cp   "#{ Config.key_dir }/#{ _key }",
+                    "#{ @box.key_dir   }/#{ _key }"
+        end
+        @box.write_git_sh
+        @box.sh     "chmod -r 0400 #{ @box.key_dir }"
+        Log.write   "wrote and chmod'ed keys", "INFO", @box
+      end
+
+      def write_git_sh
+        _git_ssh_path           = "#{ @box.key_dir }/git.ssh"
+
+        #set git to not check strict host
+        _git_sh_path           = "#{ @box.key_dir }/git.sh"
+
+        _git_sh_cmd            = "#!/bin/sh\nexec /usr/bin/ssh " +
+                                 "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
+                                 "-i #{ _git_ssh_path } \"$@\""
+
+        @box.write               _git_sh_cmd, _git_sh_path
+
+        puts                      "Wrote git ssh files"
+        return                    true
       end
 
       def install_git
