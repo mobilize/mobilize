@@ -33,7 +33,7 @@ module Mobilize
         Log.write               "#{ _call } successful for #{ _github.id } repo call; " +
                                 "#{ _calls_left } calls left this hour"
       rescue
-        Log.write               "Could not access #{ _github.id }", "FATAL"
+        Log.write               "could not access repository", "FATAL", _github
       end
       _response
     end
@@ -52,10 +52,10 @@ module Mobilize
       _github                = self
       _task.refresh_dir
       begin
-        Log.write              "attempting public read for #{ _github.id }"
+        Log.write              "attempting public read", "INFO", _github
         _github.read_public    _task
       rescue
-        Log.write              "public read failed, attempting private read for #{ _github.id }"
+        Log.write              "public read failed, attempting private read", "INFO", _github
         _github.read_private   _task
       end
       #get size of objects and log, formatted for no line breaks
@@ -63,7 +63,7 @@ module Mobilize
 
       _size                  = _log_cmd.popen4.split( "\n" ).join ", "
 
-      Log.write                "Read #{ _github.id } into #{ _task.dir }"
+      Log.write                "read into task dir", "INFO", _github
 
       Log.write                _size, "STAT", _task.user
       #deploy github repo
@@ -75,7 +75,7 @@ module Mobilize
       _cmd                   = "cd #{ _task.dir } && " +
                                "git clone -q https://u:p@#{ _github.name }.git --depth=1"
       _cmd.popen4
-      Log.write                "Read complete: #{ _github.id }"
+      Log.write                "read complete", "INFO", _github
       true
     end
 
@@ -85,10 +85,10 @@ module Mobilize
       _is_collaborator       = _github.collaborators( _task ).include? _user.github_login
 
       if _is_collaborator
-        Log.write              "Verified user #{ _user.id } has access to #{ _github.id }"
+        Log.write              "#{ _user.id } has access", "INFO", _github
         true
       else
-        Log.write              "User #{ _user.id } does not have access to #{ _github.id }", "FATAL"
+        Log.write              "#{ _user.id } does not have access", "FATAL", _github
       end
     end
 
@@ -101,7 +101,7 @@ module Mobilize
                                     "cd #{ _task.dir } && " +
                                     "git clone -q git@#{ _github.name.sub "/", ":" }.git --depth=1"
       _cmd.popen4
-      Log.write                     "Read private git repo #{ _github.id }"
+      Log.write                     "read private repo", "INFO", _github
       true
     end
   end
