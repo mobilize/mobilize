@@ -138,8 +138,8 @@ module Mobilize
 
       def install_gem_local
         _file_path = "rake build".popen4.split(" ").last[ 0..-2 ]
-        @box.cp     _file_path, "pkg/#{ _file_name }"
-        @box.sh     "gem install -l pkg/#{ _file_name } --no-ri --no-rdoc"
+        @box.cp     _file_path
+        @box.sh     "gem install -l #{ _file_path } --no-ri --no-rdoc"
       end
 
       def install_mobilize
