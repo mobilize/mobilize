@@ -150,7 +150,7 @@ module Mobilize
         @box.write_mobrc
         @box.write_keys
 
-        @box.install_gem_local
+        @box.install_gem_remote
       end
 
       def write_keys

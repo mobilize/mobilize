@@ -29,7 +29,7 @@ module Mobilize
     end
 
     def upgrade
-      @master.install_mobilize_gem
+      @master.install_gem_local
       @master.stop
       @master.start
     end

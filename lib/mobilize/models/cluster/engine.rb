@@ -30,7 +30,7 @@ module Mobilize
     end
 
     def upgrade
-      @engine.install_mobilize_gem
+      @engine.install_gem_local
       @engine.stop
       @engine.start
     end
