@@ -31,8 +31,6 @@ module Mobilize
 
     def upgrade
       @engine.install_gem_local
-      @engine.stop
-      @engine.start
     end
 
     def create_log_dir

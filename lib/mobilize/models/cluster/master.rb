@@ -30,8 +30,6 @@ module Mobilize
 
     def upgrade
       @master.install_gem_local
-      @master.stop
-      @master.start
     end
 
     def install_resque_web_routing
