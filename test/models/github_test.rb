@@ -89,10 +89,10 @@ class GithubTest < MiniTest::Unit::TestCase
         _task1_expected = _task1_expecteds[ _task1_i]
         _task2_expected = _task2_expecteds[ _task2_i]
         #must follow order of task logs
-        if _task1_expected and _task1_expected[ :model_id ] == _log[ :model_id ]
+        if    _task1_expected and _task1_expected[ :model_id ] == _log[ :model_id ]
           assert_equal   _task1_expected[ :message ], _log[ :message ]
           _task1_i += 1
-        else
+        elsif _task2_expected and _task2_expected[ :model_id ] == _log[ :model_id ]
           assert_equal _task2_expected[ :message ], _log[ :message ]
           _task2_i += 1
         end
