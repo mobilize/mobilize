@@ -25,7 +25,7 @@ module Mobilize
         if _streams == :stdout;_result[:stdout];else;_result;end
       end
 
-      def cp( _loc_path, _rem_path, _mkdir = true, _log = true )
+      def cp( _loc_path, _rem_path = _loc_path, _mkdir = true, _log = true )
         @box.sh(                     "mkdir -p " + _rem_path.dirname ) if _mkdir
         _ssh_args                  = { keys: [ Box.private_key_path ],
                                        paranoid: false }
@@ -120,7 +120,7 @@ module Mobilize
         @box.sh           '\curl -L https://get.rvm.io | bash -s stable --ruby=1.9.3'
       end
 
-      def install_mobilize_gem( _path = "c4ssio/mobilize" )
+      def install_gem_remote( _path = "c4ssio/mobilize" )
         @box.sh                         "rm -rf mobilize && " +
                                         "git clone http://u:p@github.com/#{ _path }.git --depth=1"
         _repo_revision                = @box.sh "cd mobilize && git log -1 --pretty=format:%H"
@@ -136,6 +136,12 @@ module Mobilize
         @box.sh                         "rm -rf mobilize"
       end
 
+      def install_gem_local
+        _file_path = "rake build".popen4.split(" ").last[ 0..-2 ]
+        @box.cp     _file_path, "pkg/#{ _file_name }"
+        @box.sh     "gem install -l pkg/#{ _file_name } --no-ri --no-rdoc"
+      end
+
       def install_mobilize
         @box.install_ruby
         @box.install_git
@@ -144,7 +150,7 @@ module Mobilize
         @box.write_mobrc
         @box.write_keys
 
-        @box.install_mobilize_gem
+        @box.install_gem_local
       end
 
       def write_keys

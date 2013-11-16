@@ -30,8 +30,8 @@ module Mobilize
                                                  repo: _github.repo_name
         _call                 = [ _action, _category ].compact.join "."
         _calls_left           = _response.headers.ratelimit_remaining
-        Log.write               "#{ _call } successful for #{ _github.id } repo call; " +
-                                "#{ _calls_left } calls left this hour"
+        Log.write               "#{ _call } successful for repo; " +
+                                "#{ _calls_left } calls left this hour", "INFO", _github
       rescue
         Log.write               "could not access repository", "FATAL", _github
       end
