@@ -73,16 +73,19 @@ module Mobilize
       _resque_web_workers              = Mobilize::Cluster.resque_web_workers
       #wait for workers to start
       _attempts                        = 0
-      while _resque_web_workers.length       < _engines.length and
-            _resque_web_workers.values.uniq != [ _workers_per_engine ] and
-            _attempts <= 10
+      while ( _resque_web_workers.length       <   _engines.length or
+              _resque_web_workers.values.uniq != [ _workers_per_engine ] ) and
+              _attempts <= 10
         Log.write                        "waiting for workers on all engines, attempt #{ ( _attempts + 1 ).to_s }"
         _resque_web_workers            = Mobilize::Cluster.resque_web_workers
         sleep 5
         _attempts                     += 1
       end
-      Log.write( "Worker engine start failed", "FATAL" ) if _resque_web_workers.length       <   _engines.length or
-                                                            _resque_web_workers.values.uniq != [ _workers_per_engine ]
+      if    _resque_web_workers.length < _engines.length
+        Log.write "Worker engine start failed, too few engines: #{ _resque_web_workers.length }", "FATAL"
+      elsif _resque_web_workers.values.uniq != [ _workers_per_engine ]
+        Log.write "Worker engine start failed, too few workers per engine: #{ _resque_web_workers.values.to_s }", "FATAL"
+      end
       true
     end
   end
