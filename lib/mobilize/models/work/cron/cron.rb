@@ -84,8 +84,8 @@ module Mobilize
         Cluster.master.sh        "mob cron enqueue #{ @cron.id }"
       else
         @cron.start
-        Resque.enqueue_to        _queue, Job, _cron_id, _box_id, _job_id
         Log.write                "enqueued locally", "INFO", @cron
+        Resque.enqueue_to        _queue, Job, _cron_id, _box_id, _job_id
       end
     end
   end
