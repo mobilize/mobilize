@@ -71,18 +71,18 @@ module Mobilize
     end
 
     def Cluster.wait_for_engines
-      _engines                     = Mobilize::Cluster.engines
+      _engines                         = Mobilize::Cluster.engines
 
-      _resque_web_workers          = Mobilize::Cluster.resque_web_workers
+      _resque_web_workers              = Mobilize::Cluster.resque_web_workers
       #wait for workers to start
-      _attempts                    = 0
+      _attempts                        = 0
       while _resque_web_workers.length < _engines.length and _attempts <= 5
-        Mobilize::Logger.write       "waiting for workers on all engines"
-        _resque_web_workers        = Mobilize::Cluster.resque_web_workers
+        Log.write                        "waiting for workers on all engines"
+        _resque_web_workers            = Mobilize::Cluster.resque_web_workers
         sleep 5
-        _attempts                 += 1
+        _attempts                     += 1
       end
-      Logger.write( "Worker engine start failed", "FATAL" ) if _resque_web_workers.length <= _engines.length
+      Log.write( "Worker engine start failed", "FATAL" ) if _resque_web_workers.length <= _engines.length
       true
     end
   end
