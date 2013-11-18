@@ -7,6 +7,7 @@ module Mobilize
         #populate boxes
         Mobilize::Cluster.perform "stop"
         Mobilize::Cluster.perform "start"
+        Mobilize::Cluster.wait_for_engines
         Dir.chdir Mobilize.root
         "git init".popen4
         _operator        = _args[ 1 ]
