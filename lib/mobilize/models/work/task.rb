@@ -44,7 +44,7 @@ module Mobilize
                                   "(find . -type f \\( ! -path '*/.*' \\) | " + #no hidden folders in relative path
                                   "xargs sed -ie 's/#{ _string1 }/#{ _string2 }/g')"
         _replace_cmd.popen4
-        Log.write                 "Replaced #{ _string1 } with #{ _string2 } in dir", "INFO", @task
+        Log.write                 "replaced #{ _string1 } with #{ _string2 } in dir", "INFO", @task
       end
     end
 
