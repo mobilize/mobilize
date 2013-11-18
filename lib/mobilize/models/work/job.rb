@@ -22,7 +22,6 @@ module Mobilize
     end
 
     def archive
-      @job.delete #for now there is no archiving
       Log.write "archived", "INFO", @job
     end
 

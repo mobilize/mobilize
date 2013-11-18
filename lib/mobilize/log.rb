@@ -20,17 +20,22 @@ module Mobilize
       _line                 = _header.split( ':' )[ -2 ].to_i
       _path                 = _header.split( ':' ).first
       if _model
-        _model_class          = _model.class.to_s.split("::").last
-        _model_id             = _model.id
+        _model_class        = _model.class.to_s.split("::").last
+        _model_id           = _model.id
       else
-        _model_class, _model_id = nil, nil
+        _model_class,
+        _model_id           = nil, nil
       end
       _host                 = Socket.gethostname
       _revision             = Mobilize.revision
-      _log                  = Log.create(level: _level, path:    _path,    line: _line,
-                                         call:  _call,  message: _message, host: _host,
-                                         model_class: _model_class, model_id: _model_id,
-                                         revision: _revision)
+
+      _log_hash             = { level:       _level,       path:    _path,      line:        _line,
+                                call:        _call,        message: _message,   host:        _host,
+                                model_class: _model_class, model_id: _model_id, revision:    _revision }
+
+      _log                  = Log.create _log_hash
+      _log.save!
+
       if _level            == "FATAL"
         raise                 _log.message
       end
