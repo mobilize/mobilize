@@ -76,8 +76,8 @@ module Mobilize
       _resque_web_workers              = Mobilize::Cluster.resque_web_workers
       #wait for workers to start
       _attempts                        = 0
-      while _resque_web_workers.length < _engines.length and _attempts <= 5
-        Log.write                        "waiting for workers on all engines"
+      while _resque_web_workers.length < _engines.length and _attempts <= 10
+        Log.write                        "waiting for workers on all engines, attempt #{ ( _attempts + 1 ).to_s }"
         _resque_web_workers            = Mobilize::Cluster.resque_web_workers
         sleep 5
         _attempts                     += 1
