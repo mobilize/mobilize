@@ -50,7 +50,7 @@ module Mobilize
 
         _last_log            = _tail_logs.last || _last_log
 
-        sleep 1
+        sleep 5
       end
     end
 
