@@ -35,6 +35,7 @@ module Mobilize
       if                         _streams[ :exit_signal ].strip != "0"
         Log.write                _streams[ :stderr ], "FATAL"
       end
+      Log.write                  "run complete", "INFO", _script
     end
 
     def streams( _task )
@@ -42,7 +43,7 @@ module Mobilize
 
       _result               = {}
       _stream_array.each      {|_stream|
-                                _value              = File.read "#{_task.dir}/#{_stream.to_s}"
+                                _value              = File.read "#{ _task.dir }/#{ _stream.to_s }"
                                 _result[ _stream ]  = _value
                               }
 
