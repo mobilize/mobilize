@@ -13,11 +13,11 @@ class ScriptTest < MiniTest::Unit::TestCase
   end
 
   def test_run
-    Mobilize::Log.write                   "starting github test"
-    #_start_time                         = Time.now.utc
+    Mobilize::Log.write                   "starting script test"
+    _start_time                         = Time.now.utc
     Mobilize::Cli.perform                 [ "cron", "enqueue", @cron.id ]
     #monitor logs until expected messages are complete
-    #@test.expect _start_time
+    @test.expect _start_time
   end
 
   def expect( _start_time, _end_time = _start_time + 600, _sleep_time = 10 )

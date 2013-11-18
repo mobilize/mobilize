@@ -70,4 +70,12 @@ class Array
     end
     _hash
   end
+  def group_count
+    _array                       = self
+    _count_hash                  = Hash.new 0
+    _array.each do  | _member |
+         _count_hash[ _member ] += 1
+    end
+    _count_hash
+  end
 end
