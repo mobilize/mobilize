@@ -36,12 +36,10 @@ class GfileTest < MiniTest::Unit::TestCase
 
   def expect( _start_time, _end_time = _start_time + 600, _sleep_time = 10 )
     _expecteds = [
-        { model_id: @cron.id,               message: "sent remote enqueue" },
         { model_id: @cron.id,               message: "status set to started" },
         { model_id: @run_stage.id,          message: "cleared" },
         { model_id: @write_stage.id,        message: "cleared" },
         { model_id: @read_stage.id,         message: "cleared" },
-        { model_id: @cron.id,               message: "enqueued locally" },
         { model_id: @run_stage.id,          message: "status set to started" },
         { model_id: @script_task.id,        message: "cleared" },
         { model_id: @script_task.id,        message: "status set to started" },

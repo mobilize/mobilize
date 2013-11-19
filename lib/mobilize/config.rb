@@ -97,8 +97,7 @@ module Mobilize
                                  'password'             => _Mongodb.password,
                                  'database'             => _Mongodb.database || "mobilize-#{ Mobilize.env }",
                                  'persist_in_safe_mode' => true,
-                                 'hosts'                => _Mongodb.hosts.split( "," ),
-                                 'options'    => { 'safe'   => true }
+                                 'hosts'                => _Mongodb.hosts.split( "," )
                                }
                                }
                                }}
