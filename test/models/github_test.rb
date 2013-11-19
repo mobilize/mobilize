@@ -6,7 +6,7 @@ class GithubTest < MiniTest::Unit::TestCase
     @github_public             = @Fixture::Github.public
     @user                      = @Fixture::User.default
     @crontab                   = @Fixture::Crontab.default  @user
-    @cron                      = @Fixture::Cron._once       @crontab,    "github_test"
+    @cron                      = @Fixture::Cron.default     @crontab,    "github_test"
     @github_private            = @Fixture::Github.private
     @stage                     = @Fixture::Stage.default    @cron,    1, "read"
     #assign same session to both githubs

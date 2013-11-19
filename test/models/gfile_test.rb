@@ -12,7 +12,7 @@ class GfileTest < MiniTest::Unit::TestCase
 
     @user                               = @Fixture::User.default
     @crontab                            = @Fixture::Crontab.default  @user
-    @cron                               = @Fixture::Cron._once       @crontab,        "gfile_test"
+    @cron                               = @Fixture::Cron.default     @crontab,        "gfile_test"
     @run_stage                          = @Fixture::Stage.default    @cron,        1, "run"
     @write_stage                        = @Fixture::Stage.default    @cron,        2, "write"
     @read_stage                         = @Fixture::Stage.default    @cron,        3, "read"

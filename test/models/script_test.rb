@@ -5,7 +5,7 @@ class ScriptTest < MiniTest::Unit::TestCase
     @Fixture                   = Mobilize::Fixture
     @user                      = @Fixture::User.default
     @crontab                   = @Fixture::Crontab.default  @user
-    @cron                      = @Fixture::Cron._once       @crontab,    "script_test"
+    @cron                      = @Fixture::Cron.default     @crontab,    "script_test"
     @stdin                     = "(echo 'log this to the log' > log) && cmd"
     @script                    = Mobilize::Script.find_or_create_by stdin: @stdin
     @stage                     = @Fixture::Stage.default   @cron, 1, "run"
