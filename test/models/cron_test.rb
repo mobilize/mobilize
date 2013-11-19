@@ -14,7 +14,6 @@ class CronTest < MiniTest::Unit::TestCase
     _class_methods                    = Mobilize::Fixture::Cron.methods false
     _trigger_methods                  = _class_methods.select{|_method| _method.to_s.starts_with? "_" }
     _trigger_methods.each            { |_trigger_method|
-      puts _trigger_method
       if _trigger_method.to_s.index "parent"
 
         _parent_cron.delete          if _parent_cron
