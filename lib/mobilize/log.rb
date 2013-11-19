@@ -2,7 +2,7 @@ module Mobilize
   class Log
     include Mongoid::Document
     field :level,       type: String, default:->{ "INFO" }
-    field :time,        type: Time
+    field :time,        type: Time,   default:->{ Time.now.utc }
     field :model_class, type: String
     field :model_id,    type: String
     field :path,        type: String
@@ -31,8 +31,7 @@ module Mobilize
 
       _log_hash             = { level:       _level,       path:    _path,      line:        _line,
                                 call:        _call,        message: _message,   host:        _host,
-                                model_class: _model_class, model_id: _model_id, revision:    _revision,
-                                time: Time.now.utc }
+                                model_class: _model_class, model_id: _model_id, revision:    _revision }
 
       _log                  = Log.create _log_hash
 

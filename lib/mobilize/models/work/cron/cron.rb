@@ -80,11 +80,8 @@ module Mobilize
       end
 
       if Box.find_self.nil?
-        Log.write                "sent remote enqueue", "INFO", @cron
         Cluster.master.sh        "mob cron enqueue #{ @cron.id }"
       else
-        @cron.start
-        Log.write                "enqueued locally", "INFO", @cron
         Resque.enqueue_to        _queue, Job, _cron_id, _box_id, _job_id
       end
     end
