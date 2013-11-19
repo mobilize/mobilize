@@ -10,11 +10,11 @@ notifications:
   - mobilize.server@gmail.com
 gemfile:
 - Gemfile
-script: rake install && 
-  mob ci decode git_ssh && chmod 0400 git_ssh &&
-  mob ci decode ec2_ssh && chmod 0400 ec2_ssh &&
-  export MOB_BOX_PRIVATE_KEY_PATH="$(pwd)/ec2_ssh" &&
-  export MOB_GITHUB_OWNER_SSH_KEY_PATH="$(pwd)/git_ssh" &&
+script: rake install &&
+  mob ci decode git_ssh && mob ci decode ec2_ssh &&
+  mkdir -p ~/.mobilize/keys &&
+  mv git_ssh ~/.mobilize/keys/git.ssh && chmod 0600 ~/.mobilize/keys/git.ssh &&
+  mv ec2_ssh ~/.mobilize/keys/box.ssh && chmod 0600 ~/.mobilize/keys/box.ssh &&
   mob cluster upgrade &&
   mob test all
 branches:
