@@ -66,16 +66,16 @@ You'll need to sign up for:
 * tail application logs with:
   * `mob log tail`
 
-* install your mobilize cluster:
+* install your cluster:
   * `mob cluster install`
 
-* start your mobilize cluster (5 engines with 5 Resque workers each):
+* start your cluster (5 engines with 5 Resque workers each by default):
   * `mob cluster start`
 
-* monitor your workers (you will need to enter your resque-web username/password)
+* monitor your workers
   * `mob cluster view`
 
-* terminate your mobilize cluster (5 engines with 5 Resque workers each):
+* terminate your cluster (5 engines with 5 Resque workers each):
   * `mob cluster terminate`
 
 ## Console

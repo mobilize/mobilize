@@ -10,7 +10,6 @@ God.watch do |w|
             'TERM_CHILD'     => 1 }
 
   w.dir   = Mobilize.root
-
   w.start = "resque-pool -d -E #{Mobilize.env} " +
             "-c #{Mobilize.home_dir}/config/resque-pool.yml " +
             "-o #{Mobilize.home_dir}/log/resque-pool-#{Mobilize.env}.log " +

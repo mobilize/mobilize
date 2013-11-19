@@ -5,7 +5,7 @@ module Mobilize
     field :active,       type: Boolean
     field :google_login, type: String
     field :github_login, type: String
-    field :_id,          type: String, default:->{google_login.alphanunderscore} #name@domain
-    has_many :jobs
+    field :_id,          type: String, default:->{ google_login.alphanunder } #name_domain
+    has_many :crontabs
   end
 end

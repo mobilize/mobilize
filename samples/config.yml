@@ -30,7 +30,8 @@ test:
       security_groups:
       - 'default'
   work:
-    retry_delay: 600 #number of seconds to wait between job failures before retry
+    timeout: 600 #how long a job can take before it fails
+    retry_delay: 300 #number of seconds to wait between job failures before retry
     max_retries: 5
   log:
     level: info
@@ -38,8 +39,6 @@ test:
   attempter:
     max_attempts: 5
     sleep_time: 2
-  task:
-    max_log_frequency: 10 #how often to repeat log messages regarding unchanged task state
   aws:
     access_key_id:     <%=ENV['MOB_AWS_ACCESS_KEY_ID']%>
     secret_access_key: <%=ENV['MOB_AWS_SECRET_ACCESS_KEY']%>
@@ -57,7 +56,10 @@ test:
     owner_password:     <%=ENV['MOB_GITHUB_OWNER_PASSWORD']%>
   fixture:
     gfile:
-      name:  "mobilize_gfile_test"
+      name:  mobilize_gfile_test
+    crontab:
+      name:     test
+      gbook_id: 0AhErDVK4q00ydE1DRnFma2tJbzM0RGFsRTZKaVpkbXc
     box:
       name:             <%=ENV['MOB_FIXTURE_BOX_NAME']%>
       user_name:        <%=ENV['MOB_FIXTURE_BOX_USER_NAME']%>

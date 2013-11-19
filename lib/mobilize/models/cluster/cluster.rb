@@ -21,8 +21,8 @@ module Mobilize
       _result
     end
 
-    #get procs for engine and master and call them in threads
     def Cluster.thread( _call )
+      Log.write          "Calling #{ _call } on master and engines"
       _names           = Cluster.engine_names + Cluster.master_name.to_a
       _procs           = []
 
@@ -52,22 +52,40 @@ module Mobilize
     end
 
     def Cluster.resque_web_workers
-      _workers_url               = "#{ Cluster.resque_web_url }/workers"
-      _html_string               = "curl #{ _workers_url }".popen4
-      _html_doc                  = Nokogiri::HTML _html_string
-      _text_rows                 = _html_doc.css( 'table.queues' ).css( 'tr' )
-      _value_array_array         = _text_rows.map { |_node| _node.text.strip.split_strip( "\n" ) }
-      _value_hash                = _value_array_array.tuples_to_hash
-      _value_hash
+      _worker_string             = Cluster.master.sh "mob script 'Resque.workers'"
+      _worker_array              = _worker_string.split("\n" ).map {|_worker_row| _worker_row.split( "," ).last }
+      _worker_array.group_count
     end
 
     def Cluster.engine_names
-      _engine_count     = Mobilize.config.cluster.engines.count
+      _engine_count              = Mobilize.config.cluster.engines.count
       _engine_count.times.map { |_box_i|
                                  _padded_i        = (_box_i + 1).to_s.rjust(2,'0')
                                  _engine_name     = "mobilize-engine-#{ Mobilize.env }-#{ _padded_i }"
                                  _engine_name
                               }
+    end
+
+    def Cluster.wait_for_engines
+      _engines                         = Mobilize::Cluster.engines
+      _workers_per_engine              = Mobilize.config.cluster.engines.workers.count
+      _resque_web_workers              = Mobilize::Cluster.resque_web_workers
+      #wait for workers to start
+      _attempts                        = 0
+      while ( _resque_web_workers.length       <   _engines.length or
+              _resque_web_workers.values.uniq != [ _workers_per_engine ] ) and
+              _attempts <= 10
+        Log.write                        "waiting for workers on all engines, attempt #{ ( _attempts + 1 ).to_s }"
+        _resque_web_workers            = Mobilize::Cluster.resque_web_workers
+        sleep 5
+        _attempts                     += 1
+      end
+      if    _resque_web_workers.length < _engines.length
+        Log.write "Worker engine start failed, too few engines: #{ _resque_web_workers.length }", "FATAL"
+      elsif _resque_web_workers.values.uniq != [ _workers_per_engine ]
+        Log.write "Worker engine start failed, too few workers per engine: #{ _resque_web_workers.values.to_s }", "FATAL"
+      end
+      true
     end
   end
 end

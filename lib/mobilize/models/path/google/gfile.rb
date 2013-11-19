@@ -7,7 +7,7 @@ module Mobilize
     field :owner,       type: Array
     field :readers,     type: Array
     field :writers,     type: Array
-    field :_id,         type: String, default:->{"gfile/#{owner.alphanunderscore}/#{name}"}
+    field :_id,         type: String, default:->{"gfile/#{ owner.alphanunder }/#{ name }"}
 
     @@config             = Mobilize.config "google"
 
@@ -52,20 +52,20 @@ module Mobilize
     end
 
     #delete remote and local db object
-    def terminate( _session )
+    def terminate( _session = Gfile.session )
       _remote               = @gfile.remote _session
-      Log.write               "Deleting remote #{ _remote.resource_id } for #{ @gfile.id }"
+      Log.write               "Deleting remote #{ _remote.resource_id }", "INFO", @gfile
 
       _remote.delete
       @gfile.delete
-      Log.write               "Purged #{ @gfile.id } from DB"
+      Log.write               "Purged from DB", "INFO", @gfile
 
       true
     end
 
-    def launch (_session )
+    def launch ( _session = Gfile.session )
       _remote                     = _session.upload_from_string "", @gfile.name
-      Log.write                     "Lauched remote #{ _remote.resource_id } for #{ @gfile.id }"
+      Log.write                     "Lauched remote #{ _remote.resource_id }", "INFO", @gfile
       @gfile.sync                   _remote
     end
 
@@ -82,39 +82,38 @@ module Mobilize
     def read( _task )
       _user                        = _task.user
 
-      _remote                      = @gfile.remote _task.session
+      _remote                      = @gfile.remote Gfile.session
 
       if @gfile.is_reader?           _user
         #make sure path exists but dir does not
         _task.refresh_dir
 
         _remote.download_to_file   "#{ _task.dir }/stdout"
-        Log.write                  "Downloaded #{ @gfile.id } to #{ _task.dir }/stdout"
-        Log.write                  "#{ _user.google_login }: " +
-                                   "#{ File.size( "#{ _task.dir }/stdout" ).to_s } bytes",
-                                   "STAT"
+        Log.write                  "downloaded #{ @gfile.id } to local dir", "INFO", _task
+        Log.write                  "#{ File.size( "#{ _task.dir }/stdout" ).to_s } bytes", "STAT", _user
       else
-        Log.write                  "User #{ _user.id } does not have read access to #{ @gfile.id }", "FATAL"
+        Log.write                  "does not have read access to #{ @gfile.id }", "FATAL", _user
       end
     end
 
     def write( _task )
       _user                        = _task.user
 
-      _remote                      = @gfile.remote _task.session
+      _remote                      = @gfile.remote Gfile.session
 
       if @gfile.is_writer?           _user
 
-        _remote.update_from_file     _task.input
-        Log.write                    "Uploaded #{ _task.input } from #{ @gfile.id }"
-        Log.write                    "#{ _user.google_login }: #{ File.size( _task.input ).to_s } bytes", "STAT"
+        _source                    = _task.source
+        _remote.update_from_string   _source
+        Log.write                    "uploaded input to #{ @gfile.id }", "INFO", _task
+        Log.write                    "#{ _task.source.length } bytes", "STAT", _user
       else
-        Log.write                    "#{ _user.google_login } does not have write access to #{ @gfile.id }", "FATAL"
+        Log.write                    "does not have write access to #{ @gfile.id }", "FATAL", _user
       end
       true
     end
 
-    def Gfile.remotes_by( _session, _params = {} )
+    def Gfile.remotes_by( _session = Gfile.session, _params = {} )
 
       if _params[ :title ]
          _params[ "title-exact" ]          = true
@@ -131,7 +130,7 @@ module Mobilize
     end
 
     #creates both file and its remote
-    def Gfile.find_or_create_by_owner_and_name( _owner, _name, _session )
+    def Gfile.find_or_create_by_owner_and_name( _owner, _name, _session = Gfile.session )
 
       @gfile                      = Gfile.find_or_create_by owner: _owner, name: _name
 
@@ -144,8 +143,7 @@ module Mobilize
         _remote                   = _remotes.first
 
         if                          _remotes.length > 1
-        Log.write(                  "TOO MANY REMOTES: #{ _remotes.length } remotes " +
-                                    "by #{ @gfile.owner } with name #{ @gfile.name }", "WARN")
+          Log.write                 "TOO MANY REMOTES: #{ _remotes.length } remotes ", "WARN", @gfile
         end
       end
 
@@ -156,8 +154,8 @@ module Mobilize
       end
     end
 
-    def remote( _session )
-      Log.write(           "Gfile has no remote_id", "FATAL" ) unless @gfile.remote_id
+    def remote( _session = Gfile.session )
+      Log.write(           "has no remote_id", "FATAL", @gfile ) unless @gfile.remote_id
 
       _remotes            = Gfile.remotes_by _session, owner: @gfile.owner, title: @gfile.name
 

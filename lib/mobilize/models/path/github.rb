@@ -3,13 +3,13 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     #a github points to a specific repo
-    field :domain,              type: String, default:->{"github.com"}
+    field :domain,              type: String, default:->{ "github.com" }
     field :owner_name,          type: String
     field :repo_name,           type: String
-    field :name,                type: String, default:->{"#{domain}/#{owner_name}/#{repo_name}"}
-    field :_id,                 type: String, default:->{"github/#{name}"}
+    field :name,                type: String, default:->{ "#{ domain }/#{ owner_name }/#{ repo_name }" }
+    field :_id,                 type: String, default:->{ "github/#{ name }" }
 
-    @@config                  = Mobilize.config("github")
+    @@config                  = Mobilize.config "github"
 
     def Github.sh_path;         Config.key_dir + "/git.sh"; end
 
@@ -20,89 +20,89 @@ module Mobilize
       _session
     end
 
-    def repo_call(_task, _action, _category = nil)
-      _github                 = self
+    def repo_call( _task, _action, _category = nil )
+      _github, _session       = self, Github.session
       begin
-        _connection           = _task.session.repos
-        _connection           = _category ? _connection.send(_category) : _connection
+        _connection           = _session.repos
+        _connection           = _category ? _connection.send( _category ) : _connection
         _response             = _connection.send _action,
                                                  user: _github.owner_name,
                                                  repo: _github.repo_name
-        _call                 = [_action, _category].compact.join(".")
+        _call                 = [ _action, _category ].compact.join "."
         _calls_left           = _response.headers.ratelimit_remaining
-        Log.write               "#{_call} successful for #{_github.id} repo call; " +
-                                "#{_calls_left} calls left this hour"
+        Log.write               "#{ _call } successful",                 "INFO", _github
+        _user                 = _task.stage.cron.user
+        Log.write               "1 github call made, #{ _calls_left } calls left this hour", "STAT", _user
       rescue
-        Log.write               "Could not access #{_github.id}", "FATAL"
+        Log.write               "could not access repository", "FATAL", _github
       end
       _response
     end
 
-    def collaborators(_task)
+    def collaborators( _task )
       _github                 = self
       _response               = _github.repo_call _task,"list","collaborators"
-      _collaborators          = _response.body.map{|_section| _section[:login]}
+      _collaborators          = _response.body.map { |_section| _section[ :login ] }
       _collaborators
     end
 
     #clones repo into worker with depth of 1
     #checks out appropriate branch
     #needs user_id with git_ssh_key to get private repo
-    def read(_task)
+    def read( _task )
       _github                = self
-      _task.purge_dir
+      _task.refresh_dir
       begin
-        Log.write              "attempting public read for #{_github.id}"
+        Log.write              "attempting public read", "INFO", _github
         _github.read_public    _task
       rescue
-        Log.write              "public read failed, attempting private read for #{_github.id}"
+        Log.write              "public read failed, attempting private read", "INFO", _github
         _github.read_private   _task
       end
       #get size of objects and log, formatted for no line breaks
-      _log_cmd               = "cd #{_task.dir} && git count-objects -v"
+      _log_cmd               = "cd #{ _task.dir }/#{ _github.repo_name } && git count-objects -v"
 
-      _size                  = _log_cmd.popen4.split("\n").join(", ")
+      _size                  = _log_cmd.popen4.split( "\n" ).join ", "
 
-      Log.write                "Read #{_github.id} into #{_task.dir}"
+      Log.write                "read into task dir", "INFO", _github
 
-      _stat                  = _task.user.google_login + ": " + _size
-      Log.write                _stat, "STAT"
+      Log.write                _size, "STAT", _task.user
       #deploy github repo
       true
     end
 
-    def read_public(_task)
+    def read_public( _task )
       _github                = self
-      _cmd                   = "cd #{_task.path_dir} && " +
-                               "git clone -q https://u:p@#{_github.name}.git --depth=1"
-      _cmd.popen4(true)
-      Log.write                "Read complete: #{_github.id}"
+      _cmd                   = "cd #{ _task.dir } && " +
+                               "git clone -q https://u:p@#{ _github.name }.git --depth=1"
+      _cmd.popen4
+      Log.write                "read complete", "INFO", _github
       true
     end
 
-    def verify_collaborator(_task)
+    def verify_collaborator( _task )
       _github                = self
       _user                  = _task.user
-      _is_collaborator       = _github.collaborators(_task).include?(_user.github_login)
+      _is_collaborator       = _github.collaborators( _task ).include? _user.github_login
 
       if _is_collaborator
-        Log.write              "Verified user #{_user.id} has access to #{_github.id}"
+        Log.write              "#{ _user.id } has access", "INFO", _github
         true
       else
-        Log.write              "User #{_user.id} does not have access to #{_github.id}", "FATAL"
+        Log.write              "#{ _user.id } does not have access", "FATAL", _github
       end
     end
 
-    def read_private(_task)
+    def read_private( _task )
       _github                     = self
       #determine if the user in question is a collaborator on the repo
       _github.verify_collaborator   _task
       #add key, clone repo, go to specific revision, execute command
-      _cmd                        = "export GIT_SSH=#{Github.sh_path} && " +
-                                    "cd #{_task.path_dir} && " +
-                                    "git clone -q git@#{_github.name.sub("/",":")}.git --depth=1"
-      _cmd.popen4(true)
-      Log.write                     "Read private git repo #{_github.id}"
+      _cmd                        = "export GIT_SSH=#{ Github.sh_path } && " +
+                                    "cd #{ _task.dir } && " +
+                                    "git clone -q git@#{ _github.name.sub "/", ":" }.git --depth=1"
+      _cmd.popen4
+      Log.write                     "read private repo", "INFO", _github
       true
     end
   end

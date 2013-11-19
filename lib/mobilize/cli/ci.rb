@@ -19,10 +19,10 @@ module Mobilize
           end
         end
 
-        _base64_file_str               = _base64_chunks.sort_by{|_base64_chunk|
-                                                                 _base64_chunk.first #key
-                                                          }.map{|_base64_chunk|
-                                                                 _base64_chunk.last  #value
+        _base64_file_str               = _base64_chunks.sort_by { |_base64_chunk|
+                                                                   _base64_chunk.first #key
+                                                          }.map { |_base64_chunk|
+                                                                   _base64_chunk.last  #value
                                                           }.join
 
         _file_string                   = Base64.strict_decode64 _base64_file_str
@@ -37,7 +37,7 @@ module Mobilize
         _base64_file_str                 = Base64.strict_encode64 _file_str
         _base64_chars                    = _base64_file_str.chars.to_a
         _base64_slices                   = _base64_chars.each_slice( 100 ).to_a #100 char chunks
-        _base64_chunks                   = _base64_slices.map {|_slice| _slice.join }
+        _base64_chunks                   = _base64_slices.map { |_slice| _slice.join }
 
         _base64_chunks.each_with_index do |_chunk, _chunk_i|
           _chunk_pad_i                   = "%02d" % _chunk_i

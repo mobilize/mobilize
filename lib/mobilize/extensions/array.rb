@@ -42,7 +42,7 @@ class Array
   def to_hash_array
     _array           = self
     _hash_array      = []
-    _headers         = _array.first.map { |_header| _header.alphanunderscore.to_sym }
+    _headers         = _array.first.map { |_header| _header.alphanunder.to_sym }
     _rows            = _array[ 1..-1 ]
 
     _rows.each     do |_row|
@@ -69,5 +69,13 @@ class Array
       _hash[ _hash_key ] = _value
     end
     _hash
+  end
+  def group_count
+    _array                       = self
+    _count_hash                  = Hash.new 0
+    _array.each do  | _member |
+         _count_hash[ _member ] += 1
+    end
+    _count_hash
   end
 end

@@ -4,7 +4,7 @@ module Mobilize
     include Mongoid::Timestamps
     field :stdin,            type: String
     field :task_id,          type: String
-    field :name,             type: String, default:->{ stdin.alphanunderscore[ 0..254 ] }
+    field :name,             type: String, default:->{ stdin.alphanunder[ 0..254 ] }
     field :_id,              type: String, default:->{ "script/#{ stdin.to_md5 }" }
 
     def write( _task )
@@ -12,7 +12,7 @@ module Mobilize
       _task.refresh_dir
       _stdin_path          = _task.dir + "/stdin"
       _stdin_path.write      _script.stdin
-      Log.write              "wrote stdin into task dir at #{ _stdin_path }"
+      Log.write              "stdin written to local dir", "INFO", _task
     end
 
     def Script.session
@@ -35,14 +35,15 @@ module Mobilize
       if                         _streams[ :exit_signal ].strip != "0"
         Log.write                _streams[ :stderr ], "FATAL"
       end
+      Log.write                  "run complete", "INFO", _script
     end
 
-    def streams(_task)
+    def streams( _task )
       _stream_array         = [ :stdin, :stdout, :stderr, :exit_signal, :log ]
 
       _result               = {}
       _stream_array.each      {|_stream|
-                                _value              = File.read "#{_task.dir}/#{_stream.to_s}"
+                                _value              = File.read "#{ _task.dir }/#{ _stream.to_s }"
                                 _result[ _stream ]  = _value
                               }
 

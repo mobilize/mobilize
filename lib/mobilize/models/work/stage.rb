@@ -4,12 +4,12 @@ module Mobilize
     include Mongoid::Document
     include Mongoid::Timestamps
     include Mobilize::Work
-    field :job_id,    type: String
-    field :order,     type: Fixnum, default:->{ 1 }
-    field :name,      type: String, default:->{ "stage" + ("%02d" % order) }
-    field :call,      type: String #read, write, or run
-    field :_id,       type: String, default:->{ "#{job_id}/#{name}" }
-    belongs_to :job
+    field :cron_id,    type: String
+    field :order,      type: Fixnum, default:->{ 1 }
+    field :call,       type: String #read, write, or run
+    field :name,       type: String, default:->{ "stage" + order.to_s }
+    field :_id,        type: String, default:->{ "#{ cron_id }/#{ name }" }
+    belongs_to :cron
     has_many :tasks
 
     after_initialize :set_self
@@ -18,47 +18,55 @@ module Mobilize
     def working?
       @stage              = self
       _tasks              = @stage.tasks
-      if                    _tasks.index{|_task| _task.working?}
+      if                    _tasks.index { |_task| _task.working? }
         return              true
       end
     end
 
-    def Stage.perform( _stage_id )
-      @stage.update_status        :started
-      _tasks                     = @stage.tasks
-      _tasks.each              do |_task|
-        unless                     _task.working?  or
-                                   _task.queued?   or
-                                   _task.complete?
-          Resque.enqueue_by       "mobilize-#{ Mobilize.env }", Task, _task.id
-        end
+    def perform
+      @stage.start
+      _task_procs = @stage.tasks.map do |_task|
+        Proc.new { _task.perform }
+      end
+      _results    = _task_procs.thread
+      _failures   = _results.select do |_result|
+                      _result.is_a? Exception
+                    end
+      if _failures.empty?
+        @stage.complete
       end
     end
 
     def last?
-      _job                  = @stage.job
-      _max_order            = _job.stages.map { |_job_stage| _job_stage.order }.max
+      _cron                  = @stage.cron
+      _max_order            = _cron.stages.map { |_cron_stage| _cron_stage.order }.max
       return true          if @stage.order == _max_order
     end
 
     def complete
       @stage.update_status    :completed
       if                       @stage.last?
-        _job                 = @stage.job
-        _job.complete
+        _cron                = @stage.cron
+        _cron.complete
       end
+    end
+
+    def start
+      @stage.update_status       :started
+      @stage.tasks.each { |_task| _task.clear }
     end
 
     def fail
       @stage.update_status    :failed
-      _job                   = @stage.job
-      _job.fail
+      _cron                  = @stage.cron
+      _cron.fail
+      Log.write               "Failure; Check logs", "ERROR", @stage
     end
 
     def purge!
       @stage.tasks.each { |_task| _task.purge! }
       @stage.delete
-      Log.write "Purged stage #{ @stage.id }"
+      Log.write            "Purged", "INFO", @stage
     end
   end
 end

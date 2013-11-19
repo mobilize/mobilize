@@ -18,11 +18,12 @@ require 'mobilize'
 require 'resque/tasks'
 require 'resque/pool/tasks'
 require 'pp'
-task "resque:setup" do
-  puts "Starting Resque..."
-  Resque.redis = Redis.new host:     Mobilize.config.redis.host,
-                           port:     Mobilize.config.redis.port,
-                           password: Mobilize.config.redis.password
+
+task "resque:pool:setup" do
+  Resque::Pool.after_prefork do
+    Resque.redis.client.reconnect
+    ::Mongoid.default_session.disconnect
+  end
 end
 
 require 'rake/hooks'

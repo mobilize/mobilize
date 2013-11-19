@@ -21,10 +21,11 @@ Mobilize.config
 Mobilize::Config.connect_mongodb
 
 _extensions_dir = "mobilize/extensions"
+require           "#{ _extensions_dir }/object"
 require           "#{ _extensions_dir }/string"
 require           "#{ _extensions_dir }/array"
 require           "#{ _extensions_dir }/yaml"
-
+require           "#{ _extensions_dir }/time"
 
 require           'colorize'
 require           'mobilize/log'
@@ -34,11 +35,14 @@ require           "mobilize/attempter"
 _models_dir     = "mobilize/models"
 
 require           "#{ _models_dir }/user"
+require           "#{ _models_dir }/crontab"
 
 _work_dir       = "#{ _models_dir }/work"
 require           "#{ _work_dir }/work"
+_cron_dir       = "#{ _work_dir }/cron"
+require           "#{ _cron_dir }/trigger"
+require           "#{ _cron_dir }/cron"
 require           "#{ _work_dir }/job"
-require           "#{ _work_dir }/trigger"
 require           "#{ _work_dir }/stage"
 require           "#{ _work_dir }/task"
 
@@ -64,10 +68,11 @@ require           "#{ _cluster_dir }/cluster"
 require           "#{ _cluster_dir }/engine"
 require           "#{ _cluster_dir }/master"
 
-unless [ Mobilize::Github.sh_path,
-         Mobilize::Box.private_key_path].all :exists?
+if Mobilize::Box.find_self
+  Resque.redis = Redis.new host:     Mobilize.config.redis.host,
+                           port:     Mobilize.config.redis.port,
+                           password: Mobilize.config.redis.password
 
-  Mobilize::Config.write_key_files
 end
 
 _google_dir     = "#{ _path_dir }/google"

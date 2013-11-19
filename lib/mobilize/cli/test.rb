@@ -4,6 +4,7 @@ module Mobilize
     module Test
       def Test.perform( _args )
         Mongoid.purge!
+        Mobilize::Cluster.wait_for_engines
         Dir.chdir Mobilize.root
         "git init".popen4
         _operator        = _args[ 1 ]
