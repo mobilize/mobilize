@@ -22,6 +22,7 @@ require 'pp'
 task "resque:pool:setup" do
   Resque::Pool.after_prefork do
     Resque.redis.client.reconnect
+    ::Mongoid.default_session.disconnect
   end
 end
 
