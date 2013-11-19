@@ -29,11 +29,6 @@ class GfileTest < MiniTest::Unit::TestCase
     @test.expect _start_time
   end
 
-  def teardown
-    @gfile.delete
-    @script.delete
-  end
-
   def expect( _start_time, _end_time = _start_time + 600, _sleep_time = 10 )
     _expecteds = [
         { model_id: @cron.id,               message: "status set to started" },
