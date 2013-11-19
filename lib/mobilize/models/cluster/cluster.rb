@@ -52,8 +52,7 @@ module Mobilize
     end
 
     def Cluster.resque_web_workers
-      _master                    = Master.first
-      _worker_string             = _master.sh "mob script 'Resque.workers'"
+      _worker_string             = Cluster.master.sh "mob script 'Resque.workers'"
       _worker_array              = _worker_string.split("\n" ).map {|_worker_row| _worker_row.split( "," ).last }
       _worker_array.group_count
     end

@@ -22,7 +22,7 @@ module Mobilize
       end
 
       def triggered_once?
-        if                @cron.never_completed?
+        if                @cron.completed_at.nil?
           Log.write       "triggered by once, cron never completed", "INFO", @cron
           return true
         elsif             @cron.completed_at < @cron.touched_at
@@ -38,7 +38,7 @@ module Mobilize
         #inactive crons can't be triggered
         return true   unless  @cron.active
         #crons w working jobs can't be triggered
-        return true    if     @cron.job.working?
+        return true    if     @cron.working?
         #day_of_month crons can't be triggered unless it's today
         return true    if     _unit == "day_of_month" and Time.now.utc.day != _number
         return true    if     @cron.too_soon_for_retry? or @cron.too_many_failures?
