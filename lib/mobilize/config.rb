@@ -32,9 +32,9 @@ module Mobilize
     require 'mobilize'
     Mobilize.pry
   end
-  def Mobilize.script( _args )
+  def Mobilize.script
     require 'mobilize'
-    eval _args[ -1 ]
+    eval ARGV.shift
   end
   def Mobilize.revision
     _revision_path = "#{ Mobilize.root }/REVISION"

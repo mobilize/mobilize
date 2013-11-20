@@ -73,27 +73,22 @@ module Mobilize
     #creates both DB box and its remote
     def Box.find_or_create_by_name( _name, _session = Box.session )
 
-      _Box                  = self
+      _box                   = Box.find_or_create_by name: _name
 
-      _box                  = _Box.find_or_create_by name: _name
+      unless _box.remote_id
+        _remotes             = Box.remotes_by_name   _name, nil, _session
+        if _remotes.blank?
+          return               _box.launch  _session
+        else
+          _remote            = _remotes.first
 
-      _remote               = _box.remote( _session ) if _box.remote_id
-      _remotes              = if _remote.nil?
-                                _Box.remotes_by_name   _name, nil, _session
-                              end
-      unless                  _remotes.blank?
-        _remote             = _remotes.first
-
-        if                    _remotes.length > 1
-          Log.write          "TOO MANY REMOTES: #{ _remotes.length } remotes named #{ _name }", "WARN", _box
+          if _remotes.length > 1
+            Log.write         "TOO MANY REMOTES: #{ _remotes.length } remotes named #{ _name }", "WARN", _box
+          end
+          _box.sync           _remote
         end
       end
-
-      if                      _remote
-        _box.sync             _remote
-      else
-        _box.launch           _session
-      end
+      _box
     end
 
     def Box.find_self

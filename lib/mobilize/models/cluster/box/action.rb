@@ -1,7 +1,7 @@
 module Mobilize
   class Box
     module Action
-      def view_ssh_cmd
+      def ssh
         _ssh_cmd                  = "ssh -i #{ Box.private_key_path } " +
                                     "-o 'UserKnownHostsFile=/dev/null' -o 'StrictHostKeyChecking=no' " +
                                     "#{ @box.user_name }@#{ @box.dns }"

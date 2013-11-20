@@ -1,33 +1,31 @@
 require 'mobilize'
-require 'optparse'
 module Mobilize
   module Cli
     module Box
-      def Box.banner_row
-        "box - run commands and install packages on cluster boxes"
+      def Box.operators
+        { sh:    "execute operand on box",
+          ssh:   "output shell command to create ssh connection"
+        }.with_indifferent_access
       end
+      
       def Box.perform
-        _operator                       = ARGV.shift
+        _operator             = ARGV.shift
 
-        if ARGV.length == 1
-           _box_name    = ARGV.shift
-        else 
-           _operand     = ARGV.shift
-           _box_name    = ARGV.shift
-        end
-
-        _box            = Box.find_or_create_by_name _box_name
-
-        begin
-          if _operand
-            _result                       = _box.send _operator, _operand
-          else
-            _result                       = _box.send _operator
+        if _operator
+          if ARGV.length     == 1
+             _box_name        = ARGV.shift
+          else 
+             _operand         = ARGV.shift
+             _box_name        = ARGV.shift
           end
-          puts                            _result
-        rescue
-          _box.send                       [ _operator, _operand ].compact.join "_"
+          _box                = Mobilize::Box.find_or_create_by_name _box_name.dup
+          if _box.respond_to?   _operator
+            _result           = _operand ? _box.send( _operator, _operand ) : _box.send( _operator )
+            puts _result
+            return true
+          end
         end
+        Cli.except Box
       end
     end
   end

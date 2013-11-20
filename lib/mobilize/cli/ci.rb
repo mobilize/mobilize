@@ -2,17 +2,23 @@ require 'base64'
 module Mobilize
   module Cli
     module Ci
-      def Ci.banner_row
-        "ci"
+      def Ci.operators
+        { encode:   "encode [operand] file path into multiple travis-encrypted strings",
+          decode:   "decode [operand] prefixed env variables into single file in directory"
+        }.with_indifferent_access
       end
-      def Ci.perform( _args )
-        _operator                       = _args[ 1 ]
-        Ci.send                           _operator, _args
+      def Ci.perform
+        _operator           = ARGV.shift
+        if _operator and 
+          Ci.respond_to?     _operator
+          Ci.send            _operator
+        end
+        Cli.except Ci
       end
       #takes the given prefix, decodes it, decrypts it, writes it to
       #the home folder with <prefix>_<env>.ssh
-      def Ci.decode( _args )
-      _file_name                       = _args[ 2 ]
+      def Ci.decode
+      _file_name                       = ARGV.shift
       #gather all of these prefixes from ENV
         _base64_chunks                 = {}
         ENV.each do |_key, _value|
@@ -32,8 +38,8 @@ module Mobilize
         _file_name.write                 _file_string
       end
 
-      def Ci.encode( _args )
-        _file_path                       = _args[ 2 ]
+      def Ci.encode
+        _file_path                       = ARGV.shift
         _prefix                          = _file_path.basename
         _repo                            = "mobilize/mobilize"
         _file_str                        = File.read _file_path.expand_path
