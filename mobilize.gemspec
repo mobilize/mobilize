@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Mobilize::VERSION
   spec.authors       = ["Cassio Paes-Leme"]
   spec.email         = ["cassio.paesleme@gmail.com"]
-  spec.description   = %q{Google Drive UI, Resque multithreading, SSH processing, Mongo Backend for scheduled jobs}
-  spec.summary       = %q{Google Drive UI, Resque multithreading, SSH processing, Mongo Backend for scheduled jobs}
+  spec.description   = %q{Google Spreadsheets crontabs with AWS Redis/Resque cluster for execution}
+  spec.summary       = %q{Google Spreadsheets crontabs with AWS Redis/Resque cluster for execution}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -40,4 +40,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "colorize","0.6.0"
   spec.add_runtime_dependency "m","1.3.2"
   spec.add_runtime_dependency "rack-protection","1.5.0"
+  spec.add_runtime_dependency "trollop","1.16.2"
 end

@@ -13,6 +13,9 @@ module Mobilize
     _file = File.expand_path "#{ _file }/../../.."
     _file
   end
+  def Mobilize.gem_spec
+    Gem::Specification.find_by_name "mobilize"
+  end
   def Mobilize.env
     ENV[ 'MOBILIZE_ENV' ] || "test"
   end
@@ -29,9 +32,9 @@ module Mobilize
     require 'mobilize'
     Mobilize.pry
   end
-  def Mobilize.script( _args )
+  def Mobilize.script
     require 'mobilize'
-    eval _args[ -1 ]
+    eval ARGV.shift
   end
   def Mobilize.revision
     _revision_path = "#{ Mobilize.root }/REVISION"

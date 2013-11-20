@@ -1,49 +1,32 @@
 require 'mobilize'
-require 'optparse'
 module Mobilize
   module Cli
     module Box
-      def Box.perform( _args )
-        _operator                       = _args[ 1 ]
-        _operand, _box_name             = _args.length == 3 ? [ nil, _args[ 2 ].dup ] : [ _args[ 2 ], _args[ 3 ].dup ]
-
-        _box                            = Box.find _box_name, _args
-
-        return false unless _box
-
-        begin
-          if _operand
-            _result                       = _box.send _operator, _operand
-          else
-            _result                       = _box.send _operator
-          end
-          puts                            _result
-        rescue
-          _box.send                       [ _operator, _operand ].compact.join "_"
-        end
+      def Box.operators
+        { sh:        "execute operand on box",
+          ssh:       "output shell command to create ssh connection",
+          terminate: "terminate box"
+        }.with_indifferent_access
       end
-      private
+      
+      def Box.perform
+        _operator             = ARGV.shift
 
-      def Box.find( _name, _args )
-        _launch, _box, _Box        = false, nil, Mobilize::Box
-        _opt_parser                = OptionParser.new do |_opts|
-          _launch_args             = [ '-l', '--launch', 'Launch box if not existing' ]
-          _opts.on(*_launch_args) do
-            _launch                = true
+        if _operator
+          if ARGV.length     == 1
+             _box_name        = ARGV.shift
+          else 
+             _operand         = ARGV.shift
+             _box_name        = ARGV.shift
+          end
+          _box                = Mobilize::Box.find_or_create_by_name _box_name.dup
+          if _box.respond_to?   _operator
+            _result           = _operand ? _box.send( _operator, _operand ) : _box.send( _operator )
+            puts _result
+            return true
           end
         end
-        _opt_parser.parse!           _args
-
-        begin; _box                  = _Box.find_by name: _name; rescue;
-
-          if   _launch or _args[ 2 ] == "launch"
-               _box                  = _Box.find_or_create_by_name _name
-          else
-               puts                   "Box #{ _name } not found; specify --launch to launch new"
-               return false
-          end
-        end
-        _box
+        Cli.except Box
       end
     end
   end

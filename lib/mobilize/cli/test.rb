@@ -2,12 +2,19 @@ require 'mobilize'
 module Mobilize
   module Cli
     module Test
-      def Test.perform( _args )
+      def Test.operators
+        { all: "run all tests on cluster",
+          test_names: "run [test_names, comma delimited] on cluster"
+        }.with_indifferent_access
+      end
+      def Test.perform
+        _operator        = ARGV.shift
+        Cli.except( Test ) unless _operator
+
         Mongoid.purge!
         Mobilize::Cluster.wait_for_engines
         Dir.chdir Mobilize.root
         "git init".popen4
-        _operator        = _args[ 1 ]
         _test_model_dir  = "#{ Mobilize.root }/test/models"
         _all_test_paths  = Dir.glob "#{ _test_model_dir }/*.rb"
         if _operator    == "all"
