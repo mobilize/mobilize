@@ -2,6 +2,9 @@ require 'mobilize'
 module Mobilize
   module Cli
     module Log
+      def Log.banner_row
+        "log"
+      end
       def Log.perform(_args)
              _operator            = _args[1]
         if   _operator           == 'tail'

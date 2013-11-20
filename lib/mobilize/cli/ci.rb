@@ -2,6 +2,9 @@ require 'base64'
 module Mobilize
   module Cli
     module Ci
+      def Ci.banner_row
+        "ci"
+      end
       def Ci.perform( _args )
         _operator                       = _args[ 1 ]
         Ci.send                           _operator, _args

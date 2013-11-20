@@ -13,6 +13,9 @@ module Mobilize
     _file = File.expand_path "#{ _file }/../../.."
     _file
   end
+  def Mobilize.gem_spec
+    Gem::Specification.find_by_name "mobilize"
+  end
   def Mobilize.env
     ENV[ 'MOBILIZE_ENV' ] || "test"
   end

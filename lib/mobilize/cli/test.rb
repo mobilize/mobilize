@@ -2,6 +2,9 @@ require 'mobilize'
 module Mobilize
   module Cli
     module Test
+      def Test.banner_row
+        "test"
+      end
       def Test.perform( _args )
         Mongoid.purge!
         Mobilize::Cluster.wait_for_engines
