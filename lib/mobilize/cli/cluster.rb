@@ -9,6 +9,7 @@ module Mobilize
           start:     "start all engines and master",
           restart:   "stop then start all engines and master",
           terminate: "terminate all boxes in cluster",
+          view:      "bring up resque-web ui"
         }.with_indifferent_access
       end
       def Cluster.perform

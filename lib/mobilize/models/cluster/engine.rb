@@ -22,6 +22,11 @@ module Mobilize
       @engine.sh              "kill -2 `cat #{ _pid_path }`", false
     end
 
+    def restart
+      @engine.stop
+      @engine.start
+    end
+
     def install
       @engine.install_mobilize
       @engine.write_resque_pool_file
@@ -31,6 +36,7 @@ module Mobilize
 
     def upgrade
       @engine.install_gem_local
+      @engine.restart
     end
 
     def create_log_dir

@@ -17,7 +17,7 @@ class GithubTest < MiniTest::Unit::TestCase
   def test_run
     Mobilize::Log.write                   "starting github test"
     _start_time                         = Time.now.utc
-    Mobilize::Cli.perform                 [ "cron", "enqueue", @cron.id ]
+    Mobilize::Cron.enqueue                @cron.id
     #monitor logs until expected messages are complete
     @test.expect _start_time
   end

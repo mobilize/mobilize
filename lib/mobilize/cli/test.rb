@@ -2,7 +2,7 @@ require 'mobilize'
 module Mobilize
   module Cli
     module Test
-      def Cron.operators
+      def Test.operators
         { all: "run all tests on cluster",
           test_names: "run [test_names, comma delimited] on cluster"
         }.with_indifferent_access
