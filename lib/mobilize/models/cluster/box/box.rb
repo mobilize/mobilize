@@ -73,10 +73,11 @@ module Mobilize
     #creates both DB box and its remote
     def Box.find_or_create_by_name( _name, _session = Box.session )
 
-      _box                   = Box.find_or_create_by name: _name
+      _Box                   = self #do this so engine and master don't make boxes
+      _box                   = _Box.find_or_create_by name: _name
 
       unless _box.remote_id
-        _remotes             = Box.remotes_by_name   _name, nil, _session
+        _remotes             = _Box.remotes_by_name   _name, nil, _session
         if _remotes.blank?
           return               _box.launch  _session
         else

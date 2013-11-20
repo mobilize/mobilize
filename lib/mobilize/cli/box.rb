@@ -3,8 +3,9 @@ module Mobilize
   module Cli
     module Box
       def Box.operators
-        { sh:    "execute operand on box",
-          ssh:   "output shell command to create ssh connection"
+        { sh:        "execute operand on box",
+          ssh:       "output shell command to create ssh connection",
+          terminate: "terminate box"
         }.with_indifferent_access
       end
       

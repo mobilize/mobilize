@@ -29,13 +29,14 @@ module Mobilize
 
     def Cli.banner( _Cli = Cli)
       _subcommand = _Cli == Cli ? "" : " #{ _Cli.to_s.split( "::" ).last.downcase }"
-      _banner_rows = Mobilize.gem_spec.description +
+      _banner_rows = Mobilize.gem_spec.description + 
+                    "\n" +
                     "Usage: mob#{_subcommand} <operator> [operand] \n" +
                     "\n" +
-                     Cli.operator_rows( _Cli ) +
-                     "\n" +
-                     "\n" +
-                     "run `mob#{ _subcommand } <operator>` for more info"
+                    Cli.operator_rows( _Cli ) +
+                    "\n" +
+                    "\n" +
+                    "run `mob#{ _subcommand } <operator>` for more info"
       Trollop::Parser.new do
         banner _banner_rows
       end

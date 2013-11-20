@@ -14,8 +14,8 @@ module Mobilize
       def Cluster.perform
         _operator                       = ARGV.shift
         if _operator and
-          Cluster.operators.keys.include? _operator
-          Mobilize::Cluster.send          _operator
+          Cluster.operators.keys.include?  _operator
+          return Mobilize::Cluster.perform _operator
         end
         Cli.except Cluster
       end
